@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use CodeIgniter\HTTP\ResponseInterface;
+
 use App\Models\PerangkatModel;
 use App\Models\MutasiModel;
 use Config\Database;
@@ -31,7 +31,7 @@ class AdminController extends BaseController
         return view('login');
     }
 
-    public function auth()
+    public function login()
     {
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
@@ -59,27 +59,29 @@ class AdminController extends BaseController
             return redirect()->to('/');
         }
 
-        $data['mutasi']=$this->mutasiModel->findAll();
+        $data['perangkat'] = $this->perangkatModel->getDataDash();
+
         return view('dashboard', $data);
     }
 
-    public function editMutasi($id)
+    public function updatePerangkat($id_perangkat)
     {
-        $mutasi = $this->mutasiModel->find($id);
-        $id_perangkat = $mutasi['id_perangkat'];
-        $status_baru = $this->request->getPost('status');
+        $status = $this->request->getPost('status');
+        $id_users = $this->request->getPost('id_users');
+        $keterangan = $this->request->getPost('keterangan');
 
-        $this->mutasiModel->update($id, [
-            'status'=>$status_baru,
-            'waktu'=>date('Y-m-d H:i:s')
+        $this->mutasiModel->insert([
+            'id_perangkat'=>$id_perangkat,
+            'id_users'=>$id_users,
+            'status'=>$status,
+            'keterangan'=>$keterangan
         ]);
 
-        if ($status_baru === 'dibawa' || $status_baru === 'terpasang'){
-            $this->perangkatModel->update($id_perangkat, ['status'=>'tidak tersedia']);
-        }
-        elseif ($status_baru === 'kembali'){
-            $this->perangkatModel->update($id_perangkat, ['status'=>'tersedia']);
-        }
+        $this->perangkatModel->update($id_perangkat, [
+            'user_id'=>$id_users,
+            'keterangan'=>$keterangan,
+            'status'=>$status
+        ]);
         return redirect()->to('/dashboard');
     }
 }

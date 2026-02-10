@@ -10,25 +10,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
 </head>
 
-<body class="bg-[#e5e9ef] min-h-screen flex items-start p-6 font-sans">
+<body class="bg-[#EDEDED] min-h-screen flex items-start p-6 font-sans">
 
     <!-- Sidebar -->
-    <aside class="bg-[#0749ff] text-white w-52 min-h-[90vh] rounded-2xl p-4 flex flex-col shadow-md">
-        <a href="#" class="text-xl font-bold mb-6 hover:text-gray-200">MuBa</a>
+    <aside class="bg-[#0066CC] text-white w-52 h-screen fixed left-0 top-0 p-4 flex flex-col shadow-lg">
+        <a href="#" class="text-xl font-bold mb-6 hover:text-white">Asset & Warehouse Management</a>
         <nav class="flex flex-col space-y-3 text-sm font-medium">
-            <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#32a5ff] transition bg-white text-[#0749ff] shadow">
+            <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-100 transition bg-white text-[#0066CC] shadow">
                 <i class="fas fa-home text-base"></i> <span>Dashboard</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#32a5ff] transition">
-                <i class="fas fa-cubes text-base"></i> <span>Mutasi Barang</span>
             </a>
         </nav>
     </aside>
 
     <!-- Main -->
-    <main class="flex-1 ml-8 flex flex-col">
+    <main class="flex-1 ml-52 mt-8 p-6">
+        <?= $this->renderSection('content') ?>
+
         <!-- Header -->
-        <header class="bg-[#0749ff] text-white rounded-2xl px-6 py-4 flex items-center justify-between shadow-md">
+        <header class="bg-[#0066CC] text-white fixed left-52 top-0 right-0 px-6 py-4 flex items-center justify-between shadow-md z-40">
             <div class="font-semibold text-xl">Dashboard</div>
             <div class="flex space-x-6 text-white text-lg items-center">
                 <div class="relative">

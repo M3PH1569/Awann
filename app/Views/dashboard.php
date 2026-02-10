@@ -2,98 +2,64 @@
 
 <?= $this->section('content') ?>
 
-<!-- Content MASIH TEMPLATE YA BELOM DIGANTI!!!-->
-<section class="mt-8 bg-white rounded-xl shadow px-6 py-5 w-full">
-  <h2 class="text-xl font-semibold mb-4">Selamat Datang Ya!!</h2>
-  <?php if (empty($registeredEvents)): ?>
-    <p class="text-gray-500">Belum ada event yang kamu ikuti</p>
-  <?php else: ?>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <?php foreach ($registeredEvents as $event): ?>
-        <?php
-        $image = $event['photo'] ?? 'images/default-event.jpg';
-        $review = $eventReviews[$event['id']] ?? null;
-        ?>
-        <div class="bg-white rounded-lg shadow p-4 flex flex-col">
-          <img src="<?= $image ?>" alt="<?= $event['title'] ?>" class="rounded mb-3 h-40 w-full object-cover">
-          <h3 class="font-semibold text-lg"><?= $event['title'] ?></h3>
-          <p class="text-sm text-gray-600"><?= $event['category'] ?></p>
-          <p class="text-sm"><?= $event['start_date'] ?> - <?= $event['end_date'] ?></p>
-          <p class="text-sm"><?= $event['location'] ?></p>
-          <button onclick="togglePresensi('presensi-<?= $event['id'] ?>', true)" class="mt-2 bg-[#4A7CFD] text-white py-1 px-2 rounded">Presensi</button>
-          <button onclick="openUlasan('ulasan-<?= $event['id'] ?>')" class="mt-1 bg-gray-200 text-gray-800 py-1 px-2 rounded">Lihat Ulasan</button>
+<h2 class="text-xl font-semibold mb-4">
+  Selamat Datang, <?=  session('admin')['nama'] ?? 'Admin' ?>!
+</h2>
 
-          <!-- Presensi Overlay -->
-          <div id="presensi-<?= $event['id'] ?>" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div class="bg-white p-6 rounded-lg w-96">
-              <h4 class="font-bold mb-4">Presensi <?= $event['title'] ?></h4>
-              <button onclick="togglePresensi('presensi-<?= $event['id'] ?>', false)" class="text-sm text-red-500 hover:underline">Tutup</button>
-            </div>
-          </div>
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <div class="overflow-x-auto">
 
-          <!-- Ulasan Overlay -->
-          <div id="ulasan-<?= $event['id'] ?>" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div class="bg-white p-6 rounded-lg w-96">
-              <h4 class="font-bold mb-4">Ulasan <?= $event['title'] ?></h4>
-              <?php if ($review): ?>
-                <p><?= $review['message'] ?></p>
-              <?php else: ?>
-                <p class="text-gray-500">Belum ada ulasan</p>
-              <?php endif; ?>
-              <button onclick="closeUlasan('ulasan-<?= $event['id'] ?>')" class="text-sm text-red-500 hover:underline">Tutup</button>
-            </div>
-          </div>
+    <table class="min-w-full text-sm text-left">
+      <thead class="bg-[#000033] text-white">
+        <tr>
+          <th class="px-4 py-3">Action</th>
+          <th class="px-4 py-3">No</th>
+          <th class="px-4 py-3">No Registrasi</th>
+          <th class="px-4 py-3">Nama Perangkat</th>
+          <th class="px-4 py-3">Serial Number</th>
+          <th class="px-4 py-3">User</th>
+          <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3">Keterangan</th>
+          <th class="px-4 py-3">Created</th>
+          <th class="px-4 py-3">Updated</th>
+        </tr>
+      </thead>
+      
+      <tbody class="divide-y">
+        <?php $no = 1; foreach($perangkat as $p): ?>
+        
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-3">
+            <a href="dashboard/edit/<?= $p['id'] ?>" 
+              class="text-blue-600">
+              <i class="fas fa-edit"></i>
+            </a>
+          </td>
 
-        </div>
-      <?php endforeach; ?>
-    </div>
-  <?php endif; ?>
-</section>
-</main>
-</body>
+          <td class="px-4 py-3"><?= $no++ ?></td>
+          <td class="px-4 py-3"><?= esc($p['noreg']) ?></td>
+          <td class="px-4 py-3"><?= esc($p['nama']) ?></td>
+          <td class="px-4 py-3"><?= esc($p['serial_number']) ?></td>
+          <td class="px-4 py-3"><?= $p['nama_user'] ?? '-' ?></td>
 
-<script>
-  function togglePresensi(id, show) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.style.display = show ? 'flex' : 'none';
-    el.classList.toggle('hidden', !show);
-  }
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded text-xs
+              <?= $p['status_mutasi']=='Dibawa' ? 'bg-yellow-200 text-yellow-800' : '' ?>
+              <?= $p['status_mutasi']=='Terpasang' ? 'bg-blue-200 text-blue-800' : '' ?>
+              <?= $p['status_mutasi']=='Kembali' ? 'bg-green-200 text-green-800' : '' ?>
+              ">
+              <?=  $p['status_mutasi'] ?? '-' ?>
+            </span>
+          </td>
 
-  function openUlasan(id) {
-    const el = document.getElementById(id);
-    if (el) {
-      el.style.display = 'flex';
-      el.classList.remove('hidden');
-    }
-  }
+          <td class="px-4 py-3"><?= esc($p['keterangan_mutasi']) ?: '-' ?></td>
+          <td class="px-4 py-3"><?= $p['created_at'] ?></td>
+          <td class="px-4 py-3"><?= $p['mutasi_updated'] ?></td>
+        </tr>
 
-  function closeUlasan(id) {
-    const el = document.getElementById(id);
-    if (el) {
-      el.style.display = 'none';
-      el.classList.add('hidden');
-    }
-  }
-
-  // Profile & notif dropdown
-  document.addEventListener('DOMContentLoaded', function() {
-    const profileBtn = document.getElementById('profileButton');
-    const profileMenu = document.getElementById('profileMenu');
-    profileBtn?.addEventListener('click', e => {
-      e.stopPropagation();
-      profileMenu?.classList.toggle('hidden');
-    });
-    window.addEventListener('click', () => profileMenu?.classList.add('hidden'));
-
-    const notifBtn = document.getElementById('notifButton');
-    const notifDropdown = document.getElementById('notifDropdown');
-    notifBtn?.addEventListener('click', e => {
-      e.stopPropagation();
-      notifDropdown?.classList.toggle('hidden');
-    });
-    window.addEventListener('click', () => notifDropdown?.classList.add('hidden'));
-  });
-</script>
-
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+</div>
 <?= $this->endSection() ?>

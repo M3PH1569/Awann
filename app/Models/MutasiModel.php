@@ -12,7 +12,7 @@ class MutasiModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id_perangkat', 'user', 'status','keterangan'];
+    protected $allowedFields    = ['id_perangkat', 'id_users', 'status','keterangan'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

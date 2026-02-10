@@ -28,12 +28,12 @@ class CreatePerangkatTable extends Migration
             ],
             'status'=>[
                 'type'=>'ENUM',
-                'constraint'=>['Tersedia', 'Tidak Tersedia'],
-                'default'=>'tersedia',
+                'constraint'=>['Tersedia','Tidak Tersedia'],
+                'default'=>'Tersedia',
             ],
             'created_at'=>[
                 'type'=>'DATETIME',
-                'null'=>false,
+                'null'=>true,
             ],
             'updated_at'=>[
                 'type'=>'DATETIME',
@@ -42,12 +42,12 @@ class CreatePerangkatTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addUniqueKey('noreg','serial_number');
+        $this->forge->addUniqueKey(['noreg','serial_number']);
         $this->forge->createTable('perangkat');
     }
 
     public function down()
     {
-        $this->forge->dropTable('admin');
+        $this->forge->dropTable('perangkat');
     }
 }

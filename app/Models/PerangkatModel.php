@@ -43,4 +43,26 @@ class PerangkatModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    public function getDataDash()
+    {
+        return $this->db->query("
+        SELECT
+        p.*,
+        m.status as status_mutasi,
+        m.keterangan as keterangan_mutasi,
+        m.created_at as mutasi_created,
+        m.updated_at as mutasi_updated,
+        u.nama as nama_user
+        FROM perangkat p
+        LEFT JOIN mutasi m ON m.id = (
+        SELECT id FROM mutasi
+        WHERE id_perangkat = p.id
+        ORDER BY created_at DESC
+        LIMIT 1
+        )
+        LEFT JOIN users u ON u.id = m.id_users
+        ORDER BY p.id ASC
+        ")->getResultArray();
+    }
 }

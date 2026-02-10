@@ -9,15 +9,15 @@
 </head>
 
 <body class="bg-gradient-to-b from-[#ffffff] via-white/80 to-[#0749ff] min-h-screen flex flex-col px-4 py-6">
-  <header class="bg-[#0749ff] text-[#ffffff] py-4 text-center rounded-xl mb-6">
+  <header class="bg-[#0749ff] text-[#ffffff] fixed left-0 top-0 right-0 h-20 px-6 py-4 text-center mb-6">
     <h1 class="text-3xl font-bold">MuBa</h1>
   </header>
 
-  <main class="flex justify-center">
+  <main class="flex justify-center pt-28">
     <?= $this->renderSection('content') ?>
   </main>
 
-  <footer class="mt-auto text-xs text-gray-500 text-center">
+  <footer class="mt-auto text-xs text-white text-center">
     &copy; <?= date('Y') ?> anak baik
   </footer>
 </body>

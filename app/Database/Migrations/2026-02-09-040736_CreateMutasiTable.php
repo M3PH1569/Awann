@@ -18,9 +18,9 @@ class CreateMutasiTable extends Migration
                 'type'=>'INT',
                 'unsigned'=>true,
             ],
-            'user'=>[
-                'type'=>'ENUM',
-                'constraint'=>['Sandi','Faizin','Aryo','Andre','Anang','Fahri','Iqbal','Nawal','Adit','Giri','Albaskoro'],
+            'id_users'=>[
+                'type'=>'INT',
+                'unsigned'=>true,
                 'null'=>true,
             ],
             'status'=>[
@@ -34,7 +34,7 @@ class CreateMutasiTable extends Migration
             ],
             'created_at'=>[
                 'type'=>'DATETIME',
-                'null'=>false,
+                'null'=>true,
             ],
             'updated_at'=>[
                 'type'=>'DATETIME',
@@ -44,11 +44,12 @@ class CreateMutasiTable extends Migration
 
         $this->forge->addKey('id', true);
         $this->forge->addForeignKey('id_perangkat','perangkat','id','CASCADE','CASCADE');
+        $this->forge->addForeignKey('id_users','users','id','CASCADE','CASCADE');
         $this->forge->createTable('mutasi');
     }
 
     public function down()
     {
-        $this->forge->dropTable('admin');
+        $this->forge->dropTable('mutasi');
     }
 }
