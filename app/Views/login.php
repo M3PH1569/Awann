@@ -12,17 +12,17 @@
             <label class="block font-semibold text-black text-sm mb-1" for="username">
                 Username
             </label>
-            <input name="username" class="w-full rounded-lg border border-gray-500 py-2 px-3 mb-4 text-gray-400 placeholder-gray-400" id="username" placeholder="Masukkan username" required type="text" />
+            <input name="username" class="w-full rounded-lg border border-gray-500 py-2 px-3 mb-4 text-black placeholder-gray-400" id="username" placeholder="Masukkan username" required type="text" />
         </div>
 
         <div>
             <label class="block font-semibold text-black text-sm mb-1" for="password">
                 Password
             </label>
-            <input name="password" class="w-full rounded-lg border border-gray-500 py-2 px-3 mb-4 text-gray-400 placeholder-gray-400" id="password" placeholder="Masukkan password" required type="password" />
+            <input name="password" class="w-full rounded-lg border border-gray-500 py-2 px-3 mb-4 text-black placeholder-gray-400" id="password" placeholder="Masukkan password" required type="password" />
         </div>
 
-        <button class="w-full rounded-lg bg-[#0749ff] font-semibold text-white py-2 mb-3 hover:bg-[#32a5ff] transsition-colors" type="submit">
+        <button class="w-full rounded-lg bg-[#0066CC] font-semibold text-white py-2 mb-3 hover:bg-blue-200 transsition-colors" type="submit">
             Login
         </button>
     </form>

@@ -49,19 +49,27 @@ class AdminController extends BaseController
 
     public function logout()
     {
-        $this->session->remove('admin');
+        $this->session->destroy();
         return redirect()->to('/');
     }
 
     public function dashboard()
     {
-        if(!session()->get('admin')){
-            return redirect()->to('/');
-        }
-
         $data['perangkat'] = $this->perangkatModel->getDataDash();
 
+        $configMutasi = new \Config\Mutasi();
+        $data['statuses'] = $configMutasi->status;
+
+        $userModel = new \App\Models\UserModel();
+        $data['users'] = $userModel->findAll();
+
         return view('dashboard', $data);
+    }
+
+    public function getPerangkat($id)
+    {
+        $data = $this->perangkatModel->getDetailMutasi($id);
+        return $this->response->setJSON($data);
     }
 
     public function updatePerangkat($id_perangkat)
@@ -83,5 +91,28 @@ class AdminController extends BaseController
             'status'=>$status
         ]);
         return redirect()->to('/dashboard');
+    }
+
+    public function ajaxUpdate()
+    {
+        $id_perangkat = $this->request->getPost('id');
+        $status = $this->request->getPost('status_mutasi');
+        $id_users = $this->request->getPost('id_users');
+        $keterangan = $this->request->getPost('keterangan');
+
+        $this->mutasiModel->insert([
+            'id_perangkat'=>$id_perangkat,
+            'id_users'=>$id_users,
+            'status'=>$status,
+            'keterangan'=>$keterangan
+        ]);
+
+        $this->perangkatModel->update($id_perangkat,[
+            'user_id'=>$id_users,
+            'status'=>$status,
+            'keterangan'=>$keterangan
+        ]);
+
+        return $this->response->setJSON(['success'=>true]);
     }
 }

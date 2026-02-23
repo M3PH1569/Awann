@@ -3,11 +3,14 @@
 namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
+use Config\Mutasi;
 
 class CreateMutasiTable extends Migration
 {
     public function up()
     {
+        $mutasi = new Mutasi();
+
         $this->forge->addField([
             'id'=>[
                 'type'=>'INT',
@@ -25,7 +28,7 @@ class CreateMutasiTable extends Migration
             ],
             'status'=>[
                 'type'=>'ENUM',
-                'constraint'=>['Dibawa', 'Terpasang','Kembali'],
+                'constraint'=>$mutasi->status,
                 'null'=>true,
             ],
             'keterangan'=>[

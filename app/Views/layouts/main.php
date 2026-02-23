@@ -8,9 +8,9 @@
   <title><?= $title ?? 'Asset Management' ?></title>
 </head>
 
-<body class="bg-gradient-to-b from-[#ffffff] via-white/80 to-[#0749ff] min-h-screen flex flex-col px-4 py-6">
-  <header class="bg-[#0749ff] text-[#ffffff] fixed left-0 top-0 right-0 h-20 px-6 py-4 text-center mb-6">
-    <h1 class="text-3xl font-bold">MuBa</h1>
+<body class="bg-gradient-to-b from-[#EDEDED] to-[#0066CC] min-h-screen flex flex-col px-4 py-6">
+  <header class="bg-[#0066CC] text-white fixed left-0 top-0 right-0 h-20 px-6 py-4 text-center mb-6">
+    <h1 class="text-3xl font-bold">Asset & Warehouse Management</h1>
   </header>
 
   <main class="flex justify-center pt-28">

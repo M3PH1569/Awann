@@ -65,4 +65,28 @@ class PerangkatModel extends Model
         ORDER BY p.id ASC
         ")->getResultArray();
     }
+
+    public function getDetailMutasi($id)
+    {
+        return $this->db->query("
+        SELECT
+        p.id,
+        p.noreg,
+        p.nama,
+        p.serial_number,
+        m.id_users,
+        m.status,
+        m.keterangan,
+        u.nama as nama_user
+        FROM perangkat p
+        LEFT JOIN mutasi m ON m.id = (
+        SELECT id FROM mutasi
+        WHERE id_perangkat = p.id
+        ORDER BY created_at DESC
+        LIMIT 1)
+        LEFT JOIN users u on u.id = m.id_users
+        WHERE p.id =?",
+        [$id])->getRowArray();
+    }
+        
 }

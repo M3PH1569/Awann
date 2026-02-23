@@ -46,11 +46,12 @@
                     <button id="profileButton" class="hover:scale-110 transition-transform duration-200">
                         <i class="far fa-user-circle fa-lg"></i>
                     </button>
-                    <div id="profileMenu" class="hidden absolute right-0 mt-5 w-40 bg-[#0749ff] text-white rounded-md shadow-lg z-50">
+                    <div id="profileMenu" class="hidden absolute right-0 mt-5 w-40 bg-[#0066CC] text-white rounded-md shadow-lg z-50">
                         <ul class="p-3 space-y-2 font-semibold text-sm">
                             <li><a href="#" class="block hover:underline">Dashboard</a></li>
                             <li>
-                                <form method="POST" action="#"><button type="submit" class="w-full text-left hover:underline">Log Out</button></form>
+                                <form method="POST" action="/logout">
+                                    <?= csrf_field() ?><button type="submit" class="w-full text-left hover:underline">Log Out</button></form>
                             </li>
                         </ul>
                     </div>
@@ -58,9 +59,12 @@
             </div>
         </header>
     </main>
+
+    <?=  $this->renderSection('scripts') ?>
+    
 </body>
 
-<script>
+<script>    
     // Profile & notif dropdown
     document.addEventListener('DOMContentLoaded', function() {
         const profileBtn = document.getElementById('profileButton');

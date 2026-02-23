@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<h2 class="text-xl font-semibold mb-4">
+<h2 class="text-xl font-semibold mb-3">
   Selamat Datang, <?=  session('admin')['nama'] ?? 'Admin' ?>!
 </h2>
 
@@ -30,10 +30,10 @@
         
         <tr class="hover:bg-gray-50">
           <td class="px-4 py-3">
-            <a href="dashboard/edit/<?= $p['id'] ?>" 
+            <button onclick="openEdit(<?= $p['id'] ?>)" 
               class="text-blue-600">
               <i class="fas fa-edit"></i>
-            </a>
+            </button>
           </td>
 
           <td class="px-4 py-3"><?= $no++ ?></td>
@@ -61,5 +61,112 @@
       </tbody>
     </table>
   </div>
+
+  <div id="editModal" class="fixed inset-0 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white border border-gray-200 rounded-md shadow-md w-full max-w-md p-6 relative">
+      <button onclick="closeModal()" class="absolute right-3 top-3 text-black text-lg font-bold focus:outline-none">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <h2 class="text-base text-black font-semibold mb-4">Edit Perangkat</h2>
+      <form id="editForm">
+        <input type="hidden" name="id" id="edit_id">
+
+        <div class="mb-3">
+          <label class="block text-sm font-medium text-gray-700">No Registrasi</label>
+          <input type="text" id="edit_noreg" class="mt-1 block w-full border border-gray-300 shadow-sm rounded-md p-2 bg-gray-100" disabled>
+        </div>
+        <div class="mb-3">
+          <label class="block text-sm font-medium text-gray-700">Nama Perangkat</label>
+          <input type="text" id="edit_np" class="mt-1 block w-full border border-gray-300 shadow-sm rounded-md p-2 bg-gray-100" disabled>
+        </div>
+        <div class="mb-3">
+          <label class="block text-sm font-medium text-gray-700">Serial Number</label>
+          <input type="text" id="edit_sn" class="mt-1 block w-full border border-gray-300 shadow-sm rounded-md p-2 bg-gray-100" disabled>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="mb-3">
+          <label class="block text-sm font-medium text-gray-700">Nama User</label>
+          <select id="edit_user" name="id_users" class="mt-1 block w-full border border-gray-300 shadow-sm rounded-md p-2">
+            <option value="">Pilih User</option>
+            <?php foreach($users as $u): ?>
+              <option value="<?= $u['id'] ?>">
+                <?= $u['nama'] ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm font-medium text-gray-700">Status</label>
+          <select id="edit_status" name="status_mutasi" class="mt-1 block w-full border border-gray-300 shadow-sm rounded-md p-2">
+            <option value="">Pilih Status</option>
+            <?php foreach($statuses as $s): ?>
+              <option value="<?= $s ?>">
+                <?= $s ?>
+              </option>
+            <?php endforeach;?>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm font-medium text-gray-700">Keterangan</label>
+          <textarea x.model="form.reason" id="edit_keterangan" name="keterangan" class="mt-1 block w-full border border-gray-300 shadow-sm rounded-md p-2"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-[#0066CC] text-white rounded">Simpan</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
 </div>
 <?= $this->endSection() ?>
+
+<?=  $this->section('scripts') ?>
+<script>
+window.openEdit = function(id)
+{
+  fetch("<?=  base_url('dashboard/edit') ?>/"+id)
+  .then(res=>res.json())
+  .then(data=>{
+    console.log(data);
+
+    document.getElementById("edit_id").value=data.id;
+    document.getElementById("edit_noreg").value=data.noreg;
+    document.getElementById("edit_np").value=data.nama;
+    document.getElementById("edit_sn").value=data.serial_number;
+
+    document.getElementById("edit_user").value=data.id_users ?? "";
+    document.getElementById("edit_status").value=data.status ?? "";
+    document.getElementById("edit_keterangan").value=data.keterangan ?? "";
+
+    document.getElementById("editModal").classList.remove("hidden");
+    document.getElementById("editModal").classList.add("flex");
+  });
+}
+
+window.closeModal = function()
+{
+  document.getElementById("editModal").classList.add("hidden");
+  document.getElementById("editModal").classList.remove("flex");
+}
+
+document.getElementById("editForm").addEventListener("submit", function(e){e.preventDefault();
+  let formData = new FormData(this);
+
+  fetch("<?= base_url('dashboard/update') ?>", {
+    method: "POST",
+    body: formData
+  })
+  .then(res=>res.json())
+  .then(()=> {
+    location.reload();
+  });
+});
+</script>
+<?=  $this->endSection() ?>
