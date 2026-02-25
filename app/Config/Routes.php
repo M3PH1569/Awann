@@ -12,6 +12,7 @@ $routes->group('', ['filter'=>'auth'], function($routes){
     $routes->get('dashboard', 'AdminController::dashboard');
     $routes->get('dashboard/edit/(:num)', 'AdminController::getPerangkat/$1');
     $routes->post('dashboard/update', 'AdminController::ajaxUpdate');
+    $routes->post('dashboard/check/(:num)', 'AdminController::checkMutasi/$1');
 });
 
 $routes->get('/', 'AdminController::index');

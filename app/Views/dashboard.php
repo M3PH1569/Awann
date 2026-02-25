@@ -22,6 +22,7 @@
           <th class="px-4 py-3">Keterangan</th>
           <th class="px-4 py-3">Created</th>
           <th class="px-4 py-3">Updated</th>
+          <th class="px-4 py-3">Mutasi</th>
         </tr>
       </thead>
       
@@ -55,6 +56,20 @@
           <td class="px-4 py-3"><?= esc($p['keterangan_mutasi']) ?: '-' ?></td>
           <td class="px-4 py-3"><?= $p['created_at'] ?></td>
           <td class="px-4 py-3"><?= $p['mutasi_updated'] ?></td>
+
+          <td class="px-4 py-3">
+          <?php if ($p['status_mutasi']=='Terpasang'): ?>
+            <?php if ($p['mutasi_check']==1): ?>
+              <span class="px-2 py-1 rounded text-xs bg-green-400 text-white">Checked</span>
+            <?php else: ?>
+              <button class="btn-check bg-blue-500 text-white px-3 py-1 rounded text-xs" data-id="<?= $p['mutasi_id'] ?>">
+                Crosscheck INTAN
+              </button>
+            <?php endif; ?>
+          <?php else: ?>
+            -
+          <?php endif; ?>
+          </td>
         </tr>
 
         <?php endforeach ?>
@@ -129,6 +144,25 @@
 
 <?=  $this->section('scripts') ?>
 <script>
+  document.addEventListener("click", function(e){
+    if (e.target.classList.contains("btn-check")){
+      let button = e.target;
+      let id = button.getAttribute("data-id");
+      fetch("<?= base_url('dashboard/check') ?>/"+id,{
+        method:"POST",
+        headers:{
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(res=>res.json())
+      .then(data=>{
+        if(data.success){
+          button.outerHTML= '<span class="px-2 py-1 rounded text-xs bg-green-400 text-white">Checked</span>';
+        }
+      });
+    }
+  });
+
 window.openEdit = function(id)
 {
   fetch("<?=  base_url('dashboard/edit') ?>/"+id)

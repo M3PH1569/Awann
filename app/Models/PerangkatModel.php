@@ -49,10 +49,12 @@ class PerangkatModel extends Model
         return $this->db->query("
         SELECT
         p.*,
+        m.id as mutasi_id,
         m.status as status_mutasi,
         m.keterangan as keterangan_mutasi,
         m.created_at as mutasi_created,
         m.updated_at as mutasi_updated,
+        m.is_checked as mutasi_check,
         u.nama as nama_user
         FROM perangkat p
         LEFT JOIN mutasi m ON m.id = (
@@ -77,6 +79,7 @@ class PerangkatModel extends Model
         m.id_users,
         m.status,
         m.keterangan,
+        m.is_checked,
         u.nama as nama_user
         FROM perangkat p
         LEFT JOIN mutasi m ON m.id = (

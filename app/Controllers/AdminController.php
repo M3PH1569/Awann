@@ -104,13 +104,30 @@ class AdminController extends BaseController
             'id_perangkat'=>$id_perangkat,
             'id_users'=>$id_users,
             'status'=>$status,
-            'keterangan'=>$keterangan
+            'keterangan'=>$keterangan,
+            'is_checked'=>0
         ]);
 
         $this->perangkatModel->update($id_perangkat,[
             'user_id'=>$id_users,
             'status'=>$status,
             'keterangan'=>$keterangan
+        ]);
+
+        return $this->response->setJSON(['success'=>true]);
+    }
+
+    public function checkMutasi($id)
+    {
+        $mutasi = $this->mutasiModel->find($id);
+        
+        if (!$mutasi || $mutasi['status'] !== 'Terpasang'){
+            return $this->response->setJSON(['success'=>false]);
+        }
+
+        $this->mutasiModel->update($id, [
+            'is_checked'=>1,
+            'checked_at'=>date('Y-m-d H:i:s')
         ]);
 
         return $this->response->setJSON(['success'=>true]);
