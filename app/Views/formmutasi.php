@@ -38,7 +38,7 @@
     <h2 class="text-center text-xl font-extrabold text-[#1C4D8D] mb-8">FORM MUTASI</h2>
 
     <form action="<?= base_url('/submit') ?>" method="POST">
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_3fr_1fr] gap-6 mb-5">
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 mb-5">
 
         <div class="w-full flex flex-col">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">No Registrasi</label>
@@ -71,13 +71,6 @@
         <div class="flex flex-col ">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Nama Perangkat</label>
           <div class="bg-[#EFEFEF] border rounded-md p-2 min-h-[42px] overflow-x-auto focus:outline-none" readonly>
-            <span id="nama_perangkat_text"></span>
-          </div>
-        </div>
-
-        <div class="flex flex-col">
-          <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Part Name (PN)</label>
-          <div class="bg-[#EFEFEF] border rounded-md p-2 min-h-[42px] focus:outline-none" readonly>
             <span id="nama_perangkat_text"></span>
           </div>
         </div>
@@ -114,7 +107,7 @@
         <div class="flex flex-col">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Keterangan</label>
           <div class="relative">
-            <textarea name="keterangan" rows="2" placeholder="Mau buat apa?" class="border rounded-md p-3 pr-10 text-sm w-full focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D] resize-none"></textarea>
+            <textarea name="keterangan" rows="2" placeholder="Masukkan Keterangan" class="border rounded-md p-3 pr-10 text-sm w-full focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D] resize-none"></textarea>
           </div>
         </div>
       </div>

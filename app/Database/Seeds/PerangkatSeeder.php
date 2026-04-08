@@ -9,13 +9,23 @@ class PerangkatSeeder extends Seeder
 {
     public function run()
     {
-        $this->db->table('perangkat')->insert([
-            'nama'=>'Fortigate40F',
-            'noreg'=>'B2WN0012MA0009',
-            'serial_number'=>'8892317246641',
-            'status'=>'Tersedia',
-            'created_at'=>Time::now(),
-            'updated_at'=>Time::now(),
-        ]);
+        $file = fopen(WRITEPATH . 'uploads/cobalagi.csv', 'r');
+        $data = [];
+        $header = fgetcsv($file);
+
+
+        while (($row = fgetcsv($file, 1000, ';')) !== false) {
+            $data[] = [
+                'nama' => $row[0],
+                'noreg' => $row[1],
+                'status' => 'Tersedia',
+                'created_at' => Time::now(),
+                'updated_at' => Time::now(),
+            ];
+        }
+
+        fclose($file);
+
+        $this->db->table('perangkat')->insertBatch($data);
     }
 }

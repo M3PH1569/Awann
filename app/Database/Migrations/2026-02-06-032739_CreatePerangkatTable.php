@@ -22,10 +22,6 @@ class CreatePerangkatTable extends Migration
                 'type'=>'VARCHAR',
                 'constraint'=>50,
             ],
-            'serial_number'=>[
-                'type'=>'VARCHAR',
-                'constraint'=>50,
-            ],
             'status'=>[
                 'type'=>'ENUM',
                 'constraint'=>['Tersedia','Tidak Tersedia'],
@@ -42,7 +38,7 @@ class CreatePerangkatTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addUniqueKey(['noreg','serial_number']);
+        $this->forge->addUniqueKey('noreg');
         $this->forge->createTable('perangkat');
     }
 

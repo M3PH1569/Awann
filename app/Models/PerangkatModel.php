@@ -12,7 +12,7 @@ class PerangkatModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['nama', 'noreg', 'serial_number', 'status'];
+    protected $allowedFields    = ['nama', 'noreg', 'status'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -52,7 +52,6 @@ class PerangkatModel extends Model
             $keyword = $this->db->escapeLikeString($filters['keyword']);
             $where[] = "(p.noreg LIKE '%$keyword%' OR 
                         p.nama LIKE '%$keyword%' OR 
-                        p.serial_number LIKE '%$keyword%' OR
                         u.nama LIKE '%$keyword%' OR
                         m.status LIKE '%$keyword%' OR
                         m.keterangan LIKE '%$keyword%' OR
@@ -135,7 +134,6 @@ class PerangkatModel extends Model
         p.id,
         p.noreg,
         p.nama,
-        p.serial_number,
         m.id_users,
         m.status,
         m.keterangan,

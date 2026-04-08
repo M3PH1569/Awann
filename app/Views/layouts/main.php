@@ -33,8 +33,8 @@
 <body class="bg-[#F1F1F1] h-screen flex flex-col overflow-hidden">
   <?php $uri = service('uri'); ?>
 
-  <nav class="fixed w-full bg-[#1C4D8D] text-white px-8 py-2 flex justify-between items-center shadow-md">
-    <h1 class="text-3xl font-extrabold tracking-wider">AWan</h1>
+  <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 flex justify-between items-center shadow-md">
+    <img src="<?= base_url('images/awan.png') ?>" width="250px">
 
     <div class="flex gap-8 items-center">
       <a href="<?= base_url('/') ?>" class="flex flex-col items-center cursor-pointer transition group
@@ -62,7 +62,7 @@
   </main>
 
   <footer class="mt-auto text-xs text-[#1C4D8D] p-2 text-center">
-    &copy; <?= date('Y') ?> anak baik
+    &copy; <?= date('Y') ?> PT. Aplikanusa Lintasarta
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>

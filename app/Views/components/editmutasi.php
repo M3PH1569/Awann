@@ -19,7 +19,7 @@
 
             <div>
                 <label class="font-medium text-[#1C4D8D] text-sm">Nama Perangkat</label>
-                <input type="text" id="edit_np" class="w-full bg-[#D0E4FE] text-sm text-[#1C4D8D] font-semibold border rounded-md p-2 focus:outline-none" disabled>
+                <input type="text" id="edit_np" class="w-full bg-[#D0E4FE] text-sm text-black font-semibold border rounded-md p-2 focus:outline-none" disabled>
             </div>
 
             <hr class="my-4">

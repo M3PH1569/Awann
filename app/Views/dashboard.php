@@ -84,7 +84,7 @@
 
             <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
               <td class="px-4 py-3 text-center text-xs text-blue-700 border border-gray-300">
-                <button type="button" onclick="openEdit(<?= $p['id'] ?>)" class="btn-check hover:text-blue-400 mr-1 transition">
+                <button type="button" onclick="openEdit(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-pen-to-square"></i>
                 </button>
                 <button type="button" onclick="openHistory(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
@@ -248,7 +248,7 @@
           return;
         }
 
-        let no = (res.currentPage - 1) * 30 + 1;
+        let no = (res.currentPage - 1) * 50 + 1;
 
         res.data.forEach(row => {
           tbody.innerHTML += `

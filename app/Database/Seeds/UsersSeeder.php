@@ -9,16 +9,19 @@ class UsersSeeder extends Seeder
     public function run()
     {
         $nama = [
-            'Sandi',
-            'Faizin',
-            'Aryo',
-            'Andre',
-            'Anang',
-            'Fahri',
-            'Iqbal',
-            'Nawal',
-            'Adit',
-            'Giri',
+            'Sandiawan Izhart',
+            'Khoerul Faizin',
+            'Aryo Dewandaru',
+            'Andre Pranata',
+            'Anang Kiswantoro',
+            'Maulana Fachri',
+            'Iqbal Mustofa',
+            'Nawal Haidan',
+            'Yudi Yudianto',
+            'Adhitya Gemeleonard',
+            'Fachry',
+            'Giri Mahendra',
+            'Rizky Maulana',
             'Albaskoro'
         ];
 
