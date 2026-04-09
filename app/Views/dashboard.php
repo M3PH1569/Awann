@@ -5,7 +5,7 @@
 <div class="max-w-[1450px] mx-auto w-full flex-1 flex flex-col">
   <div class="flex justify-between items-center w-full">
     <h2 class="text-base font-semibold mb-3">
-      Selamat Datang, <?= session('admin')['nama'] ?? 'Admin' ?>!
+      Selamat Datang, <?= session('admin')['nama'] ?? '' ?>!
     </h2>
 
     <div class="flex gap-2 mb-4">
@@ -22,7 +22,7 @@
   </div>
 
   <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center sticky top-[70px]">
-    <input type="text" name="keyword" value="<?= $_GET['keyword'] ?? '' ?>" placeholder="Cari apa aja" class="border text-xs rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+    <input type="text" name="keyword" value="<?= $_GET['keyword'] ?? '' ?>" placeholder="Search..." class="border text-xs rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
 
     <div>
       <select name="status" onchange="this.form.submit()" class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">

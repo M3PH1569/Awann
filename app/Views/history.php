@@ -4,32 +4,38 @@
 
 <div class="max-w-[1450px] mx-auto w-full flex-1 flex flex-col">
     <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center">
-        <input type="text" name="search" value="<?= $_GET['search'] ?? '' ?>" placeholder="Cari apa aja" class="border text-xs rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+        <input type="text" name="search" value="<?= $_GET['search'] ?? '' ?>" placeholder="Search..."
+            class="border text-xs rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
 
         <div>
-            <select name="status" onchange="this.form.submit()" class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+            <select name="status" onchange="this.form.submit()"
+                class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
                 <option value="">Semua Status</option>
                 <option value="Dibawa" <?= (($_GET['status'] ?? '') == 'Dibawa') ? 'selected' : '' ?>>Dibawa</option>
-                <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang</option>
+                <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang
+                </option>
                 <option value="Kembali" <?= (($_GET['status'] ?? '') == 'Kembali') ? 'selected' : '' ?>>Kembali</option>
             </select>
         </div>
 
         <div>
-            <select name="filter_mutasi" onchange="this.form.submit()" class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+            <select name="filter_mutasi" onchange="this.form.submit()"
+                class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
                 <option value="">Semua Mutasi</option>
-                <option value="belum" <?= (($_GET['filter_mutasi'] ?? '') == 'belum') ? 'selected' : '' ?>>Belum Mutasi</option>
-                <option value="crosscheck" <?= (($_GET['filter_mutasi'] ?? '') == 'crosscheck') ? 'selected' : '' ?>>Crosscheck INTAN</option>
+                <option value="belum" <?= (($_GET['filter_mutasi'] ?? '') == 'belum') ? 'selected' : '' ?>>Belum Mutasi
+                </option>
+                <option value="crosscheck" <?= (($_GET['filter_mutasi'] ?? '') == 'crosscheck') ? 'selected' : '' ?>>
+                    Crosscheck INTAN</option>
                 <option value="check" <?= (($_GET['filter_mutasi'] ?? '') == 'check') ? 'selected' : '' ?>>Checked</option>
             </select>
         </div>
 
         <div>
-            <select name="user" onchange="this.form.submit()" class="border px-4 py-2 text-xs rounded-lg w-48 focus:outline-none focus:ring-[#1C4D8D]">
+            <select name="user" onchange="this.form.submit()"
+                class="border px-4 py-2 text-xs rounded-lg w-48 focus:outline-none focus:ring-[#1C4D8D]">
                 <option value="">Semua User</option>
                 <?php foreach ($users as $u): ?>
-                    <option value="<?= $u['id'] ?>"
-                        <?= (($_GET['user'] ?? '') == $u['id']) ? 'selected' : '' ?>>
+                    <option value="<?= $u['id'] ?>" <?= (($_GET['user'] ?? '') == $u['id']) ? 'selected' : '' ?>>
                         <?= esc($u['nama']) ?>
                     </option>
                 <?php endforeach; ?>
@@ -66,9 +72,13 @@
                         <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
                             <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $no++ ?></td>
                             <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['noreg']) ?></td>
-                            <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['nm_perangkat']) ?></td>
-                            <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $h['nm_user'] ?? '-' ?></td>
-                            <td class="px-4 py-3 text-xs text-left border border-gray-300 break-words whitespace-normal max-w-[225px]"><?= esc($h['keterangan']) ?: '-' ?></td>
+                            <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['nm_perangkat']) ?>
+                            </td>
+                            <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $h['nm_user'] ?? '-' ?>
+                            </td>
+                            <td
+                                class="px-4 py-3 text-xs text-left border border-gray-300 break-words whitespace-normal max-w-[225px]">
+                                <?= esc($h['keterangan']) ?: '-' ?></td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
                                 <span class="px-2 py-1 rounded text-xs
@@ -80,21 +90,27 @@
                                 </span>
                             </td>
 
-                            <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $h['created_at'] ?></td>
-                            <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $h['updated_at'] ?></td>
+                            <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
+                                <?= $h['created_at'] ?></td>
+                            <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
+                                <?= $h['updated_at'] ?></td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
                                 <?php if ($h['status'] == 'Terpasang'): ?>
                                     <?php if ($h['is_checked'] == 1): ?>
                                         <span class="px-2 py-1 rounded text-xs bg-green-400 text-white">Checked</span>
                                     <?php else: ?>
-                                        <span class="inline-block text-center whitespace-nowrap px-2 py-1 rounded text-xs bg-blue-500 text-white" data-id="<?= $h['id'] ?>">
+                                        <span
+                                            class="inline-block text-center whitespace-nowrap px-2 py-1 rounded text-xs bg-blue-500 text-white"
+                                            data-id="<?= $h['id'] ?>">
                                             Crosscheck INTAN
                                         </span>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <?php if ($h['is_checked'] == 0): ?>
-                                        <span class="inline-block text-center whitespace-nowrap px-2 py-1 rounded text-xs bg-yellow-400 text-yellow-900">Belum Mutasi</span>
+                                        <span
+                                            class="inline-block text-center whitespace-nowrap px-2 py-1 rounded text-xs bg-yellow-400 text-yellow-900">Belum
+                                            Mutasi</span>
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </td>
@@ -108,7 +124,8 @@
     <div class="py-1 sticky bottom-0 mt-2">
         <div class="flex justify-center items-center gap-1 w-full">
             <?php for ($i = 1; $i <= $totalPage; $i++): ?>
-                <a href="?page=<?= $i ?>" class="px-3 py-1 text-sm rounded <?= $i == $currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>"><?= $i ?></a>
+                <a href="?page=<?= $i ?>"
+                    class="px-3 py-1 text-sm rounded <?= $i == $currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>"><?= $i ?></a>
             <?php endfor; ?>
         </div>
     </div>

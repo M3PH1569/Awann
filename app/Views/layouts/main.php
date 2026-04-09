@@ -9,6 +9,7 @@
 
   <title>AWan - Asset Warehouse Management</title>
 
+  <link rel="icon" href="<?= base_url('images/LogoLintas.png') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
@@ -30,7 +31,7 @@
   </style>
 </head>
 
-<body class="bg-[#F1F1F1] h-screen flex flex-col overflow-hidden">
+<body class="bg-[#F1F1F1] h-screen flex flex-col">
   <?php $uri = service('uri'); ?>
 
   <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 flex justify-between items-center shadow-md">
@@ -57,7 +58,7 @@
     </div>
   </nav>
 
-  <main class="flex-1 pt-24">
+  <main class="flex-1 pt-24 pl-4 pr-4">
     <?= $this->renderSection('content') ?>
   </main>
 
