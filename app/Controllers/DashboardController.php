@@ -23,7 +23,7 @@ class DashboardController extends BaseController
     public function dashboard()
     {
         $page = $this->request->getGet('page') ?? 1;
-        $limit = 30;
+        $limit = 50;
         $offset = ($page - 1)*$limit;
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
@@ -56,7 +56,7 @@ class DashboardController extends BaseController
         $page = $this->request->getVar('page') ?? 1;
         $search = $this->request->getVar('searchHistory') ?? '';
 
-        $limit = 30;
+        $limit = 15;
         $offset = ($page - 1) * $limit;
 
         $filters=[

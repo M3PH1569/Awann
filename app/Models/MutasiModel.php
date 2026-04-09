@@ -109,7 +109,7 @@ class MutasiModel extends Model
     ];
   }
 
-  public function getDataHistory($id, $filters = [], $limit = 10, $offset = 0)
+  public function getDataHistory($id, $filters = [], $limit = 15, $offset = 0)
   {
     $builder = $this->db->table('mutasi m');
     $builder->select('m.*, u.nama as nm_user');

@@ -149,11 +149,11 @@
   <div class="py-1 sticky bottom-0 mt-2">
     <div class="flex justify-center items-center gap-1 w-full">
 
-    <?php $query = $_GET; ?>
+      <?php $query = $_GET; ?>
 
       <!-- Prev -->
       <?php if ($currentPage > 1): ?>
-        <?php $query['page']=$currentPage - 1;?>
+        <?php $query['page'] = $currentPage - 1; ?>
         <a href="?<?= http_build_query($query) ?>" class="px-3 py-1 text-xs bg-gray-200 rounded">
           &laquo;
         </a>
@@ -194,8 +194,8 @@
 
       <!-- Next -->
       <?php if ($currentPage < $totalPage): ?>
-        <?php $query['page']=$currentPage+1; ?>
-        <a href="?<?=  http_build_query($query) ?>" class="px-3 py-1 text-xs bg-gray-200 rounded">
+        <?php $query['page'] = $currentPage + 1; ?>
+        <a href="?<?= http_build_query($query) ?>" class="px-3 py-1 text-xs bg-gray-200 rounded">
           &raquo;
         </a>
       <?php endif; ?>

@@ -22,7 +22,7 @@
 
       <p class="text-[11px] font-bold mt-5 mb-1">BUTUH BANTUAN?</p>
       <p class="text-[11px] mb-4">Silakan hubungi admin melalui whatsapp di bawah ini</p>
-      <a href="https://wa.me/6282133601435?text=Woi%20admin,%20mau%20konfirmasi%20tentang%20mutasi%20perangkat" 
+      <a href="https://wa.me/6282133601435?text=Woi%20admin,%20mau%20konfirmasi%20tentang%20mutasi%20perangkat"
         target="_blank"
         class="bg-white text-[#1C4D8D] font-bold px-2 py-3 rounded-lg w-full text-sm shadow hover:bg-gray-100 transition text-center flex items-center justify-center gap-2">
         Hubungi Admin
@@ -30,7 +30,7 @@
     </div>
 
     <div class="mt-8">
-      
+
     </div>
   </div>
 
@@ -40,33 +40,19 @@
     <form action="<?= base_url('/submit') ?>" method="POST">
       <div class="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 mb-5">
 
-        <div class="w-full flex flex-col">
+        <div class="w-full flex flex-col relative">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">No Registrasi</label>
-          <select id="noreg" name="noreg" class="">
-            <style>
-              .ts-control {
-                width: 100%;
-                border-radius: 0.375rem;
-                /* rounded-md */
-                padding: 0.7rem;
-                /* p-2 */
-                border: 1px solid #d1d5db;
-                /* border gray */
-              }
+          <input type="text" id="noreg_input" placeholder="Scan barcode atau ketik noreg"
+            class="w-full rounded-md p-2 min-h-[42px] border border-gray-300 focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D]">
 
-              .ts-control:focus {
-                border-color: #1C4D8D;
-                box-shadow: 0 0 0 1px #1C4D8D;
-              }
-            </style>
-            <option value="">Masukkan no registrasi</option>
-            <?php foreach ($perangkat as $p): ?>
-              <option value="<?= $p['noreg'] ?>" data-nama="<?= $p['nama'] ?>" data-id="<?= $p['id'] ?>">
-                <?= $p['noreg'] ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
+          <!-- Daftar tersembunyi untuk pencarian (Opsional untuk validasi JS) -->
+          <div id="status_scan" class="text-[10px] mt-1 hidden"></div>
         </div>
+
+        <!-- Hidden input untuk ID Perangkat (tetap ada) -->
+        <input type="hidden" id="id_perangkat" name="id_perangkat">
+        <input type="hidden" id="noreg_hidden" name="noreg"> <!-- Ini yang dikirim ke server -->
+
 
         <div class="flex flex-col ">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Nama Perangkat</label>
@@ -123,56 +109,49 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
-    const selectElement = document.getElementById('noreg');
+    // Data perangkat dari PHP ke JSON Javascript
+    const daftarPerangkat = <?= json_encode($perangkat) ?>;
 
-    const tsNoreg = new TomSelect("#noreg", {
-      create: false,
-      placeholder: "Scan barcode atau cari noreg...",
-      searchField: ["value"],
-      selectOnTab: false,
-      highlight: false, // Matikan highlight otomatis agar tidak ada yang terpilih tanpa sengaja
+    const inputScan = document.getElementById('noreg_input');
+    const textNama = document.getElementById('nama_perangkat_text');
+    const inputId = document.getElementById('id_perangkat');
+    const inputNoregHidden = document.getElementById('noreg_hidden');
 
-      // KUNCI 1: Cegat Enter sebelum Tom Select bereaksi
-      onKeyDown: function(e) {
-        if (e.keyCode === 100000000000000) { 
-          const rawInput = this.control_input.value.trim();
-          const options = Object.values(this.options);
-          const exists = options.find(opt => opt.value.toLowerCase() === rawInput.toLowerCase());
+    inputScan.addEventListener('keydown', function(e) {
+      if (e.keyCode === 13) { // Jika Enter dari Scanner
+        e.preventDefault(); // Stop form submit otomatis
 
-          if (rawInput !== "" && !exists) {
-            alert("No Registrasi '" + rawInput + "' Tidak Ditemukan!");
-            this.clear();
-            this.close();
-            e.preventDefault(); // Batalkan aksi pilih baris pertama
-            return false;
-          }
-        }
-      },
+        const noregDiScan = this.value.trim();
 
-      // KUNCI 2: Validasi ulang saat terjadi perubahan
-      onChange: function(value) {
-        const rawInput = this.control_input.value.trim();
-        
-        // Jika scanner memasukkan teks, tapi value yang terpilih beda (ngasal)
-        if (rawInput !== "" && value.toLowerCase() !== rawInput.toLowerCase()) {
-          this.clear(); // Langsung batalkan pilihan ngasal
-          return;
-        }
+        // Cari yang SAMA PERSIS (Exact Match)
+        const hasil = daftarPerangkat.find(p => p.noreg.toLowerCase() === noregDiScan.toLowerCase());
 
-        // Autofill Data
-        const selected = selectElement.querySelector(`option[value="${value}"]`);
-        if (selected) {
-          document.getElementById('nama_perangkat_text').innerText = selected.getAttribute('data-nama') || '';
-          document.getElementById('id_perangkat').value = selected.getAttribute('data-id') || '';
+        if (hasil) {
+          // JIKA KETEMU
+          textNama.innerText = hasil.nama;
+          inputId.value = hasil.id;
+          inputNoregHidden.value = hasil.noreg;
+
+          // Beri tanda sukses
+          this.classList.remove('border-red-500');
+          this.classList.add('border-green-500');
         } else {
-          document.getElementById('nama_perangkat_text').innerText = '';
-          document.getElementById('id_perangkat').value = '';
+          // JIKA TIDAK KETEMU
+          alert("No Registrasi '" + noregDiScan + "' tidak terdaftar di sistem!");
+          this.value = "";
+          textNama.innerText = "";
+          inputId.value = "";
+          inputNoregHidden.value = "";
+
+          this.classList.add('border-red-500');
         }
       }
     });
 
-    new TomSelect("#user", { create: false });
+    // Inisialisasi TomSelect hanya untuk USER (karena user tidak di-scan)
+    new TomSelect("#user", {
+      create: false
+    });
   });
 </script>
-
 <?= $this->endSection() ?>
