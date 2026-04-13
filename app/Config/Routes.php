@@ -36,3 +36,4 @@ $routes->get('history', 'HistoryController::index');
 $routes->get('logout', 'AdminController::logout');
 $routes->get('export/excel', 'ExportController::exportExcel');
 $routes->get('export/pdf', 'ExportController::exportPdf');
+$routes->post('update-password', 'AdminController::updatePassword');

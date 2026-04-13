@@ -24,6 +24,9 @@
                 Login
             </button>
         </form>
+            <div class="text-right mt-4 text-sm text-gray-600">
+                <a href="#" onclick="bukaModalPassword()" class="text-[#1C4D8D] font-semibold hover:underline">Ganti password</a>
+            </div>
     </div>
 </div>
 
