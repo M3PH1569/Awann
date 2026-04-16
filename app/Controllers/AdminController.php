@@ -52,4 +52,36 @@ class AdminController extends BaseController
         $this->session->destroy();
         return redirect()->to('login');
     }
+
+    public function updatePassword()
+    {
+        $currentPassword = $this->request->getPost('current_password');
+        $newPassword = $this->request->getPost('new_password');
+        $confirmPassword = $this->request->getPost('confirm_password');
+
+        if ($newPassword !== $confirmPassword) {
+            $this->session->setFlashdata('error', 'Konfirmasi password tidak cocok');
+            return redirect()->to('/dashboard');
+        }
+
+        $usernameInput = $this->request->getPost('username'); 
+
+        $admin = $this->db->table('admin')->where('username', $usernameInput)->get()->getRowArray();
+
+        if (!$admin) {
+            $this->session->setFlashdata('error', 'Username tidak ditemukan');
+            return redirect()->to('login');
+        }
+
+        if (!password_verify($currentPassword, $admin['password'])) {
+            $this->session->setFlashdata('error', 'Password lama salah');
+            return redirect()->to('login');
+        }
+
+        $hashedNewPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+        $this->db->table('admin')->where('id', $admin['id'])->update(['password' => $hashedNewPassword]);
+
+        $this->session->setFlashdata('success', 'Password berhasil diganti');
+        return redirect()->to('login');
+        }
 }
