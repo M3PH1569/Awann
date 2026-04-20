@@ -41,8 +41,8 @@
 
         <div class="flex gap-8 items-center">
             <a href="javascript:void(0)" onclick="bukaModalPassword()" class="flex flex-col items-center cursor-pointer transition group text-white hover:text-gray-300">
-                <i class="fa-solid fa-key text-2xl mb-1 rotate-[135deg]"></i>
-                <span class="text-sm font-medium">Password</span>
+                <i class="fa-solid fa-key text-xl mb-1"></i>
+                <span class="text-sm">Password</span>
             </a>
             <a href="<?= base_url('logout') ?>" class="flex flex-col items-center cursor-pointer transition group
                 <?= $uri->getSegment(1) == 'logout' ? 'text-[#7FB3D5] font-semibold border-b-2 border-[#7FB3D5]' : 'hover:text-[#7FB3D5]' ?>">
