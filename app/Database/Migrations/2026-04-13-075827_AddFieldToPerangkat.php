@@ -34,6 +34,6 @@ class AddFieldToPerangkat extends Migration
 
     public function down()
     {
-        $this->forge->dropColumn('perangkat', ['id_spec', 'kode_id']);
+        $this->forge->dropColumn('perangkat', ['kode_id']);
     }
 }
