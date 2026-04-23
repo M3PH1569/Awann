@@ -40,12 +40,12 @@
         <img src="<?= base_url('images/awan.png') ?>" width="130px">
 
         <div class="flex gap-8 items-center">
-            <a href="javascript:void(0)" onclick="bukaModalPassword()" class="flex flex-col items-center cursor-pointer transition group text-white hover:text-gray-300">
+            <a href="javascript:void(0)" onclick="bukaModalPassword()" class="flex flex-col items-center cursor-pointer transition group text-white hover:text-[#B3B3B3]">
                 <i class="fa-solid fa-key text-xl mb-1"></i>
                 <span class="text-sm">Password</span>
             </a>
             <a href="<?= base_url('logout') ?>" class="flex flex-col items-center cursor-pointer transition group
-                <?= $uri->getSegment(1) == 'logout' ? 'text-[#7FB3D5] font-semibold border-b-2 border-[#7FB3D5]' : 'hover:text-[#7FB3D5]' ?>">
+                <?= $uri->getSegment(1) == 'logout' ? 'text-[#B3B3B3] font-semibold' : 'hover:text-[#B3B3B3]' ?>">
                 <i class="fa-solid fa-arrow-right-from-bracket text-xl mb-1"></i>
                 <span class="text-sm">Logout</span>
             </a>
@@ -101,7 +101,7 @@
                     </div>
 
                     <div class="flex justify-end gap-2 pt-1">
-                        <button type="submit" class="bg-[#1C4D8D] text-white text-sm px-3 py-2 rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition">
+                        <button type="submit" class="bg-[#1C4D8D] text-white text-sm px-3 py-2 rounded-md font-semibold shadow hover:bg-[#3E679E] transition">
                             Ganti Password
                         </button>
                     </div>
