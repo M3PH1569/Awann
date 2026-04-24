@@ -75,7 +75,8 @@
                         <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
                             <td class="px-4 py-3 text-center text-sm
                              text-blue-700 border border-gray-300">
-                                <button type="button" onclick="openHistory(<?= $h['id_perangkat'] ?>)" class="hover:text-blue-400 mr-1 transition">
+                                <button type="button" onclick="openHistory(<?= $h['id_perangkat'] ?>)"
+                                    class="hover:text-blue-400 mr-1 transition">
                                     <i class="fa-solid fa-clock-rotate-left"></i>
                                 </button>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $no++ ?></td>
@@ -204,7 +205,7 @@
         document.getElementById(id).classList.remove("flex");
     }
     // HISTORY MODAL
-    window.openHistory = function(id) {
+    window.openHistory = function (id) {
         openModal("historyModal");
 
         const input = document.getElementById("searchHistory");
@@ -215,12 +216,12 @@
 
     function loadHistory(id, page = 1, search = '') {
         fetch(`<?= base_url('history/log') ?>/${id}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: `page=${page}&searchHistory=${encodeURIComponent(search)}`
-            })
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: `page=${page}&searchHistory=${encodeURIComponent(search)}`
+        })
             .then(res => res.json())
             .then(res => {
                 console.log(res);
@@ -260,15 +261,15 @@
 
         for (let i = 1; i <= totalPage; i++) {
             container.innerHTML += `
-      <button onclick="loadHistory(${id}, ${i}, '${search}')" class="px-3 py-1 text-xs rounded ${i===currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200'}">${i}</button>`;
+      <button onclick="loadHistory(${id}, ${i}, '${search}')" class="px-3 py-1 text-xs rounded ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200'}">${i}</button>`;
         }
     }
 
-    window.closeHistory = function() {
+    window.closeHistory = function () {
         closeModal("historyModal");
     }
 
-    document.getElementById("historyModal").addEventListener("click", function(e) {
+    document.getElementById("historyModal").addEventListener("click", function (e) {
         if (e.target.id === "historyModal") {
             closeHistory();
         }
@@ -276,7 +277,7 @@
 
     const searchInput = document.getElementById("searchHistory");
     if (searchInput) {
-        searchInput.addEventListener("keyup", function() {
+        searchInput.addEventListener("keyup", function () {
             let id = this.dataset.id;
             loadHistory(id, 1, this.value);
         });
