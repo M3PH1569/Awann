@@ -22,7 +22,8 @@ class UsersSeeder extends Seeder
             'Fachry',
             'Giri Mahendra',
             'Rizky Maulana',
-            'Albaskoro'
+            'Albaskoro',
+            'Habib'
         ];
 
         $data=[];
