@@ -35,7 +35,7 @@
   </div>
 
   <div class="w-full md:w-4/5 bg-white p-6 md:p-10 min-h-[510px]">
-    <h2 class="text-center text-xl font-extrabold text-[#1C4D8D] mb-8">FORM MUTASI</h2>
+    <h2 class="text-center text-xl font-extrabold text-[#1C4D8D] mb-8">FORM REQUEST PERANGKAT</h2>
 
     <form action="<?= base_url('/submit') ?>" method="POST">
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 mb-5">
@@ -66,7 +66,7 @@
       <div class="mt-4 mb-4">
           <h3 class="font-semibold text-sm mb-2 text-[#1C4D8D]">Daftar Perangkat</h3>
           <table class="w-full text-xs border">
-            <thead class="bg-gray-200 border border-gray-300">
+            <thead class="bg-gray-100 border border-gray-300">
               <tr>
                 <th class="p-2 border border-gray-300">No</th>
                 <th class="p-2 border border-gray-300">Nomor Registrasi</th>
