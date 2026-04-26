@@ -10,7 +10,7 @@
         </div>
 
         <div class="px-6 pt-4">
-            <input type="text" id="searchHistory" value="<?= $_GET['searchHistory'] ?? '' ?>" class="border rounded px-3 py-2 w-full mb-4 sticky top-0" placeholder="Cari riwayat perangkat enih...">
+            <input type="text" id="searchHistory" value="<?= $_GET['searchHistory'] ?? '' ?>" class="border rounded px-3 py-2 w-full mb-4 sticky top-0" placeholder="Cari riwayat perangkat...">
         </div>
 
         <div class="flex-1 overflow-y-auto max-h-[400px] px-6 pb-4 rounded-md overflow-hidden">

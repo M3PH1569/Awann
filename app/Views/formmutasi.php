@@ -22,7 +22,7 @@
 
       <p class="text-[11px] font-bold mt-5 mb-1">BUTUH BANTUAN?</p>
       <p class="text-[11px] mb-4">Silakan hubungi admin melalui whatsapp di bawah ini</p>
-      <a href="https://wa.me/6282133601435?text=Woi%20admin,%20mau%20konfirmasi%20tentang%20mutasi%20perangkat"
+      <a href="https://wa.me/6282133601435?text=Admin,%20mau%20konfirmasi%20tentang%20mutasi%20perangkat"
         target="_blank"
         class="bg-white text-[#1C4D8D] font-bold px-2 py-3 rounded-lg w-full text-sm shadow hover:bg-gray-100 transition text-center flex items-center justify-center gap-2">
         Hubungi Admin
