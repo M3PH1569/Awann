@@ -29,7 +29,7 @@
 
       <p class="text-[11px] font-bold mt-5 mb-1">BUTUH BANTUAN?</p>
       <p class="text-[11px] mb-4">Silakan hubungi admin melalui whatsapp di bawah ini</p>
-      <a href="https://wa.me/6282133601435?text=Woi%20admin,%20mau%20konfirmasi%20tentang%20mutasi%20perangkat"
+      <a href="https://wa.me/6282133601435?text=Admin,%20mau%20konfirmasi%20tentang%20mutasi%20perangkat"
         target="_blank"
         class="bg-white text-[#1C4D8D] font-bold px-2 py-3 rounded-lg w-full text-sm shadow hover:bg-gray-100 transition text-center flex items-center justify-center gap-2">
         Hubungi Admin
@@ -42,7 +42,7 @@
   </div>
 
   <div class="w-full md:w-4/5 bg-white p-6 md:p-10 min-h-[510px]">
-    <h2 class="text-center text-xl font-extrabold text-[#1C4D8D] mb-8">FORM MUTASI</h2>
+    <h2 class="text-center text-xl font-extrabold text-[#1C4D8D] mb-8">FORM REQUEST PERANGKAT</h2>
 
     <form action="<?= base_url('/submit') ?>" method="POST">
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 mb-5">
@@ -64,23 +64,23 @@
       </div>
 
       <div class="mt-4 mb-4">
-        <h3 class="font-semibold text-sm mb-2 text-[#1C4D8D]">Daftar Perangkat</h3>
-        <table class="w-full text-xs border">
-          <thead class="bg-gray-200 border border-gray-300">
-            <tr>
-              <th class="p-2 border border-gray-300">No</th>
-              <th class="p-2 border border-gray-300">Nomor Registrasi</th>
-              <th class="p-2 border border-gray-300">Nama Perangkat</th>
-              <th class="p-2 border border-gray-300">Action</th>
-            </tr>
-          </thead>
-          <tbody id="list_perangkat"></tbody>
-        </table>
-      </div>
+          <h3 class="font-semibold text-sm mb-2 text-[#1C4D8D]">Daftar Perangkat</h3>
+          <table class="w-full text-xs border">
+            <thead class="bg-gray-100 border border-gray-300">
+              <tr>
+                <th class="p-2 border border-gray-300">No</th>
+                <th class="p-2 border border-gray-300">Nomor Registrasi</th>
+                <th class="p-2 border border-gray-300">Nama Perangkat</th>
+                <th class="p-2 border border-gray-300">Action</th>
+              </tr>
+            </thead>
+            <tbody id="list_perangkat"></tbody>
+          </table>
+        </div>
 
       <div class="flex flex-col mb-4">
         <label class="font-semibold text-[#1C4D8D] text-sm mb-2">User</label>
-        <select id="user" name="user" class="">
+        <select id="user" name="user" class="" required>
           <style>
             .ts-control {
               border-radius: 0.375rem;

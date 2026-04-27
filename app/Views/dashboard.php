@@ -54,8 +54,8 @@
       </select>
     </div>
 
-    <a href="/dashboard" class="bg-gray-200 px-4 py-2 text-xs rounded-lg hover:bg-gray-300 transition">
-      Reset
+    <a href="/dashboard" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7FB3D5] transition text-white">
+       Reset Filter
     </a>
   </form>
 
