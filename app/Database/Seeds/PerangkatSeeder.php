@@ -13,7 +13,7 @@ class PerangkatSeeder extends Seeder
     {
         set_time_limit(0);
 
-        $file = fopen(WRITEPATH . 'uploads/coba2.csv', 'r');
+        $file = fopen(WRITEPATH . 'uploads/tabelperangkat.csv', 'r');
         fgetcsv($file);
 
         $specModel = new SpecPerangkatModel;

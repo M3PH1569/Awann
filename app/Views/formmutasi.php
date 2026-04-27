@@ -1,6 +1,13 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
+<div id="toast" class="fixed top-20 right-5 z-50 hidden transform transition-all duration-300 translate-x-full">
+  <div id="toastBox" class="flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm">
+    <i id="toastIcon" class="fa-solid"></i>
+    <span id="toastMsg"></span>
+  </div>
+</div>
+
 <div class="w-full max-w-[1450px] mx-auto rounded-lg overflow-hidden shadow-lg flex flex-col md:flex-row">
   <div class="w-full md:w-1/5 bg-[#3E679E] p-6 md:p-8 text-white flex flex-col justify-between md:min-h-[510px]">
     <div>
@@ -54,29 +61,22 @@
             Tambah
           </button>
         </div>
-
-        <!-- <div class="flex flex-col ">
-          <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Nama Perangkat</label>
-          <div class="bg-[#EFEFEF] border rounded-md p-2 min-h-[42px] overflow-x-auto focus:outline-none text-xs" readonly>
-            <span id="nama_perangkat_text"></span>
-          </div>
-        </div> -->
       </div>
 
       <div class="mt-4 mb-4">
-          <h3 class="font-semibold text-sm mb-2 text-[#1C4D8D]">Daftar Perangkat</h3>
-          <table class="w-full text-xs border">
-            <thead class="bg-gray-200 border border-gray-300">
-              <tr>
-                <th class="p-2 border border-gray-300">No</th>
-                <th class="p-2 border border-gray-300">Nomor Registrasi</th>
-                <th class="p-2 border border-gray-300">Nama Perangkat</th>
-                <th class="p-2 border border-gray-300">Action</th>
-              </tr>
-            </thead>
-            <tbody id="list_perangkat"></tbody>
-          </table>
-        </div>
+        <h3 class="font-semibold text-sm mb-2 text-[#1C4D8D]">Daftar Perangkat</h3>
+        <table class="w-full text-xs border">
+          <thead class="bg-gray-200 border border-gray-300">
+            <tr>
+              <th class="p-2 border border-gray-300">No</th>
+              <th class="p-2 border border-gray-300">Nomor Registrasi</th>
+              <th class="p-2 border border-gray-300">Nama Perangkat</th>
+              <th class="p-2 border border-gray-300">Action</th>
+            </tr>
+          </thead>
+          <tbody id="list_perangkat"></tbody>
+        </table>
+      </div>
 
       <div class="flex flex-col mb-4">
         <label class="font-semibold text-[#1C4D8D] text-sm mb-2">User</label>
@@ -125,32 +125,67 @@
 </div>
 
 <script>
+  function showToast(message, type = "error") {
+    const toast = document.getElementById("toast");
+    const box = document.getElementById("toastBox");
+    const msg = document.getElementById("toastMsg");
+    const icon = document.getElementById("toastIcon");
+
+    msg.innerText = message;
+
+    box.className = "flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm";
+
+    if (type === "error") {
+      box.classList.add("bg-red-500");
+      icon.className = "fa-solid fa-circle-xmark";
+    } else if (type === "success") {
+      box.classList.add("bg-green-500");
+      icon.className = "fa-solid fa-circle-check";
+    } else {
+      box.classList.add("bg-yellow-500");
+      icon.className = "fa-solid fa-triangle-exclamation";
+    }
+
+    toast.classList.remove("hidden", "translate-x-full");
+    toast.classList.add("translate-x-0");
+
+    setTimeout(() => {
+      toast.classList.remove("translate-x-0");
+      toast.classList.add("translate-x-full");
+
+      setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 300);
+    }, 3000);
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
+    <?php if (session()->getFlashData('success')): ?>
+      showToast("<?= session()->getFlashdata('success') ?>", "success");
+    <?php endif; ?>
+
     const daftarPerangkat = <?= json_encode($perangkat) ?>;
     const inputScan = document.getElementById('noreg_input');
-    // const textNama = document.getElementById('nama_perangkat_text');
-    // const inputId = document.getElementById('id_perangkat');
-    // const inputNoregHidden = document.getElementById('noreg_hidden');
 
     let cart = [];
 
-    function multiAdd(noregInput){
+    function multiAdd(noregInput) {
       const noreg = noregInput.trim();
-      
-      if(!noreg){
-        alert("Masukkan noreg terlebih dahulu");
-        return;
-      }
-      
-      const hasil = daftarPerangkat.find(p=>p.noreg.toLowerCase()===noreg.toLowerCase());
 
-      if(!hasil){
-        alert("No registrasi tidak tersedia");
+      if (!noreg) {
+        showToast("Masukkan noreg terlebih dahulu", "warning");
         return;
       }
 
-      if(cart.some(item=>item.noreg===hasil.noreg)){
-        alert("Perangkat sudah ditambahkan!");
+      const hasil = daftarPerangkat.find(p => p.noreg.toLowerCase() === noreg.toLowerCase());
+
+      if (!hasil) {
+        showToast("No registrasi tidak tersedia", "error");
+        return;
+      }
+
+      if (cart.some(item => item.noreg === hasil.noreg)) {
+        showToast("Perangkat sudah ditambahkan!", "warning");
         return;
       }
 
@@ -161,7 +196,7 @@
       });
 
       renderTable();
-      inputScan.value="";
+      inputScan.value = "";
     }
 
     inputScan.addEventListener('keydown', function(e) {
@@ -171,15 +206,15 @@
       }
     });
 
-    document.getElementById('btn_tambah').addEventListener('click', function(){
+    document.getElementById('btn_tambah').addEventListener('click', function() {
       multiAdd(inputScan.value);
     });
 
-    function renderTable(){
+    function renderTable() {
       const tbody = document.getElementById('list_perangkat');
-      tbody.innerHTML="";
+      tbody.innerHTML = "";
 
-      cart.forEach((item, index)=>{
+      cart.forEach((item, index) => {
         tbody.innerHTML += `
         <tr>
           <td class="p-2 text-center border border-gray-300">${index+1}</td>
@@ -200,8 +235,8 @@
       });
     }
 
-    window.hapusItem = function(index){
-      cart.splice(index,1);
+    window.hapusItem = function(index) {
+      cart.splice(index, 1);
       renderTable();
     }
 
@@ -209,7 +244,7 @@
       create: false,
       // allowEmptyOption: true,
       // openOnFocus: true
-    });  
+    });
   });
 </script>
 <?= $this->endSection() ?>
