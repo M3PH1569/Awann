@@ -70,15 +70,15 @@ class PerangkatModel extends Model
 
         if (!empty($filters['filter_mutasi'])){
             if ($filters['filter_mutasi']=='belum'){
-                $where[] = "(m.status != 'Terpasang' OR m.status IS NULL)";
+                $where[] = "(m.status NOT IN ('Terpasang', 'Terkirim') OR m.status IS NULL)";
             }
 
             elseif ($filters['filter_mutasi']=='crosscheck'){
-                $where[] = "(m.status = 'Terpasang' AND m.is_checked = 0)";
+                $where[] = "(m.status IN ('Terpasang', 'Terkirim') AND m.is_checked = 0)";
             }
 
             elseif ($filters['filter_mutasi']=='check'){
-                $where[] = "(m.status = 'Terpasang' AND m.is_checked = 1)";
+                $where[] = "(m.status IN ('Terpasang', 'Terkirim') AND m.is_checked = 1)";
             }
         }
 

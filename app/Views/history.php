@@ -12,9 +12,10 @@
                 class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
                 <option value="">Semua Status</option>
                 <option value="Dibawa" <?= (($_GET['status'] ?? '') == 'Dibawa') ? 'selected' : '' ?>>Dibawa</option>
-                <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang
-                </option>
+                <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang</option>
                 <option value="Kembali" <?= (($_GET['status'] ?? '') == 'Kembali') ? 'selected' : '' ?>>Kembali</option>
+                <option value="Pengiriman" <?= (($_GET['status'] ?? '') == 'Pengiriman') ? 'selected' : '' ?>>Pengiriman</option>
+                <option value="Terkirim" <?= (($_GET['status'] ?? '') == 'Terkirim') ? 'selected' : '' ?>>Terkirim</option>
             </select>
         </div>
 
@@ -95,6 +96,8 @@
                                     <?= $h['status'] == 'Dibawa' ? 'bg-yellow-200 text-yellow-800' : '' ?>
                                     <?= $h['status'] == 'Terpasang' ? 'bg-blue-200 text-blue-800' : '' ?>
                                     <?= $h['status'] == 'Kembali' ? 'bg-green-200 text-green-800' : '' ?>
+                                    <?= $h['status'] == 'Pengiriman' ? 'bg-orange-200 text-orange-800' : '' ?>
+                                    <?= $h['status'] == 'Terkirim' ? 'bg-purple-200 text-purple-800' : '' ?>
                                     ">
                                     <?= $h['status'] ?? '-' ?>
                                 </span>
@@ -108,7 +111,7 @@
                             </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
-                                <?php if ($h['status'] == 'Terpasang'): ?>
+                                <?php if ($h['status'] == ['Terpasang', 'Terkirim']): ?>
                                     <?php if ($h['is_checked'] == 1): ?>
                                         <span class="px-2 py-1 rounded text-xs bg-green-400 text-white">Checked</span>
                                     <?php else: ?>

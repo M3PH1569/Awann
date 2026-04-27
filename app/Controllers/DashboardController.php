@@ -80,7 +80,7 @@ class DashboardController extends BaseController
     {
         $mutasi = $this->mutasiModel->find($id);
         
-        if (!$mutasi || $mutasi['status'] !== 'Terpasang'){
+        if (!$mutasi || !in_array($mutasi['status'], ['Terpasang', 'Terkirim'])){
             return $this->response->setJSON(['success'=>false]);
         }
 

@@ -13,7 +13,7 @@
             </div>
 
             <div class="flex flex-col">
-                <label class="font-semibold text-sm ext-[#1C4D8D] text-sm mb-2" for="password">
+                <label class="font-semibold text-sm text-[#1C4D8D] text-sm mb-2" for="password">
                     Password
                 </label>
                 

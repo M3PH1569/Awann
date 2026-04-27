@@ -30,6 +30,8 @@
         <option value="Dibawa" <?= (($_GET['status'] ?? '') == 'Dibawa') ? 'selected' : '' ?>>Dibawa</option>
         <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang</option>
         <option value="Kembali" <?= (($_GET['status'] ?? '') == 'Kembali') ? 'selected' : '' ?>>Kembali</option>
+        <option value="Pengiriman" <?= (($_GET['status'] ?? '') == 'Pengiriman') ? 'selected' : '' ?>>Pengiriman</option>
+        <option value="Terkirim" <?= (($_GET['status'] ?? '') == 'Terkirim') ? 'selected' : '' ?>>Terkirim</option>
       </select>
     </div>
 
@@ -105,6 +107,8 @@
                   <?= $p['status_mutasi'] == 'Dibawa' ? 'bg-yellow-200 text-yellow-800' : '' ?>
                   <?= $p['status_mutasi'] == 'Terpasang' ? 'bg-blue-200 text-blue-800' : '' ?>
                   <?= $p['status_mutasi'] == 'Kembali' ? 'bg-green-200 text-green-800' : '' ?>
+                  <?= $p['status_mutasi'] == 'Pengiriman' ? 'bg-orange-200 text-orange-800' : '' ?>
+                  <?= $p['status_mutasi'] == 'Terkirim' ? 'bg-purple-200 text-purple-800' : '' ?>
                   ">
                   <?= $p['status_mutasi'] ?? '-' ?>
                 </span>
@@ -114,17 +118,17 @@
               <td class="px-4 py-3 text-center text-xs border border-gray-300"><?= $p['mutasi_updated'] ?></td>
 
               <td class="px-4 py-3 text-center text-xs border border-gray-300">
-                <?php if ($p['status_mutasi'] == 'Terpasang'): ?>
+                <?php if (in_array($p['status_mutasi'], ['Terpasang', 'Terkirim'])): ?>
                   <?php if ($p['mutasi_check'] == 1): ?>
-                    <span class="px-2 py-1 rounded text-xs bg-green-400 text-white">Checked</span>
+                    <span class="px-2 py-1 rounded text-xs bg-lime-400 text-lime-800">Checked</span>
                   <?php else: ?>
-                    <button class="btn-check bg-blue-500 text-white px-3 py-1 rounded text-xs" data-id="<?= $p['mutasi_id'] ?>">
+                    <button class="btn-check bg-blue-500 text-white p-2 rounded text-xs hover:bg-blue-400 transition" data-id="<?= $p['mutasi_id'] ?>">
                       Crosscheck INTAN
                     </button>
                   <?php endif; ?>
                 <?php else: ?>
                   <?php if ($p['mutasi_check'] == 0): ?>
-                    <span class="inline-block text-center whitespace-nowrap px-2 py-1 rounded text-xs bg-yellow-400 text-yellow-900">Belum Mutasi</span>
+                    <span class="inline-block text-center whitespace-nowrap px-2 py-1 rounded text-xs bg-amber-400 text-amber-800">Belum Mutasi</span>
                   <?php endif; ?>
                 <?php endif; ?>
               </td>
@@ -226,13 +230,14 @@
       .then(res => res.json())
       .then(data => {
         console.log(data);
+        console.log("STATUS MUTASI:", data.status_mutasi);
 
         document.getElementById("edit_id").value = data.id;
         document.getElementById("edit_noreg").value = data.noreg;
         document.getElementById("edit_np").value = data.nama;
 
         document.getElementById("edit_user").value = data.id_users ?? "";
-        document.getElementById("edit_status").value = data.status ?? "";
+        document.getElementById("edit_status").value = data.status_mutasi ?? "";
         document.getElementById("edit_ket").value = data.keterangan ?? "";
 
         openModal("editModal");
@@ -253,6 +258,8 @@
   if (editMutasi) {
     editMutasi.addEventListener("submit", function(e) {
       e.preventDefault();
+
+      console.log("STATUS YANG DIKIRIM:", document.getElementById("edit_status").value);
 
       let formData = new FormData(this);
 

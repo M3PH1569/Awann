@@ -149,6 +149,7 @@ class PerangkatController extends BaseController
     public function editPerangkat($id)
     {
         $data = $this->perangkatModel->getDetailMutasi($id);
+        $data['status_mutasi']=$data['status'];
         return $this->response->setJSON($data);
     }
 
@@ -198,7 +199,7 @@ class PerangkatController extends BaseController
 
         $statusMutasi = strtolower($statusMutasi);
 
-        if($statusMutasi=='dibawa' || $statusMutasi=='terpasang'){
+        if($statusMutasi=='dibawa' || $statusMutasi=='terpasang' || $statusMutasi=='pengiriman' || $statusMutasi=='terkirim'){
             return 'Tidak Tersedia';
         }else if ($statusMutasi=='kembali'){
             return 'Tersedia';

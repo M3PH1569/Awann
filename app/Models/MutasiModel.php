@@ -91,17 +91,13 @@ class MutasiModel extends Model
 
     switch ($filters['filter_mutasi'] ?? ''){
       case 'belum':
-        $builder->where([
-          'm.status !=' => 'Terpasang',
-          'm.is_checked'=> 0
-        ]);
+        $builder->whereNotIn('m.status', ['Terpasang', 'Terkirim']);
+        $builder->where('m.is_checked', 0);
         break;
 
       case 'crosscheck':
-        $builder->where([
-          'm.status'=>'Terpasang',
-          'm.is_checked'=> 0
-        ]);
+        $builder->whereIn('m.status', ['Terpasang', 'Terkirim']);
+        $builder->where('m.is_checked', 0);
         break;
 
       case 'check':

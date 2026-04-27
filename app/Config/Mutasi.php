@@ -10,5 +10,7 @@ class Mutasi extends BaseConfig
         'Dibawa',
         'Terpasang',
         'Kembali',
+        'Pengiriman',
+        'Terkirim',
     ];
 }

@@ -16,7 +16,7 @@ class CreatePerangkatTable extends Migration
             ],
             'nama'=>[
                 'type'=>'VARCHAR',
-                'constraint'=>100,
+                'constraint'=>255,
             ],
             'noreg'=>[
                 'type'=>'VARCHAR',

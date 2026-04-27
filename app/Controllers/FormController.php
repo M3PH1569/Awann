@@ -66,7 +66,7 @@ class FormController extends BaseController
 
         $statusMutasi = strtolower($statusMutasi);
 
-        if($statusMutasi=='dibawa' || $statusMutasi=='terpasang'){
+        if($statusMutasi=='dibawa' || $statusMutasi=='terpasang' || $statusMutasi=='pengiriman' || $statusMutasi=='terkirim'){
             return 'Tidak Tersedia';
         }else if ($statusMutasi=='kembali'){
             return 'Tersedia';
