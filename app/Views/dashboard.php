@@ -254,21 +254,28 @@
       });
   }
 
-  const editMutasi = document.getElementById("editMutasi");
-  if (editMutasi) {
-    editMutasi.addEventListener("submit", function(e) {
-      e.preventDefault();
+  const editForm = document.querySelector("#editMutasi");
+  const submitEdit = document.getElementById("btn_submit_edit");
 
-      console.log("STATUS YANG DIKIRIM:", document.getElementById("edit_status").value);
+  if (editForm){
+    editForm.addEventListener("submit", function(e){
+      e.preventDefault();
+        
+      submitEdit.disabled = true;
+      submitEdit.innerText = "Saving...";
 
       let formData = new FormData(this);
 
       fetch("<?= base_url('dashboard/update') ?>", {
-          method: "POST",
-          body: formData
-        })
-        .then(res => res.json())
-        .then(() => location.reload());
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(() => location.reload())
+      .catch(()=>{
+        submitEdit.disabled = false;
+        submitEdit.innerText = "Simpan";
+      });
     });
   }
 
@@ -469,11 +476,7 @@
   specSelect.addEventListener('change', cekNoregRealTime);
 
   const tambahForm = document.getElementById("tambahperangkat");
-
-  let formData = new FormData(document.getElementById("tambahperangkat"));
-  for (let pair of formData.entries()) {
-    console.log(pair[0] + ': ' + pair[1]);
-  }
+  const submitTambah = document.getElementById("btn_submit_tambah");
 
   if (tambahForm) {
     tambahForm.addEventListener("submit", function(e) {
@@ -482,9 +485,12 @@
       const nama = document.getElementById("nama").value;
 
       if (!nama) {
-        alert("Nama perangkat belum keisi!");
+        alert("Nama perangkat belum diisi!");
         return;
       }
+
+      submitTambah.disabled = true;
+      submitTambah.innerText = "Saving...";
 
       let formData = new FormData(this);
 
@@ -500,6 +506,10 @@
             closeModal("tambahModal");
             location.reload();
           }
+        })
+        .catch(()=>{
+          submitTambah.disabled = false;
+          submitTambah.innerText = "Simpan";
         });
     });
   }

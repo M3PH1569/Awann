@@ -113,7 +113,7 @@
       </div>
 
       <div class="flex">
-        <button type="submit" class="bg-[#1C4D8D] text-sm text-white px-8 py-2 rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition">
+        <button type="submit" id="btn_submit" class="bg-[#1C4D8D] text-sm text-white px-8 py-2 rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition">
           Submit
         </button>
         <button type="reset" class="bg-[#858585] text-sm text-white ml-2 px-8 py-2 rounded-md font-semibold shadow hover:bg-[#999999] transition">
@@ -239,6 +239,19 @@
       cart.splice(index, 1);
       renderTable();
     }
+
+    const form = document.querySelector("form");
+    const btnSubmit = document.getElementById("btn_submit");
+
+    form.addEventListener("submit", function(e){
+      if (cart.length===0){
+        e.preventDefault();
+        showToast("Tambahkan minimal 1 perangkat!", "warning");
+        return;
+      }
+
+      btnSubmit.disabled = true;
+    });
 
     new TomSelect("#user", {
       create: false,
