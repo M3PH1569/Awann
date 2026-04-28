@@ -262,7 +262,6 @@
       e.preventDefault();
         
       submitEdit.disabled = true;
-      submitEdit.innerText = "Saving...";
 
       let formData = new FormData(this);
 
@@ -490,7 +489,6 @@
       }
 
       submitTambah.disabled = true;
-      submitTambah.innerText = "Saving...";
 
       let formData = new FormData(this);
 
