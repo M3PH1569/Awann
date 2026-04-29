@@ -9,12 +9,14 @@
     </h2>
 
     <div class="flex gap-2 mb-4">
-      <a href="<?= base_url('export/pdf') ?>" target="_blank" class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
+      <a href="<?= base_url('export/pdf') ?>" target="_blank"
+        class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
         <i class="fa-solid fa-file-pdf"></i>
         Export PDF
       </a>
 
-      <a href="<?= base_url('export/excel') ?>" class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
+      <a href="<?= base_url('export/excel') ?>"
+        class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
         <i class="fa-solid fa-file-excel"></i>
         Export Excel
       </a>
@@ -22,10 +24,12 @@
   </div>
 
   <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center sticky top-[70px]">
-    <input type="text" name="keyword" value="<?= $_GET['keyword'] ?? '' ?>" placeholder="Search..." class="border text-xs rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+    <input type="text" name="keyword" value="<?= $_GET['keyword'] ?? '' ?>" placeholder="Search..."
+      class="border text-xs rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
 
     <div>
-      <select name="status" onchange="this.form.submit()" class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+      <select name="status" onchange="this.form.submit()"
+        class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
         <option value="">Semua Status</option>
         <option value="Dibawa" <?= (($_GET['status'] ?? '') == 'Dibawa') ? 'selected' : '' ?>>Dibawa</option>
         <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang</option>
@@ -36,20 +40,22 @@
     </div>
 
     <div>
-      <select name="filter_mutasi" onchange="this.form.submit()" class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+      <select name="filter_mutasi" onchange="this.form.submit()"
+        class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
         <option value="">Semua Mutasi</option>
         <option value="belum" <?= (($_GET['filter_mutasi'] ?? '') == 'belum') ? 'selected' : '' ?>>Belum Mutasi</option>
-        <option value="crosscheck" <?= (($_GET['filter_mutasi'] ?? '') == 'crosscheck') ? 'selected' : '' ?>>Crosscheck INTAN</option>
+        <option value="crosscheck" <?= (($_GET['filter_mutasi'] ?? '') == 'crosscheck') ? 'selected' : '' ?>>Crosscheck
+          INTAN</option>
         <option value="check" <?= (($_GET['filter_mutasi'] ?? '') == 'check') ? 'selected' : '' ?>>Checked</option>
       </select>
     </div>
 
     <div>
-      <select name="user" onchange="this.form.submit()" class="border px-4 py-2 text-xs rounded-lg w-48 focus:outline-none focus:ring-[#1C4D8D]">
+      <select name="user" onchange="this.form.submit()"
+        class="border px-4 py-2 text-xs rounded-lg w-48 focus:outline-none focus:ring-[#1C4D8D]">
         <option value="">Semua User</option>
         <?php foreach ($users as $u): ?>
-          <option value="<?= $u['id'] ?>"
-            <?= (($_GET['user'] ?? '') == $u['id']) ? 'selected' : '' ?>>
+          <option value="<?= $u['id'] ?>" <?= (($_GET['user'] ?? '') == $u['id']) ? 'selected' : '' ?>>
             <?= esc($u['nama']) ?>
           </option>
         <?php endforeach; ?>
@@ -57,7 +63,7 @@
     </div>
 
     <a href="/dashboard" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7FB3D5] transition text-white">
-       Reset Filter
+      Reset Filter
     </a>
   </form>
 
@@ -83,7 +89,8 @@
           <?php $no = ($currentPage - 1) * $limit + 1;
           foreach ($perangkat as $p): ?>
 
-            <tr id="row-<?= $p['id'] ?>" class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black transition">
+            <tr id="row-<?= $p['id'] ?>"
+              class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black transition">
               <td class="px-4 py-3 text-center text-xs text-blue-700 border border-gray-300">
                 <button type="button" onclick="openEdit(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-pen-to-square"></i>
@@ -91,16 +98,21 @@
                 <button type="button" onclick="openHistory(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
-                <button type="button" onclick="confirmDelete(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
+                <button type="button" onclick="confirmDelete(<?= $p['id'] ?>)"
+                  class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
               </td>
 
               <td class="px-4 py-3 text-center text-xs border border-gray-300"><?= $no++ ?></td>
               <td class="px-4 py-3 text-left text-xs border border-gray-300"><?= esc($p['noreg']) ?></td>
-              <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[250px]"><?= esc($p['nama']) ?></td>
+              <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[250px]">
+                <?= esc($p['nama']) ?>
+              </td>
               <td class="px-4 py-3 text-center text-xs border border-gray-300"><?= $p['nama_user'] ?? '-' ?></td>
-              <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[225px]"><?= esc($p['keterangan_mutasi']) ?: '-' ?></td>
+              <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[225px]">
+                <?= esc($p['keterangan_mutasi']) ?: '-' ?>
+              </td>
 
               <td class="px-4 py-3 text-center text-xs border border-gray-300">
                 <span class="px-2 py-1 rounded text-xs
@@ -122,13 +134,16 @@
                   <?php if ($p['mutasi_check'] == 1): ?>
                     <span class="px-2 py-1 rounded text-xs bg-lime-400 text-lime-800">Checked</span>
                   <?php else: ?>
-                    <button class="btn-check bg-blue-500 text-white p-2 rounded text-xs hover:bg-blue-400 transition" data-id="<?= $p['mutasi_id'] ?>">
+                    <button class="btn-check bg-blue-500 text-white p-2 rounded text-xs hover:bg-blue-400 transition"
+                      data-id="<?= $p['mutasi_id'] ?>">
                       Crosscheck INTAN
                     </button>
                   <?php endif; ?>
                 <?php else: ?>
                   <?php if ($p['mutasi_check'] == 0): ?>
-                    <span class="inline-block text-center whitespace-nowrap px-2 py-1 rounded text-xs bg-amber-400 text-amber-800">Belum Mutasi</span>
+                    <span
+                      class="inline-block text-center whitespace-nowrap px-2 py-1 rounded text-xs bg-amber-400 text-amber-800">Belum
+                      Mutasi</span>
                   <?php endif; ?>
                 <?php endif; ?>
               </td>
@@ -139,7 +154,8 @@
       </table>
     </div>
 
-    <button onclick="openModal('tambahModal')" class="fixed bottom-10 right-10 w-14 h-14 bg-[#1C4D8D] text-white rounded-full flex items-center justify-center text-xl shadow-lg hover:bg-[#7AAACE] hover:scale-110 transition z-[49]">
+    <button onclick="openModal('tambahModal')"
+      class="fixed bottom-10 right-10 w-14 h-14 bg-[#1C4D8D] text-white rounded-full flex items-center justify-center text-xl shadow-lg hover:bg-[#7AAACE] hover:scale-110 transition z-[49]">
       <i class="fa-solid fa-plus"></i>
     </button>
 
@@ -178,8 +194,7 @@
       <!-- Middle pages -->
       <?php for ($i = $start; $i <= $end; $i++): ?>
         <?php $query['page'] = $i; ?>
-        <a href="?<?= http_build_query($query) ?>"
-          class="px-3 py-1 text-xs rounded 
+        <a href="?<?= http_build_query($query) ?>" class="px-3 py-1 text-xs rounded 
           <?= $i == $currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>">
           <?= $i ?>
         </a>
@@ -216,7 +231,7 @@
     document.getElementById(id).classList.add("flex");
 
     const namaWrapper = document.getElementById("namaWrapper");
-    if(namaWrapper)namaWrapper.classList.remove("hidden");
+    if (namaWrapper) namaWrapper.classList.remove("hidden");
   }
 
   function closeModal(id) {
@@ -225,7 +240,7 @@
   }
 
   // EDIT MODAL
-  window.openEdit = function(id) {
+  window.openEdit = function (id) {
     fetch("<?= base_url('dashboard/edit') ?>/" + id)
       .then(res => res.json())
       .then(data => {
@@ -257,10 +272,10 @@
   const editForm = document.querySelector("#editMutasi");
   const submitEdit = document.getElementById("btn_submit_edit");
 
-  if (editForm){
-    editForm.addEventListener("submit", function(e){
+  if (editForm) {
+    editForm.addEventListener("submit", function (e) {
       e.preventDefault();
-        
+
       submitEdit.disabled = true;
 
       let formData = new FormData(this);
@@ -269,17 +284,17 @@
         method: "POST",
         body: formData
       })
-      .then(res => res.json())
-      .then(() => location.reload())
-      .catch(()=>{
-        submitEdit.disabled = false;
-        submitEdit.innerText = "Simpan";
-      });
+        .then(res => res.json())
+        .then(() => location.reload())
+        .catch(() => {
+          submitEdit.disabled = false;
+          submitEdit.innerText = "Simpan";
+        });
     });
   }
 
   // HISTORY MODAL
-  window.openHistory = function(id) {
+  window.openHistory = function (id) {
     openModal("historyModal");
 
     const input = document.getElementById("searchHistory");
@@ -290,12 +305,12 @@
 
   function loadHistory(id, page = 1, search = '') {
     fetch(`<?= base_url('dashboard/history') ?>/${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: `page=${page}&searchHistory=${encodeURIComponent(search)}`
-      })
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: `page=${page}&searchHistory=${encodeURIComponent(search)}`
+    })
       .then(res => res.json())
       .then(res => {
         console.log(res);
@@ -335,15 +350,15 @@
 
     for (let i = 1; i <= totalPage; i++) {
       container.innerHTML += `
-      <button onclick="loadHistory(${id}, ${i}, '${search}')" class="px-3 py-1 text-xs rounded ${i===currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200'}">${i}</button>`;
+      <button onclick="loadHistory(${id}, ${i}, '${search}')" class="px-3 py-1 text-xs rounded ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200'}">${i}</button>`;
     }
   }
 
-  window.closeHistory = function() {
+  window.closeHistory = function () {
     closeModal("historyModal");
   }
 
-  document.getElementById("historyModal").addEventListener("click", function(e) {
+  document.getElementById("historyModal").addEventListener("click", function (e) {
     if (e.target.id === "historyModal") {
       closeHistory();
     }
@@ -351,14 +366,14 @@
 
   const searchInput = document.getElementById("searchHistory");
   if (searchInput) {
-    searchInput.addEventListener("keyup", function() {
+    searchInput.addEventListener("keyup", function () {
       let id = this.dataset.id;
       loadHistory(id, 1, this.value);
     });
   }
 
   // BUTTON CROSSCHECK INTAN
-  document.addEventListener("click", function(e) {
+  document.addEventListener("click", function (e) {
     let btn = e.target.closest(".btn-check");
     if (!btn) return;
 
@@ -376,11 +391,11 @@
     }).then((result) => {
       if (result.isConfirmed) {
         fetch("<?= base_url('dashboard/check') ?>/" + id, {
-            method: "POST",
-            headers: {
-              "X-Requested-With": "XMLHttpRequest"
-            }
-          })
+          method: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
           .then(res => res.json())
           .then(data => {
             if (data.success) {
@@ -392,47 +407,149 @@
   });
 
   // TAMBAH PERANGKAT MODAL
-  new TomSelect("#kode_spec", {
-    valueField: "id",
-    labelField: "text",
-    searchField: ["kode_spec", "nama_perangkat"],
-    create: true,
+  // new TomSelect("#kode_spec", {
+  //   valueField: "id",
+  //   labelField: "text",
+  //   searchField: ["kode_spec", "nama_perangkat"],
+  //   create: true,
 
-    load: function(query, callback) {
-      if (!query.length) return callback();
+  //   load: function(query, callback) {
+  //     if (!query.length) return callback();
 
-      fetch(`/perangkat/getSpec?search=${query}`)
-        .then(res => res.json())
-        .then(data => {
-          callback(data.map(item => ({
-            id: item.id,
-            text: item.kode_spec + " - " + item.nama_perangkat,
-            kode_spec: item.kode_spec,
-            nama: item.nama_perangkat
-          })));
-        }).catch(() => callback());
-    },
+  //     fetch(`/perangkat/getSpec?search=${query}`)
+  //       .then(res => res.json())
+  //       .then(data => {
+  //         callback(data.map(item => ({
+  //           id: item.id,
+  //           text: item.kode_spec + " - " + item.nama_perangkat,
+  //           kode_spec: item.kode_spec,
+  //           nama: item.nama_perangkat
+  //         })));
+  //       }).catch(() => callback());
+  //   },
 
-    onChange: function(value) {
-      const namaInput = document.getElementById("nama");
-      const namaWrapper = document.getElementById("namaWrapper");
+  //   onChange: function(value) {
+  //     const namaInput = document.getElementById("nama");
+  //     const namaWrapper = document.getElementById("namaWrapper");
 
-      if (/^\d+$/.test(value)) {
-        fetch(`/perangkat/getSpecById?id=${value}`)
+  //     if (/^\d+$/.test(value)) {
+  //       fetch(`/perangkat/getSpecById?id=${value}`)
+  //         .then(res => res.json())
+  //         .then(data => {
+  //           namaInput.value = data.nama_perangkat;
+
+  //           namaWrapper.classList.add("hidden");
+  //           // namaInput.removeAttribute("readonly");
+  //         });
+
+  //     } else {
+  //       namaInput.value = value;
+
+  //       namaWrapper.classList.remove("hidden");
+  //       // namaInput.removeAttribute("readonly");
+  //     }
+  //   }
+  // });
+
+  // 1. Deklarasi satu kali saja di luar
+  let tsSpec;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // 1. Inisialisasi TomSelect
+    const el = document.getElementById("kode_spec");
+    if (el) {
+      tsSpec = new TomSelect(el, {
+        valueField: "id",
+        labelField: "text",
+        searchField: ["kode_spec", "nama_perangkat"],
+        create: true,
+        load: function (query, callback) {
+          if (!query.length) return callback();
+          fetch(`/perangkat/getSpec?search=${query}`)
+            .then(res => res.json())
+            .then(data => {
+              callback(data.map(item => ({
+                id: item.id,
+                text: item.kode_spec + " - " + item.nama_perangkat,
+                kode_spec: item.kode_spec,
+                nama: item.nama_perangkat
+              })));
+            }).catch(() => callback());
+        },
+        onChange: function (value) {
+          const namaInput = document.getElementById("nama");
+          const namaWrapper = document.getElementById("namaWrapper");
+          if (/^\d+$/.test(value)) {
+            fetch(`/perangkat/getSpecById?id=${value}`)
+              .then(res => res.json())
+              .then(data => {
+                namaInput.value = data.nama_perangkat;
+                namaWrapper.classList.add("hidden");
+              });
+          } else {
+            namaInput.value = value;
+            namaWrapper.classList.remove("hidden");
+          }
+        }
+      });
+    }
+
+    // 2. Handle Submit Form
+    const tambahForm = document.getElementById("tambahperangkat");
+    if (tambahForm) {
+      tambahForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        // Ambil elemen tombol secara lokal agar tidak undefined
+        const submitBtn = document.getElementById("btn_submit_tambah");
+        const namaInput = document.getElementById("nama");
+
+        if (!namaInput.value) {
+          alert("Nama perangkat belum diisi!");
+          return;
+        }
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerText = "Menyimpan...";
+        }
+
+        let formData = new FormData(this);
+
+        // Ambil value dari TomSelect secara eksplisit
+        if (tsSpec) {
+          formData.set('id_spec', tsSpec.getValue());
+        }
+
+        fetch("<?= base_url('dashboard/simpan') ?>", {
+          method: "POST",
+          body: formData,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
           .then(res => res.json())
-          .then(data => {
-            namaInput.value = data.nama_perangkat;
-
-            namaWrapper.classList.add("hidden");
-            // namaInput.removeAttribute("readonly");
+          .then(res => {
+            if (res.success) {
+              // CEK MESSAGE: Hanya alert jika message bukan undefined
+              if (typeof res.message !== "undefined" && res.message !== null) {
+                alert(res.message);
+              }
+              location.reload();
+            } else {
+              alert(res.message || "Gagal menyimpan data!");
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Simpan";
+              }
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerText = "Simpan";
+            }
           });
-
-      } else {
-        namaInput.value = value;
-
-        namaWrapper.classList.remove("hidden");
-        // namaInput.removeAttribute("readonly");
-      }
+      });
     }
   });
 
@@ -477,43 +594,99 @@
   const tambahForm = document.getElementById("tambahperangkat");
   const submitTambah = document.getElementById("btn_submit_tambah");
 
+  // if (tambahForm) {
+  //   tambahForm.addEventListener("submit", function (e) {
+  //     e.preventDefault();
+
+  //     const nama = document.getElementById("nama").value;
+
+  //     if (!nama) {
+  //       alert("Nama perangkat belum diisi!");
+  //       return;
+  //     }
+
+  //     submitTambah.disabled = true;
+
+  //     let formData = new FormData(this);
+
+  //     fetch("<?= base_url('dashboard/simpan') ?>", {
+  //       method: "POST",
+  //       body: formData
+  //     })
+  //       .then(res => res.json())
+  //       .then(res => {
+  //         console.log(res);
+
+  //         if (res.success) {
+  //           closeModal("tambahModal");
+  //           location.reload();
+  //         }
+  //       })
+  //       .catch(() => {
+  //         submitTambah.disabled = false;
+  //         submitTambah.innerText = "Simpan";
+  //       });
+  //   });
+  // }
+
   if (tambahForm) {
-    tambahForm.addEventListener("submit", function(e) {
+    tambahForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      const nama = document.getElementById("nama").value;
+      // 1. Ambil elemen tombol secara langsung agar tidak undefined
+      const btnSubmit = document.getElementById("btn_submit_tambah");
+      const namaInput = document.getElementById("nama");
 
-      if (!nama) {
+      if (!namaInput.value) {
         alert("Nama perangkat belum diisi!");
         return;
       }
 
-      submitTambah.disabled = true;
+      // 2. Pastikan tombol ada sebelum di-disable
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Proses...";
+      }
 
       let formData = new FormData(this);
 
+      // Tambahkan value TomSelect jika diperlukan
+      if (typeof tsSpec !== 'undefined') {
+        formData.set('id_spec', tsSpec.getValue());
+      }
+
       fetch("<?= base_url('dashboard/simpan') ?>", {
-          method: "POST",
-          body: formData
-        })
+        method: "POST",
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
         .then(res => res.json())
         .then(res => {
-          console.log(res);
-
+          // 3. Gunakan pengecekan || untuk menghindari notif "undefined"
           if (res.success) {
-            closeModal("tambahModal");
+            alert(res.message || "Data berhasil disimpan!");
             location.reload();
+          } else {
+            alert(res.message || "Terjadi kesalahan pada server.");
+            if (btnSubmit) {
+              btnSubmit.disabled = false;
+              btnSubmit.innerText = "Simpan";
+            }
           }
         })
-        .catch(()=>{
-          submitTambah.disabled = false;
-          submitTambah.innerText = "Simpan";
+        .catch(err => {
+          console.error(err);
+          alert("Gagal terhubung ke server.");
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "Simpan";
+          }
         });
     });
   }
 
   // HAPUS DATA PERANGKAT
-  window.confirmDelete = function(id) {
+  window.confirmDelete = function (id) {
     Swal.fire({
       title: "Apakah Anda yakin menghapus perangkat ini?",
       text: "Data perangkat akan terhapus",
@@ -526,31 +699,31 @@
     }).then((result) => {
       if (result.isConfirmed) {
         fetch("<?= base_url('perangkat/delete') ?>/" + id)
-        .then(res=>res.json())
-        .then(res=>{
-          if(res.success){
+          .then(res => res.json())
+          .then(res => {
+            if (res.success) {
 
-          const row = document.getElementById("row-" + id);
+              const row = document.getElementById("row-" + id);
 
-          row.style.transition = "all 0.4s ease";
-          row.style.opacity = "0";
-          row.style.transform = "translateX(50px)";
+              row.style.transition = "all 0.4s ease";
+              row.style.opacity = "0";
+              row.style.transform = "translateX(50px)";
 
-          setTimeout(()=>{
-            row.remove();
-          },400);
+              setTimeout(() => {
+                row.remove();
+              }, 400);
 
-            Swal.fire({
-              icon: "success",
-              title: "Berhasil",
-              text: "Perangkat berhasil dihapus",
-              showConfirmaButton: false
-            });
+              Swal.fire({
+                icon: "success",
+                title: "Berhasil",
+                text: "Perangkat berhasil dihapus",
+                showConfirmaButton: false
+              });
 
-          }else{
-            Swal.fire("Gagal", "Data tidak ditemukan", "error");
-          }
-        })
+            } else {
+              Swal.fire("Gagal", "Data tidak ditemukan", "error");
+            }
+          })
       };
     });
   }

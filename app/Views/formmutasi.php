@@ -19,7 +19,7 @@
       <div class="bg-[#1C4D8D] p-5 rounded-xl shadow-inner">
         <h2 class="font-bold text-lg mb-2">PENTING!!!</h2>
         <p class="text-xs leading relaxed mb-4 text-white">
-          Mohon untuk pengambilan dan peminjaman perangkat dapat mengisi form yang sudah disediakan
+          Mohon untuk pengambilan dan peminjaman perangkat dapat mengisi form yang sudah disediakan atau mengirimkan foto registrasi perangkat dengan <b>JELAS</b>
         </p>
         <p class="text-[10px] italic text-white">
           Note: <br>
@@ -29,7 +29,7 @@
 
       <p class="text-[11px] font-bold mt-5 mb-1">BUTUH BANTUAN?</p>
       <p class="text-[11px] mb-4">Silakan hubungi admin melalui whatsapp di bawah ini</p>
-      <a href="https://wa.me/6282133601435?text=Admin,%20mau%20konfirmasi%20tentang%20mutasi%20perangkat"
+      <a href="https://wa.me/6282133601435?text=Admin,%20terkendala%20No.Registrasi%20perangkat%20tidak%20terdaftar"
         target="_blank"
         class="bg-white text-[#1C4D8D] font-bold px-2 py-3 rounded-lg w-full text-sm shadow hover:bg-gray-100 transition text-center flex items-center justify-center gap-2">
         Hubungi Admin

@@ -24,7 +24,7 @@ class DashboardController extends BaseController
     {
         $page = $this->request->getGet('page') ?? 1;
         $limit = 50;
-        $offset = ($page - 1)*$limit;
+        $offset = ($page - 1) * $limit;
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'status' => $this->request->getGet('status'),
@@ -38,7 +38,7 @@ class DashboardController extends BaseController
         $totalData = $result['total'];
         $data['currentPage'] = $page;
         $data['limit'] = $limit;
-        $data['totalPage'] = ceil($totalData/$limit);
+        $data['totalPage'] = ceil($totalData / $limit);
 
         $configMutasi = new \Config\Mutasi();
         $data['statuses'] = $configMutasi->status;
@@ -59,36 +59,64 @@ class DashboardController extends BaseController
         $limit = 15;
         $offset = ($page - 1) * $limit;
 
-        $filters=[
+        $filters = [
             'searchHistory' => $search
         ];
 
         $result = $model->getDataHistory($id, $filters, $limit, $offset);
 
         $total = $result['total'];
-        $totalPage = ceil($total/$limit);
+        $totalPage = ceil($total / $limit);
 
         return $this->response->setJSON([
-            'data'=>$result['data'],
-            'total'=>$total,
-            'totalPage'=>$totalPage,
-            'currentPage'=>(int)$page
+            'data' => $result['data'],
+            'total' => $total,
+            'totalPage' => $totalPage,
+            'currentPage' => (int) $page
         ]);
     }
 
     public function checkMutasi($id)
     {
         $mutasi = $this->mutasiModel->find($id);
-        
-        if (!$mutasi || !in_array($mutasi['status'], ['Terpasang', 'Terkirim'])){
-            return $this->response->setJSON(['success'=>false]);
+
+        if (!$mutasi || !in_array($mutasi['status'], ['Terpasang', 'Terkirim'])) {
+            return $this->response->setJSON(['success' => false]);
         }
 
         $this->mutasiModel->update($id, [
-            'is_checked'=>1,
-            'checked_at'=>date('Y-m-d H:i:s')
+            'is_checked' => 1,
+            'checked_at' => date('Y-m-d H:i:s')
         ]);
 
-        return $this->response->setJSON(['success'=>true]);
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    public function simpanPerangkat()
+    {
+        $idSpecInput = $this->request->getPost('id_spec'); // Menangkap <select name="id_spec">
+        $namaInput = $this->request->getPost('nama');
+        $kodeId = $this->request->getPost('kode_id');
+
+        $data = [
+            'kode_id' => $kodeId,
+            'status' => 'Tersedia',
+        ];
+
+        if (is_numeric($idSpecInput)) {
+            // Jika user memilih dari list (ID angka)
+            $data['id_spec'] = (int) $idSpecInput;
+            $data['nama'] = $namaInput;
+        } else {
+            // Jika user mengetik teks baru (misal: "B2WN...")
+            $data['id_spec'] = null; // Karena tidak ada di tabel spec
+            $data['nama'] = $idSpecInput; // Gunakan teks yang diketik sebagai nama
+        }
+
+        if ($this->perangkatModel->insert($data)) {
+            return $this->response->setJSON(['success' => true, 'message' => 'Data berhasil ditambahkan']);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Gagal menyimpan ke database']);
     }
 }

@@ -12,9 +12,11 @@
                 class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
                 <option value="">Semua Status</option>
                 <option value="Dibawa" <?= (($_GET['status'] ?? '') == 'Dibawa') ? 'selected' : '' ?>>Dibawa</option>
-                <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang</option>
+                <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang
+                </option>
                 <option value="Kembali" <?= (($_GET['status'] ?? '') == 'Kembali') ? 'selected' : '' ?>>Kembali</option>
-                <option value="Pengiriman" <?= (($_GET['status'] ?? '') == 'Pengiriman') ? 'selected' : '' ?>>Pengiriman</option>
+                <option value="Pengiriman" <?= (($_GET['status'] ?? '') == 'Pengiriman') ? 'selected' : '' ?>>Pengiriman
+                </option>
                 <option value="Terkirim" <?= (($_GET['status'] ?? '') == 'Terkirim') ? 'selected' : '' ?>>Terkirim</option>
             </select>
         </div>
@@ -84,11 +86,12 @@
                             <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['noreg']) ?></td>
                             <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['nm_perangkat']) ?>
                             </td>
-                            <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap"><?= $h['nm_user'] ?? '-' ?>
+                            <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
+                                <?= $h['nm_user'] ?? '-' ?>
                             </td>
                             <td
                                 class="px-4 py-3 text-xs text-left border border-gray-300 break-words whitespace-normal max-w-[225px]">
-                                <?= esc($h['keterangan']) ?: '-' ?>
+                                <!-- <?= esc($h['keterangan']) ?: '-' ?> -->
                             </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">

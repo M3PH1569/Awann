@@ -55,7 +55,7 @@ class PerangkatModel extends Model
                         u.nama LIKE '%$keyword%' OR
                         m.status LIKE '%$keyword%' OR
                         m.keterangan LIKE '%$keyword%' OR
-                        m.is_checked LIKE '%$keyword%')";
+                        m.is_checked::text LIKE '%$keyword%')";
         }
 
         if (!empty($filters['status'])){
