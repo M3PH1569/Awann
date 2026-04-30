@@ -2,6 +2,12 @@
 
 <?= $this->section('content') ?>
 
+<div id="toast" class="fixed top-20 right-5 z-50 hidden transform transition-all duration-300 translate-x-full">
+  <div id="toastBox" class="flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm">
+    <i id="toastIcon" class="fa-solid"></i>
+    <span id="toastMsg"></span>
+  </div>
+</div>
 <div class="max-w-[1450px] mx-auto w-full flex-1 flex flex-col">
   <div class="flex justify-between items-center w-full">
     <h2 class="text-base font-semibold mb-3">
@@ -226,6 +232,39 @@
 
 <?= $this->section('scripts') ?>
 <script>
+  function showToast(message, type = "error") {
+    const toast = document.getElementById("toast");
+    const box = document.getElementById("toastBox");
+    const msg = document.getElementById("toastMsg");
+    const icon = document.getElementById("toastIcon");
+
+    msg.innerText = message;
+
+    box.className = "flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm";
+
+    if (type === "error") {
+      box.classList.add("bg-red-500");
+      icon.className = "fa-solid fa-circle-xmark";
+    } else if (type === "success") {
+      box.classList.add("bg-green-500");
+      icon.className = "fa-solid fa-circle-check";
+    } else {
+      box.classList.add("bg-yellow-500");
+      icon.className = "fa-solid fa-triangle-exclamation";
+    }
+
+    toast.classList.remove("hidden", "translate-x-full");
+    toast.classList.add("translate-x-0");
+
+    setTimeout(() => {
+      toast.classList.remove("translate-x-0");
+      toast.classList.add("translate-x-full");
+
+      setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 300);
+    }, 3000);
+  }
   function openModal(id) {
     document.getElementById(id).classList.remove("hidden");
     document.getElementById(id).classList.add("flex");
@@ -505,7 +544,7 @@
         const namaInput = document.getElementById("nama");
 
         if (!namaInput.value) {
-          alert("Nama perangkat belum diisi!");
+          showToast("Nama perangkat belum diisi!", "warning");
           return;
         }
 
@@ -529,13 +568,12 @@
           .then(res => res.json())
           .then(res => {
             if (res.success) {
-              // CEK MESSAGE: Hanya alert jika message bukan undefined
-              if (typeof res.message !== "undefined" && res.message !== null) {
-                alert(res.message);
-              }
-              location.reload();
+              showToast(res.message || "Data berhasil disimpan!", "success");
+              setTimeout(() => {
+                location.reload();
+              }, 1500);
             } else {
-              alert(res.message || "Gagal menyimpan data!");
+              showToast(res.message || "Gagal menyimpan data!", "error");
               if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Simpan";
@@ -544,6 +582,7 @@
           })
           .catch(err => {
             console.error(err);
+            showToast("Terjadi kesalahan pada server!", "error");
             if (submitBtn) {
               submitBtn.disabled = false;
               submitBtn.innerText = "Simpan";
@@ -591,99 +630,7 @@
   kodeInput.addEventListener('input', cekNoregRealTime);
   specSelect.addEventListener('change', cekNoregRealTime);
 
-  const tambahForm = document.getElementById("tambahperangkat");
-  const submitTambah = document.getElementById("btn_submit_tambah");
 
-  // if (tambahForm) {
-  //   tambahForm.addEventListener("submit", function (e) {
-  //     e.preventDefault();
-
-  //     const nama = document.getElementById("nama").value;
-
-  //     if (!nama) {
-  //       alert("Nama perangkat belum diisi!");
-  //       return;
-  //     }
-
-  //     submitTambah.disabled = true;
-
-  //     let formData = new FormData(this);
-
-  //     fetch("<?= base_url('dashboard/simpan') ?>", {
-  //       method: "POST",
-  //       body: formData
-  //     })
-  //       .then(res => res.json())
-  //       .then(res => {
-  //         console.log(res);
-
-  //         if (res.success) {
-  //           closeModal("tambahModal");
-  //           location.reload();
-  //         }
-  //       })
-  //       .catch(() => {
-  //         submitTambah.disabled = false;
-  //         submitTambah.innerText = "Simpan";
-  //       });
-  //   });
-  // }
-
-  if (tambahForm) {
-    tambahForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      // 1. Ambil elemen tombol secara langsung agar tidak undefined
-      const btnSubmit = document.getElementById("btn_submit_tambah");
-      const namaInput = document.getElementById("nama");
-
-      if (!namaInput.value) {
-        alert("Nama perangkat belum diisi!");
-        return;
-      }
-
-      // 2. Pastikan tombol ada sebelum di-disable
-      if (btnSubmit) {
-        btnSubmit.disabled = true;
-        btnSubmit.innerText = "Proses...";
-      }
-
-      let formData = new FormData(this);
-
-      // Tambahkan value TomSelect jika diperlukan
-      if (typeof tsSpec !== 'undefined') {
-        formData.set('id_spec', tsSpec.getValue());
-      }
-
-      fetch("<?= base_url('dashboard/simpan') ?>", {
-        method: "POST",
-        body: formData,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      })
-        .then(res => res.json())
-        .then(res => {
-          // 3. Gunakan pengecekan || untuk menghindari notif "undefined"
-          if (res.success) {
-            alert(res.message || "Data berhasil disimpan!");
-            location.reload();
-          } else {
-            alert(res.message || "Terjadi kesalahan pada server.");
-            if (btnSubmit) {
-              btnSubmit.disabled = false;
-              btnSubmit.innerText = "Simpan";
-            }
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert("Gagal terhubung ke server.");
-          if (btnSubmit) {
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "Simpan";
-          }
-        });
-    });
-  }
 
   // HAPUS DATA PERANGKAT
   window.confirmDelete = function (id) {

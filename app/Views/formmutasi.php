@@ -59,8 +59,15 @@
         <div class="w-full flex flex-col justify-end">
           <label class="invisible text-sm mb-2">Hidden</label>
           <button type="button" id="btn_tambah"
-            class="bg-[#1C4D8D] h-[42px] px-3 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition items-end">
-            Tambah
+            class="bg-[#1C4D8D] h-[42px] px-4 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition items-end flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+              <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+            </svg> Scan Barcode
           </button>
         </div>
       </div>
@@ -124,6 +131,23 @@
     </form>
   </div>
 </div>
+
+<!-- Modal Scanner -->
+<div id="scannerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
+    <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+      <h3 class="font-bold">Scan Barcode / QR Code</h3>
+      <button type="button" id="closeScanner" class="text-white hover:text-red-300 transition">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+    <div class="p-4 flex flex-col items-center">
+      <div id="reader" class="w-full"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <script>
   function showToast(message, type = "error") {
@@ -229,8 +253,47 @@
       }
     });
 
+    let html5QrcodeScanner;
+
+    let isScanning = false;
+
     document.getElementById('btn_tambah').addEventListener('click', function () {
-      multiAdd(inputScan.value);
+      document.getElementById('scannerModal').classList.remove('hidden');
+      isScanning = true;
+
+      html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        /* verbose= */ false);
+
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    });
+
+    function onScanSuccess(decodedText, decodedResult) {
+      if (!isScanning) return;
+      isScanning = false;
+
+      showToast("Barcode terdeteksi!", "success");
+
+      document.getElementById('scannerModal').classList.add('hidden');
+      inputScan.value = decodedText;
+      multiAdd(decodedText);
+
+      html5QrcodeScanner.clear().catch(err => console.error(err));
+    }
+
+    function onScanFailure(error) {
+      // ignore failures to keep scanning
+    }
+
+    document.getElementById('closeScanner').addEventListener('click', function () {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear().then(() => {
+          document.getElementById('scannerModal').classList.add('hidden');
+        });
+      } else {
+        document.getElementById('scannerModal').classList.add('hidden');
+      }
     });
 
     function renderTable() {
