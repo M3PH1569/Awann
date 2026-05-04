@@ -112,7 +112,6 @@
               object-fit: cover !important;
             }
 
-            /* Custom Scan Box Overlay logic might be needed if library doesn't show it clearly */
             #reader__scan_region {
               border-radius: 8px;
             }
@@ -290,7 +289,6 @@
       scannerModal.classList.remove('hidden');
 
       if (!html5QrCode) {
-        // Explicitly include support for linear barcodes
         const formatsToSupport = [
           Html5QrcodeSupportedFormats.QR_CODE,
           Html5QrcodeSupportedFormats.CODE_128,
@@ -307,7 +305,6 @@
       const config = {
         fps: 25,
         qrbox: (viewfinderWidth, viewfinderHeight) => {
-          // Make qrbox wider for linear barcodes
           const widthPercentage = 0.8;
           const heightPercentage = 0.6;
           const width = Math.floor(viewfinderWidth * widthPercentage);
@@ -323,7 +320,6 @@
         }
       };
 
-      // Security check: browsers only allow camera access on HTTPS or localhost
       if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         showToast("Error: Kamera membutuhkan koneksi HTTPS (Secure Context)", "error");
         scannerModal.classList.add('hidden');
@@ -331,7 +327,6 @@
       }
 
       try {
-        // Use simpler constraints for better compatibility
         await html5QrCode.start(
           { facingMode: "environment" },
           config,
@@ -340,7 +335,6 @@
         );
         isScanning = true;
 
-        // Add visual guide
         const reader = document.getElementById('reader');
         if (!document.getElementById('scanner-guide')) {
           const guide = document.createElement('div');
@@ -354,7 +348,6 @@
           guide.style.zIndex = '10';
           guide.style.pointerEvents = 'none';
 
-          // Size the guide based on qrbox logic
           const rect = reader.getBoundingClientRect();
           const width = Math.floor(rect.width * 0.8);
           const height = Math.floor(rect.height * 0.6);

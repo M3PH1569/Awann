@@ -446,54 +446,9 @@
   });
 
   // TAMBAH PERANGKAT MODAL
-  // new TomSelect("#kode_spec", {
-  //   valueField: "id",
-  //   labelField: "text",
-  //   searchField: ["kode_spec", "nama_perangkat"],
-  //   create: true,
-
-  //   load: function(query, callback) {
-  //     if (!query.length) return callback();
-
-  //     fetch(`/perangkat/getSpec?search=${query}`)
-  //       .then(res => res.json())
-  //       .then(data => {
-  //         callback(data.map(item => ({
-  //           id: item.id,
-  //           text: item.kode_spec + " - " + item.nama_perangkat,
-  //           kode_spec: item.kode_spec,
-  //           nama: item.nama_perangkat
-  //         })));
-  //       }).catch(() => callback());
-  //   },
-
-  //   onChange: function(value) {
-  //     const namaInput = document.getElementById("nama");
-  //     const namaWrapper = document.getElementById("namaWrapper");
-
-  //     if (/^\d+$/.test(value)) {
-  //       fetch(`/perangkat/getSpecById?id=${value}`)
-  //         .then(res => res.json())
-  //         .then(data => {
-  //           namaInput.value = data.nama_perangkat;
-
-  //           namaWrapper.classList.add("hidden");
-  //           // namaInput.removeAttribute("readonly");
-  //         });
-
-  //     } else {
-  //       namaInput.value = value;
-
-  //       namaWrapper.classList.remove("hidden");
-  //       // namaInput.removeAttribute("readonly");
-  //     }
-  //   }
-  // });
-
   let tsSpec;
 
   document.addEventListener("DOMContentLoaded", function () {
-    // 1. Inisialisasi TomSelect
     const el = document.getElementById("kode_spec");
     if (el) {
       tsSpec = new TomSelect(el, {
@@ -532,13 +487,11 @@
       });
     }
 
-    // 2. Handle Submit Form
     const tambahForm = document.getElementById("tambahperangkat");
     if (tambahForm) {
       tambahForm.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        // Ambil elemen tombol secara lokal agar tidak undefined
         const submitBtn = document.getElementById("btn_submit_tambah");
         const namaInput = document.getElementById("nama");
 
@@ -554,7 +507,6 @@
 
         let formData = new FormData(this);
 
-        // Ambil value dari TomSelect secara eksplisit
         if (tsSpec) {
           formData.set('id_spec', tsSpec.getValue());
         }
@@ -628,8 +580,6 @@
 
   kodeInput.addEventListener('input', cekNoregRealTime);
   specSelect.addEventListener('change', cekNoregRealTime);
-
-
 
   // HAPUS DATA PERANGKAT
   window.confirmDelete = function (id) {
