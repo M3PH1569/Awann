@@ -276,6 +276,21 @@
   }
 
   function closeModal(id) {
+    const modal = document.getElementById(id);
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+
+    const form = modal.querySelector("form");
+
+    if(form && id !== "editModal"){
+      form.reset();
+    }
+
+    if(id === "tambahModal" && tsSpec){
+      tsSpec.clear();
+    }
+
     document.getElementById(id).classList.add("hidden");
     document.getElementById(id).classList.remove("flex");
   }
