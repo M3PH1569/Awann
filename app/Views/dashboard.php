@@ -237,6 +237,16 @@
       loadUsers();
     }
   });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Enter"){
+      const input = document.getElementById("newUserInput");
+      if(input){
+        e.preventDefault();
+        saveNewUser();
+      }
+    }
+  }); 
   
   function showToast(message, type = "error") {
     const toast = document.getElementById("toast");
@@ -351,7 +361,7 @@
 
     tdNama.innerHTML=`
       <div class="relative group">
-        <input type="text" id="edit_nama_${userId}" value="${namaLama}" class="w-full bg-white border border-gray-300 px-3 py-2 rounded-md text-xs shadow-sm transition-all duration-200">
+        <input type="text" id="edit_nama_${userId}" value="${namaLama}" class="w-full bg-white border border-gray-300 px-3 py-2 rounded-md text-xs shadow-sm focus:ring-1 focus:ring-[#1C4D8D] outline-none transition-all duration-200">
       </div>`;
 
     tdNama.style.opacity = "0";
@@ -418,28 +428,101 @@
   }
 
   function addUser(){
-   let nama = prompt("Masukkan nama user : "); 
+    const tbody = document.getElementById("userManageBody");
+    
+    if(document.getElementById("newUserRow")) returnl
 
-   if(!nama || !nama.trim()) return;
-   fetch("<?= base_url('dashboard/addUser') ?>", {
-    method : "POST",
-    headers: {
-      "X-Requested-With" : "XMLHttpRequest"
-    },
-    body: new URLSearchParams({nama})
-   })
-  .then(res => res.json())
-  .then(res => {
-    console.log(res);
-    if(res.success){
-      showToast("Berhasil Menambahkan User", "success");
-      loadUsers();
-      refreshUserDropdown();
-      addUserToTomSelect(res.data);
-    }else{
-      showToast("Gagal Menambahkan User", "error");
+    const row = document.createElement("tr");
+    row.id = "newUserRow";
+    row.className = "bg-[#F9FBFF] animate-fadein";
+
+    row.innerHTML = `
+    <td class="px-4 py-3 text-center border">
+      <div class="flex justify-center gap-2">
+
+        <button onclick="saveNewUser()"
+          class="w-6 h-6 flex items-center justify-center rounded-full 
+                bg-green-100 text-green-600 hover:bg-green-200 active:scale-95 transition"
+          title="Simpan">
+          <i class="fa-solid fa-check text-xs"></i>
+        </button>
+
+        <button onclick="cancelNewUser()"
+          class="w-6 h-6 flex items-center justify-center rounded-full 
+                bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition"
+          title="Batal">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+    </td>
+
+    <td class="px-4 py-3 text-center border text-xs">-</td>
+    <td class="px-4 py-3 border">
+      <input type="text" id="newUserInput" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none" placeholder="Masukkan Nama User">
+    </td>
+    `;
+
+    tbody.prepend(row);
+
+    setTimeout(() => {
+      document.getElementById("newUserInput").focus();
+    }, 100);
+  }
+    
+  //  let nama = prompt("Masukkan nama user : "); 
+
+  //  if(!nama || !nama.trim()) return;
+  //  fetch("<?= base_url('dashboard/addUser') ?>", {
+  //   method : "POST",
+  //   headers: {
+  //     "X-Requested-With" : "XMLHttpRequest"
+  //   },
+  //   body: new URLSearchParams({nama})
+  //  })
+  // .then(res => res.json())
+  // .then(res => {
+  //   console.log(res);
+  //   if(res.success){
+  //     showToast("Berhasil Menambahkan User", "success");
+  //     loadUsers();
+  //     refreshUserDropdown();
+  //     addUserToTomSelect(res.data);
+  //   }else{
+  //     showToast("Gagal Menambahkan User", "error");
+  //   }
+  //  });
+
+  function saveNewUser(){
+    const input = document.getElementById("newUserInput");
+    const nama = input.value;
+
+    if(!nama.trim()){
+      showToast("Nama User Kosong", "warning");
+      return;
     }
-   });
+
+    fetch("<?= base_url('dashboard/addUser') ?>", {
+      method: "POST",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: new URLSearchParams({nama})
+    })
+    .then(res => res.json())
+    .then(res => {
+      if(res.success){
+        showToast("Berhasil Menambahkan User", "success");
+        loadUsers();
+        refreshUserDropdown();
+      }else{
+        showToast("Gagal Menambahkan User", "error");
+      }
+    });
+  }
+
+  function cancelNewUser(){
+    const row = document.getElementById("newUserRow");
+    if(row)row.remove();
   }
 
   function deleteUser(id) {
