@@ -59,7 +59,7 @@
         <div class="w-full flex flex-col justify-end">
           <label class="invisible text-sm mb-2">Hidden</label>
           <button type="button" id="btn_tambah"
-            class="bg-[#1C4D8D] h-[42px] px-4 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition items-end flex items-center justify-center gap-2">
+            class="bg-[#1C4D8D] h-[42px] px-4 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7AAACE] transition items-end flex items-center justify-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
@@ -135,7 +135,7 @@
 
       <div class="flex">
         <button type="submit" id="btn_submit"
-          class="bg-[#1C4D8D] text-sm text-white px-8 py-2 rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition">
+          class="bg-[#1C4D8D] text-sm text-white px-8 py-2 rounded-md font-semibold shadow hover:bg-[#7AAACE] transition">
           Submit
         </button>
       </div>

@@ -33,7 +33,7 @@
                     <span class="block sm:inline text-sm"><?= session()->getFlashdata('error') ?></span>
                 </div>
             <?php endif; ?>
-            <button class="bg-[#1C4D8D] w-full text-sm text-white p-3 rounded-lg font-bold shadow-md hover:bg-[#3E679E] transition mt-4" type="submit">
+            <button class="bg-[#1C4D8D] w-full text-sm text-white p-3 rounded-lg font-bold shadow-md hover:bg-[#7AAACE] transition mt-4" type="submit">
                 Login
             </button>
         </form>

@@ -68,7 +68,7 @@
       </select>
     </div>
 
-    <a href="/dashboard" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7FB3D5] transition text-white">
+    <a href="/dashboard" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
       Reset Filter
     </a>
   </form>
@@ -104,8 +104,7 @@
                 <button type="button" onclick="openHistory(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
-                <button type="button" onclick="confirmDelete(<?= $p['id'] ?>)"
-                  class="hover:text-blue-400 mr-1 transition">
+                <button type="button" onclick="confirmDelete(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
               </td>
