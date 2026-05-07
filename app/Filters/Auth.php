@@ -11,7 +11,8 @@ class Auth implements FilterInterface
     public function before(RequestInterface $request, $arguments = null)
     {
         if (!session()->get('admin')) {
-            return redirect()->to('/');
+            return redirect()->to('/login')
+            ->with('error', 'Session habis, Silakan login kembali');
         }
     }
 
