@@ -9,7 +9,7 @@ use CodeIgniter\Router\RouteCollection;
 
 $routes->setAutoRoute(false);
 
-$routes->group('', ['filter'=>'auth'], function($routes){
+$routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'DashboardController::dashboard');
     $routes->post('dashboard', 'DashboardController::dashboard');
 
@@ -25,6 +25,7 @@ $routes->group('', ['filter'=>'auth'], function($routes){
 
     $routes->get('dashboard/edit/(:num)', 'PerangkatController::editPerangkat/$1');
     $routes->post('dashboard/update', 'PerangkatController::updatePerangkat');
+    $routes->post('dashboard/bulkUpdate', 'PerangkatController::bulkUpdatePerangkat');
 
     $routes->post('dashboard/simpan', 'PerangkatController::tambahPerangkat');
     $routes->get('perangkat/cek-noreg', 'PerangkatController::cekNoreg');
@@ -36,6 +37,7 @@ $routes->group('', ['filter'=>'auth'], function($routes){
 });
 
 $routes->get('/', 'FormController::index');
+$routes->get('formmutasi', 'FormController::index');
 $routes->post('submit', 'FormController::submit');
 $routes->get('submit/pdf', 'FormController::generatePdf');
 $routes->get('submit/pdf/clear', 'FormController::clearPdfSession');

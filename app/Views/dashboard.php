@@ -14,14 +14,27 @@
       Selamat Datang, <?= session('admin')['nama'] ?? '' ?>!
     </h2>
 
+    <?php
+    // Build export query string from active filters
+    $exportParams = [];
+    if (!empty($_GET['keyword']))
+      $exportParams['keyword'] = $_GET['keyword'];
+    if (!empty($_GET['status']))
+      $exportParams['status'] = $_GET['status'];
+    if (!empty($_GET['filter_mutasi']))
+      $exportParams['filter_mutasi'] = $_GET['filter_mutasi'];
+    if (!empty($_GET['user']))
+      $exportParams['user'] = $_GET['user'];
+    $exportQuery = !empty($exportParams) ? '?' . http_build_query($exportParams) : '';
+    ?>
     <div class="flex gap-2 mb-4">
-      <a href="<?= base_url('export/pdf') ?>" target="_blank"
+      <a href="<?= base_url('export/pdf') . $exportQuery ?>" target="_blank"
         class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
         <i class="fa-solid fa-file-pdf"></i>
         Export PDF
       </a>
 
-      <a href="<?= base_url('export/excel') ?>"
+      <a href="<?= base_url('export/excel') . $exportQuery ?>"
         class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
         <i class="fa-solid fa-file-excel"></i>
         Export Excel
@@ -78,6 +91,9 @@
       <table class="min-w-full text-xs text-left border border-gray-300 text-nowrap">
         <thead class="sticky top-0 z-10 bg-[#0F2854] text-white">
           <tr>
+            <th class="px-2 py-3 text-xs text-center border border-gray-300 w-8">
+              <input type="checkbox" id="selectAll" class="w-4 h-4 cursor-pointer accent-[#1C4D8D]" title="Select All">
+            </th>
             <th class="px-4 py-3 text-xs text-center border border-gray-300">Action</th>
             <th class="px-4 py-3 text-xs text-center border border-gray-300">No</th>
             <th class="px-4 py-3 text-xs text-left border border-gray-300">No Registrasi</th>
@@ -97,6 +113,10 @@
 
             <tr id="row-<?= $p['id'] ?>"
               class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black transition">
+              <td class="px-2 py-3 text-center text-xs border border-gray-300">
+                <input type="checkbox" class="row-checkbox w-4 h-4 cursor-pointer accent-[#1C4D8D]"
+                  value="<?= $p['id'] ?>">
+              </td>
               <td class="px-4 py-3 text-center text-xs text-blue-700 border border-gray-300">
                 <button type="button" onclick="openEdit(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-pen-to-square"></i>
@@ -104,7 +124,8 @@
                 <button type="button" onclick="openHistory(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
-                <button type="button" onclick="confirmDelete(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
+                <button type="button" onclick="confirmDelete(<?= $p['id'] ?>)"
+                  class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
               </td>
@@ -165,9 +186,52 @@
     </button>
 
     <?= view('components/editmutasi') ?>
+    <?= view('components/bulkedit', ['users' => $users, 'statuses' => $statuses]) ?>
     <?= view('components/historyperangkat') ?>
     <?= view('components/tambahperangkat') ?>
     <?= view('components/usermanage') ?>
+
+    <!-- Floating Bulk Action Toolbar -->
+    <div id="bulkToolbar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[55] hidden">
+      <div
+        class="flex items-center gap-3 bg-[#0F2854] text-white px-5 py-3 rounded-xl shadow-2xl border border-[#1C4D8D]/30"
+        style="animation: slideUp 0.3s ease-out">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-check-double text-sm"></i>
+          <span id="selectedCount" class="text-sm font-semibold">0</span>
+          <span class="text-sm">data dipilih</span>
+        </div>
+        <div class="w-px h-6 bg-white/30"></div>
+        <button onclick="openBulkEdit()"
+          class="flex items-center gap-2 bg-[#1C4D8D] hover:bg-[#7AAACE] px-4 py-2 rounded-lg text-xs font-semibold transition">
+          <i class="fa-solid fa-pen-to-square"></i>
+          Edit Selected
+        </button>
+        <button onclick="clearSelection()"
+          class="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-xs transition">
+          <i class="fa-solid fa-xmark"></i>
+          Batal
+        </button>
+      </div>
+    </div>
+
+    <style>
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      tr.selected-row {
+        background-color: #DBEAFE !important;
+      }
+    </style>
 
   </div>
 
@@ -232,34 +296,34 @@
 
 <?= $this->section('scripts') ?>
 <script>
-  document.addEventListener("keydown", function(e){
-    if(e.key === "Escape"){
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
       loadUsers();
     }
   });
 
-  document.addEventListener("keydown", function(e){
-    if(e.key === "Enter"){
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
       const input = document.getElementById("newUserInput");
-      if(input){
+      if (input) {
         e.preventDefault();
         saveNewUser();
       }
     }
-  }); 
+  });
 
-  document.addEventListener("input", function(e){
-    if(e.target.id === "searchUser"){
+  document.addEventListener("input", function (e) {
+    if (e.target.id === "searchUser") {
       const keyword = e.target.value.toLowerCase();
 
-      const filtered = allUsers.filter(u => 
+      const filtered = allUsers.filter(u =>
         u.nama.toLowerCase().includes(keyword)
       );
 
       renderUsers(filtered);
     }
   });
-  
+
   function showToast(message, type = "error") {
     const toast = document.getElementById("toast");
     const box = document.getElementById("toastBox");
@@ -310,11 +374,11 @@
 
     const form = modal.querySelector("form");
 
-    if(form && id !== "editModal"){
+    if (form && id !== "editModal") {
       form.reset();
     }
 
-    if(id === "tambahModal" && tsSpec){
+    if (id === "tambahModal" && tsSpec) {
       tsSpec.clear();
     }
   }
@@ -326,34 +390,34 @@
   }
 
   let allUsers = [];
-  function loadUsers(){
+  function loadUsers() {
     fetch("<?= base_url('dashboard/userList') ?>")
-    .then(res => res.json() )
-    .then(res => {
-      allUsers = res;
-      renderUsers(res);
-    });
+      .then(res => res.json())
+      .then(res => {
+        allUsers = res;
+        renderUsers(res);
+      });
   }
 
-  function renderUsers(users){
-      const tbody = document.getElementById("userManageBody");
-      const keyword = (document.getElementById("searchUser")?.value || "").toLowerCase();
+  function renderUsers(users) {
+    const tbody = document.getElementById("userManageBody");
+    const keyword = (document.getElementById("searchUser")?.value || "").toLowerCase();
 
-      tbody.innerHTML = "";
+    tbody.innerHTML = "";
 
-      if (!users.length){
-        tbody.innerHTML = `
+    if (!users.length) {
+      tbody.innerHTML = `
         <tr>
           <td colspan="3" class="text-center py-4">
             User tidak ditemukan
           </td>
         </tr>`;
-        return;
-      }
+      return;
+    }
 
-      let no = 1;
-      users.forEach(user=>{
-        tbody.innerHTML += `
+    let no = 1;
+    users.forEach(user => {
+      tbody.innerHTML += `
         <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
           <td class="px-4 py-3 text-center text-xs text-blue-700 border border-gray-300">
             <button type="button" onclick="editUser(this)" data-id="${user.id}" data-nama="${user.nama}" class="text-[#1C4D8D] hover:text-blue-400 mr-1 transition">
@@ -366,17 +430,17 @@
           <td class="px-4 py-3 text-center border border-gray-300">${no++}</td>
           <td class="px-4 py-3 text-left border border-gray-300">${highlightText(user.nama, keyword)}</td>
         </tr>`;
-      }); 
-    }
+    });
+  }
 
-    function highlightText(text, keyword){
-      if(!keyword) return text;
+  function highlightText(text, keyword) {
+    if (!keyword) return text;
 
-      const regex = new RegExp(`(${keyword})`, "gi");
-      return text.replace(regex, '<span class="bg-blue-200 rounded">$1</span>');
-    }
+    const regex = new RegExp(`(${keyword})`, "gi");
+    return text.replace(regex, '<span class="bg-blue-200 rounded">$1</span>');
+  }
 
-    function editUser(el){
+  function editUser(el) {
     const userId = el.dataset.id;
     const namaLama = el.dataset.nama;
 
@@ -385,7 +449,7 @@
 
     const tdNama = row.children[2];
 
-    tdNama.innerHTML=`
+    tdNama.innerHTML = `
       <div class="relative group">
         <input type="text" id="edit_nama_${userId}" value="${namaLama}" class="w-full bg-white border border-gray-300 px-3 py-2 rounded-md text-xs shadow-sm focus:ring-1 focus:ring-[#1C4D8D] outline-none transition-all duration-200">
       </div>`;
@@ -399,7 +463,7 @@
     }, 120);
 
     const tdAction = row.children[0];
-    tdAction.innerHTML=`
+    tdAction.innerHTML = `
     <div class="flex justify-center items-center gap-2">
 
       <button onclick="saveUser(${userId})"
@@ -418,7 +482,7 @@
 
     </div>`;
 
-    setTimeout(()=>{
+    setTimeout(() => {
       const input = document.getElementById(`edit_nama_${userId}`);
       input.focus();
 
@@ -426,7 +490,7 @@
     }, 100);
   }
 
-  function saveUser(id){
+  function saveUser(id) {
     const nama = document.getElementById(`edit_nama_${id}`).value;
 
     fetch("<?= base_url('dashboard/updateUser') ?>/" + id, {
@@ -434,29 +498,29 @@
       headers: {
         "X-Requested-With": "XMLHttpRequest"
       },
-      body: new URLSearchParams({nama})
+      body: new URLSearchParams({ nama })
     })
-    .then(res=>res.json())
-    .then(res=>{
-      if(res.success){
-        showToast("User berhasil diubah", "success");
-        loadUsers();
-      }else{
-        showToast("Gagal mengubah user", "error");
-      }
-    });
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          showToast("User berhasil diubah", "success");
+          loadUsers();
+        } else {
+          showToast("Gagal mengubah user", "error");
+        }
+      });
   }
 
-  function cancelEdit(el, id, namaLama){
+  function cancelEdit(el, id, namaLama) {
     loadUsers();
     const row = el.closest("tr");
     row.classList.remove("bg-[#F9FBFF]", "ring-1", "ring-[#1C4D8D]/10");
   }
 
-  function addUser(){
+  function addUser() {
     const tbody = document.getElementById("userManageBody");
-    
-    if(document.getElementById("newUserRow")) return;
+
+    if (document.getElementById("newUserRow")) return;
 
     const row = document.createElement("tr");
     row.id = "newUserRow";
@@ -494,7 +558,7 @@
       document.getElementById("newUserInput").focus();
     }, 100);
   }
-    
+
   //  let nama = prompt("Masukkan nama user : "); 
 
   //  if(!nama || !nama.trim()) return;
@@ -518,11 +582,11 @@
   //   }
   //  });
 
-  function saveNewUser(){
+  function saveNewUser() {
     const input = document.getElementById("newUserInput");
     const nama = input.value;
 
-    if(!nama.trim()){
+    if (!nama.trim()) {
       showToast("Nama User Kosong", "warning");
       return;
     }
@@ -532,23 +596,23 @@
       headers: {
         "X-Requested-With": "XMLHttpRequest"
       },
-      body: new URLSearchParams({nama})
+      body: new URLSearchParams({ nama })
     })
-    .then(res => res.json())
-    .then(res => {
-      if(res.success){
-        showToast("Berhasil Menambahkan User", "success");
-        loadUsers();
-        refreshUserDropdown();
-      }else{
-        showToast("Gagal Menambahkan User", "error");
-      }
-    });
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          showToast("Berhasil Menambahkan User", "success");
+          loadUsers();
+          refreshUserDropdown();
+        } else {
+          showToast("Gagal Menambahkan User", "error");
+        }
+      });
   }
 
-  function cancelNewUser(){
+  function cancelNewUser() {
     const row = document.getElementById("newUserRow");
-    if(row)row.remove();
+    if (row) row.remove();
   }
 
   function deleteUser(id) {
@@ -565,40 +629,40 @@
             "X-Requested-With": "XMLHttpRequest"
           }
         })
-        .then(res => res.json())
-        .then(res => {
-          if (res.success) {
-            showToast("User berhasil dihapus", "success");
-            loadUsers();
-          }else{
-            showToast("Gagal menghapus user", "error");
-          }
-        });
+          .then(res => res.json())
+          .then(res => {
+            if (res.success) {
+              showToast("User berhasil dihapus", "success");
+              loadUsers();
+            } else {
+              showToast("Gagal menghapus user", "error");
+            }
+          });
       }
     });
   }
 
-  function refreshUserDropdown(){
+  function refreshUserDropdown() {
     fetch("<?= base_url('dashboard/userList') ?>")
-    .then(res=>res.json())
-    .then(users=>{
-      const select = document.getElementById("isiUser");
+      .then(res => res.json())
+      .then(users => {
+        const select = document.getElementById("isiUser");
 
-      const selected = select.value;
-      select.innerHTML = `<option value="">Semua User</option>`;
+        const selected = select.value;
+        select.innerHTML = `<option value="">Semua User</option>`;
 
-      users.forEach(u=>{
-        select.innerHTML+=`<option value="${u.id}">${u.nama}</option>`;
+        users.forEach(u => {
+          select.innerHTML += `<option value="${u.id}">${u.nama}</option>`;
+        });
+
+        select.value = selected;
       });
-
-      select.value = selected;
-    });
   }
 
-  function addUserToTomSelect(user){
+  function addUserToTomSelect(user) {
     const select = document.getElementById("edit_user");
 
-    if(select && select.tomselect){
+    if (select && select.tomselect) {
       select.tomselect.addOption({
         value: user.id,
         text: user.nama
@@ -613,37 +677,37 @@
       .then(res => res.json())
       .then(data => {
         fetch("<?= base_url('dashboard/userList') ?>")
-        .then(res=>res.json())
-        .then(users=>{
-          const select = document.getElementById("edit_user");
+          .then(res => res.json())
+          .then(users => {
+            const select = document.getElementById("edit_user");
 
-          if(select.tomselect){
-            select.tomselect.destroy();
-          }
-
-          select.innerHTML = `<option value="">Pilih User</option>`;
-          users.forEach(u=>{
-            select.innerHTML+=`<option value="${u.id}">${u.nama}</option>`;
-          });
-
-          const ts = new TomSelect("#edit_user", {
-            create: false,
-            sortField: {
-              field: "text",
-              direction: "asc"
+            if (select.tomselect) {
+              select.tomselect.destroy();
             }
+
+            select.innerHTML = `<option value="">Pilih User</option>`;
+            users.forEach(u => {
+              select.innerHTML += `<option value="${u.id}">${u.nama}</option>`;
+            });
+
+            const ts = new TomSelect("#edit_user", {
+              create: false,
+              sortField: {
+                field: "text",
+                direction: "asc"
+              }
+            });
+
+            ts.setValue(data.id_users ?? "");
+
+            // new TomSelect("#edit_user", {
+            //   create: false,
+            //   sortField: {
+            //     field: "text",
+            //     direction: "asc"
+            //   }
+            // });
           });
-
-          ts.setValue(data.id_users ?? "");
-
-          // new TomSelect("#edit_user", {
-          //   create: false,
-          //   sortField: {
-          //     field: "text",
-          //     direction: "asc"
-          //   }
-          // });
-        });
         console.log(data);
         console.log("STATUS MUTASI:", data.status_mutasi);
 
@@ -733,14 +797,14 @@
         const keyword = search.toLowerCase();
 
         function highlightText(text, keyword) {
-          if(!keyword) return text;
+          if (!keyword) return text;
 
           const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
           const regex = new RegExp(`(${escaped})`, "gi");
 
           return text.replace(regex, '<span class="bg-blue-200 rounded">$1</span>');
         }
-        
+
         res.data.forEach(row => {
           tbody.innerHTML += `
           <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
@@ -931,7 +995,7 @@
     debounceTimer = setTimeout(() => {
       let kode_id = kodeInput.value;
       if (!specSelect.tomselect || !specSelect.value) return;
-      
+
       let selectedOption = specSelect.tomselect.getItem(specSelect.value);
       if (!selectedOption) return;
 
@@ -998,6 +1062,207 @@
             }
           })
       };
+    });
+  }
+  // ========== MULTI-SELECT & BULK EDIT ==========
+
+  function getSelectedIds() {
+    return Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+  }
+
+  function updateBulkToolbar() {
+    const ids = getSelectedIds();
+    const toolbar = document.getElementById('bulkToolbar');
+    const countEl = document.getElementById('selectedCount');
+
+    countEl.textContent = ids.length;
+
+    if (ids.length > 0) {
+      toolbar.classList.remove('hidden');
+    } else {
+      toolbar.classList.add('hidden');
+    }
+
+    // Update select-all checkbox state
+    const allCheckboxes = document.querySelectorAll('.row-checkbox');
+    const selectAll = document.getElementById('selectAll');
+    if (allCheckboxes.length > 0 && ids.length === allCheckboxes.length) {
+      selectAll.checked = true;
+      selectAll.indeterminate = false;
+    } else if (ids.length > 0) {
+      selectAll.checked = false;
+      selectAll.indeterminate = true;
+    } else {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+    }
+  }
+
+  function toggleRowHighlight(checkbox) {
+    const row = checkbox.closest('tr');
+    if (checkbox.checked) {
+      row.classList.add('selected-row');
+    } else {
+      row.classList.remove('selected-row');
+    }
+  }
+
+  // Select All checkbox
+  document.getElementById('selectAll').addEventListener('change', function () {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => {
+      cb.checked = this.checked;
+      toggleRowHighlight(cb);
+    });
+    updateBulkToolbar();
+  });
+
+  // Individual row checkboxes
+  document.addEventListener('change', function (e) {
+    if (e.target.classList.contains('row-checkbox')) {
+      toggleRowHighlight(e.target);
+      updateBulkToolbar();
+    }
+  });
+
+  function clearSelection() {
+    document.querySelectorAll('.row-checkbox').forEach(cb => {
+      cb.checked = false;
+      toggleRowHighlight(cb);
+    });
+    document.getElementById('selectAll').checked = false;
+    document.getElementById('selectAll').indeterminate = false;
+    updateBulkToolbar();
+  }
+
+  let tsBulkUser = null;
+  let tsBulkStatus = null;
+
+  function destroyBulkTomSelects() {
+    if (tsBulkUser) { tsBulkUser.destroy(); tsBulkUser = null; }
+    if (tsBulkStatus) { tsBulkStatus.destroy(); tsBulkStatus = null; }
+  }
+
+  function openBulkEdit() {
+    const ids = getSelectedIds();
+    if (ids.length === 0) {
+      showToast('Pilih minimal 1 data', 'warning');
+      return;
+    }
+
+    // Set hidden IDs field
+    document.getElementById('bulk_ids').value = JSON.stringify(ids);
+    document.getElementById('bulkEditCount').textContent = ids.length;
+
+    // Build selected items preview list
+    const listEl = document.getElementById('bulkSelectedList');
+    listEl.innerHTML = '';
+    ids.forEach(id => {
+      const row = document.getElementById('row-' + id);
+      if (row) {
+        const cells = row.querySelectorAll('td');
+        const noreg = cells[2]?.textContent?.trim() || '-';
+        const nama = cells[3]?.textContent?.trim() || '-';
+        listEl.innerHTML += `<div class="py-1 border-b border-gray-200 last:border-0"><strong>${noreg}</strong> — ${nama}</div>`;
+      }
+    });
+
+    // Reset form fields
+    document.getElementById('bulk_ket').value = '';
+
+    // Destroy previous TomSelect instances
+    destroyBulkTomSelects();
+
+    // Init TomSelect on existing selects
+    tsBulkUser = new TomSelect('#bulk_user', {
+      create: false,
+      sortField: { field: 'text', direction: 'asc' },
+      allowEmptyOption: true
+    });
+    tsBulkUser.setValue('');
+
+    tsBulkStatus = new TomSelect('#bulk_status', {
+      create: false,
+      allowEmptyOption: true
+    });
+    tsBulkStatus.setValue('');
+
+    openModal('bulkEditModal');
+  }
+
+  // Override closeModal for bulkEditModal to clean up TomSelect
+  const _originalCloseModal = closeModal;
+  closeModal = function (id) {
+    if (id === 'bulkEditModal') {
+      destroyBulkTomSelects();
+    }
+    _originalCloseModal(id);
+  };
+
+  // Bulk Edit Form Submit
+  const bulkForm = document.getElementById('bulkEditForm');
+  if (bulkForm) {
+    bulkForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('btn_submit_bulk');
+      const ids = JSON.parse(document.getElementById('bulk_ids').value);
+      const id_users = tsBulkUser ? tsBulkUser.getValue() : document.getElementById('bulk_user').value;
+      const status_mutasi = tsBulkStatus ? tsBulkStatus.getValue() : document.getElementById('bulk_status').value;
+      const keterangan = document.getElementById('bulk_ket').value;
+
+      // Check at least one field is filled
+      if (!id_users && !status_mutasi && !keterangan) {
+        showToast('Isi minimal 1 field untuk diupdate', 'warning');
+        return;
+      }
+
+      Swal.fire({
+        title: `Update ${ids.length} perangkat?`,
+        text: 'Edit data diterapkan ke semua data yang dipilih',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#1C4D8D',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Simpan',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+
+          fetch("<?= base_url('dashboard/bulkUpdate') ?>", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({
+              ids: ids,
+              id_users: id_users,
+              status_mutasi: status_mutasi,
+              keterangan: keterangan
+            })
+          })
+            .then(res => res.json())
+            .then(res => {
+              if (res.success) {
+                showToast(`Berhasil mengupdate ${res.updated} perangkat`, 'success');
+                setTimeout(() => location.reload(), 1500);
+              } else {
+                showToast(res.message || 'Gagal mengupdate data', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Semua';
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              showToast('Terjadi kesalahan pada server', 'error');
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Semua';
+            });
+        }
+      });
     });
   }
 </script>

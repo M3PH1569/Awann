@@ -1,7 +1,34 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<div id="toast" class="fixed top-20 right-5 z-50 hidden transform transition-all duration-300 translate-x-full">
+
+<!-- Homepage Overlay -->
+<?php $hideOverlay = session()->getFlashdata('success') || session()->getFlashdata('error') || session()->get('mutasi_pdf_ids'); ?>
+<div id="homepageOverlay"
+  class="fixed inset-0 z-[40] flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat pt-16 transition-all duration-[800ms] ease-in-out transform translate-y-0 <?= $hideOverlay ? 'hidden' : '' ?>"
+  style="background-image: url('<?= base_url('images/Bg.png') ?>'); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 40; background-color: #1C4D8D; <?= $hideOverlay ? 'display: none;' : '' ?>">
+  <div class="absolute inset-0 bg-black/60 z-0"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 0;">
+  </div>
+  <div class="relative z-10 flex flex-col items-center justify-center px-4 w-full h-full">
+    <img src="<?= base_url('images/awan.png') ?>" alt="AWan Logo" class="w-64 mb-0 drop-shadow-lg"
+      onerror="this.style.display='none'"><i class="mb-8 text-gray-200">Tertib Administrasi, Mutasi Tanpa Batas</i>
+    <p class="text-gray-200 mb-10 mx-auto text-lg drop-shadow">
+      Sistem manajemen aset untuk mutasi dan tracking history perangkat<br>
+
+    </p>
+    <p class="text-gray-200 mb-10 mx-auto text-lg drop-shadow">
+
+    </p>
+
+    <button type="button" onclick="closeHomepageOverlay()"
+      class="bg-[#1C4D8D] hover:bg-[#3E679E] text-white font-semibold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-lg flex items-center gap-2 border border-blue-400/30">
+      Buka Formulir
+    </button>
+  </div>
+</div>
+
+<div id="toast" class="fixed top-20 right-5 z-[70] hidden transform transition-all duration-300 translate-x-full">
   <div id="toastBox" class="flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm">
     <i id="toastIcon" class="fa-solid"></i>
     <span id="toastMsg"></span>
@@ -193,6 +220,16 @@
         toast.classList.add("hidden");
       }, 300);
     }, 3000);
+  }
+
+  function closeHomepageOverlay() {
+    const overlay = document.getElementById('homepageOverlay');
+    overlay.classList.remove('translate-y-0');
+    overlay.classList.add('-translate-y-full');
+
+    setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 800);
   }
 
   document.addEventListener("DOMContentLoaded", function () {
