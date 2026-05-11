@@ -77,7 +77,7 @@
 
         <div class="w-full flex flex-col relative">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">No Registrasi</label>
-          <input type="text" id="noreg_input" placeholder="Scan barcode atau ketik noreg"
+          <input type="text" id="noreg_input" placeholder="Scan barcode atau ketik no registrasi"
             class="text-xs w-full rounded-md p-2 min-h-[42px] border border-gray-300 focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D]">
 
           <div id="status_scan" class="text-[10px] mt-1 hidden"></div>
@@ -99,19 +99,27 @@
         </div>
       </div>
 
-      <div class="mt-4 mb-4">
-        <h3 class="font-semibold text-sm mb-2 text-[#1C4D8D]">Daftar Perangkat</h3>
-        <table class="w-full text-xs border">
-          <thead class="bg-gray-100 border border-gray-300">
-            <tr>
-              <th class="p-2 border border-gray-300">No</th>
-              <th class="p-2 border border-gray-300">Nomor Registrasi</th>
-              <th class="p-2 border border-gray-300">Nama Perangkat</th>
-              <th class="p-2 border border-gray-300">Action</th>
-            </tr>
-          </thead>
-          <tbody id="list_perangkat"></tbody>
-        </table>
+      <div class="mt-4 mb-6">
+        <h3 class="font-semibold text-sm mb-3 text-[#1C4D8D]">Daftar Perangkat</h3>
+        <div class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="px-2 py-2 font-semibold text-gray-600 text-center w-12">No</th>
+                <th class="px-2 py-2 font-semibold text-gray-600">Nomor Registrasi</th>
+                <th class="px-2 py-2 font-semibold text-gray-600">Nama Perangkat</th>
+                <th class="px-2 py-2 font-semibold text-gray-600 text-center w-20">Action</th>
+              </tr>
+            </thead>
+            <tbody id="list_perangkat" class="divide-y divide-gray-100 bg-white">
+              <tr>
+                <td colspan="4" class="px-4 py-2 text-center text-gray-400 italic">
+                  Belum ada perangkat yang ditambahkan
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="flex flex-col mb-4">
@@ -444,23 +452,31 @@
       const tbody = document.getElementById('list_perangkat');
       tbody.innerHTML = "";
 
+      if (cart.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-4 py-8 text-center text-gray-400 italic">
+              Belum ada perangkat yang ditambahkan
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
       cart.forEach((item, index) => {
         tbody.innerHTML += `
-        <tr>
-          <td class="p-2 text-center border border-gray-300">${index + 1}</td>
-          <td class="p-2 border border-gray-300">${item.noreg}</td>
-          <td class="p-2 border border-gray-300">${item.nama}</td>
-          <td class="p-2 text-center border border-gray-300">
-            <button onclick="hapusItem(${index})" class="text-red-500">
-            <span>
-            <i class="fa-solid fa-trash"></i>
-            </span>
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-4 py-3 text-center text-gray-700">${index + 1}</td>
+          <td class="px-4 py-3 text-gray-700 font-medium">${item.noreg}</td>
+          <td class="px-4 py-3 text-gray-700">${item.nama}</td>
+          <td class="px-4 py-3 text-center">
+            <button type="button" onclick="hapusItem(${index})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-md transition-colors" title="Hapus">
+              <i class="fa-solid fa-trash"></i>
             </button>
+            <input type="hidden" name="perangkat[${index}][id]" value="${item.id}">
+            <input type="hidden" name="perangkat[${index}][noreg]" value="${item.noreg}">
           </td>
         </tr>
-
-        <input type="hidden" name="perangkat[${index}][id]" value="${item.id}">
-        <input type="hidden" name="perangkat[${index}][noreg]" value="${item.noreg}">
         `;
       });
     }
