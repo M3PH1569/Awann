@@ -41,7 +41,8 @@
         <img src="<?= base_url('images/awan.png') ?>" width="200px">
 
         <div x-data="{open:false}" class="relative">
-            <button @click="open = !open" class="flex items-center gap-2 cursor-pointer transition group text-white hover:text-[#B3B3B3]">
+            <button @click="open = !open"
+                class="flex items-center gap-2 cursor-pointer transition group text-white hover:text-[#B3B3B3]">
                 <i class="fa-regular fa-circle-user text-xl mb-1"></i>
                 <span class="text-sm font-medium">
                     <?= session('nama_admin') ?? 'admin' ?>
@@ -81,17 +82,17 @@
     </main>
 
     <!-- PASSWORD MODAL -->
-    <div id="overlayPassword" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
+    <div id="overlayPassword"
+        class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
         <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
-            
+
             <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
                 <h3 class="font-bold">Ganti Password</h3>
 
-            <button onclick="tutupModalPassword()"
-                class="text-white hover:text-gray-400 transition">
-                <i class="fa-solid fa-xmark fa-xl"></i>
-            </button>
-        </div>
+                <button onclick="tutupModalPassword()" class="text-white hover:text-gray-400 transition">
+                    <i class="fa-solid fa-xmark fa-xl"></i>
+                </button>
+            </div>
 
             <?php if (session()->getFlashdata('error')): ?>
                 <div class="bg-red-100 text-red-700 p-2 mb-4 text-sm rounded">
@@ -99,7 +100,8 @@
                 </div>
             <?php endif; ?>
 
-            <form id="gantiPassword" action="<?= base_url('update-password') ?>" method="post" class="p-4 flex flex-col justify-between">
+            <form id="gantiPassword" action="<?= base_url('update-password') ?>" method="post"
+                class="p-4 flex flex-col justify-between">
                 <?= csrf_field() ?>
 
                 <div class="grid grid-cols-[180px,1fr] gap-x-6 gap-y-4 items-center text-left mb-5">
@@ -149,7 +151,7 @@
         </div>
     </div>
     <footer class="mt-auto text-xs text-[#1C4D8D] p-2 text-center">
-        &copy; <?= date('Y') ?> PT. Aplikanusa Lintasarta
+        Unreleased &bull; PT. Aplikanusa Lintasarta &copy; <?= date('Y') ?>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
@@ -169,7 +171,7 @@
             document.getElementById('overlayPassword').classList.add('hidden');
 
             document.getElementById('gantiPassword').reset();
-            
+
             overlay.classList.add('hidden');
             overlay.classList.remove('flex');
             localStorage.removeItem('showModal');

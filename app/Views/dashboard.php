@@ -1219,8 +1219,8 @@
 
       Swal.fire({
         title: `Update ${ids.length} perangkat?`,
-        text: 'Edit data diterapkan ke semua data yang dipilih',
-        icon: 'question',
+        text: 'Data perangkat yang dipilih akan terupdate',
+        icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#1C4D8D',
         cancelButtonColor: '#d33',

@@ -5,27 +5,35 @@
 <!-- Homepage Overlay -->
 <?php $hideOverlay = session()->getFlashdata('success') || session()->getFlashdata('error') || session()->get('mutasi_pdf_ids'); ?>
 <div id="homepageOverlay"
-  class="fixed inset-0 z-[40] flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat pt-16 transition-all duration-[800ms] ease-in-out transform translate-y-0 <?= $hideOverlay ? 'hidden' : '' ?>"
-  style="background-image: url('<?= base_url('images/Bg.png') ?>'); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 40; background-color: #1C4D8D; <?= $hideOverlay ? 'display: none;' : '' ?>">
-  <div class="absolute inset-0 bg-black/60 z-0"
-    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 0;">
+  class="fixed inset-0 z-[40] flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat transition-all duration-[800ms] ease-in-out <?= $hideOverlay ? 'hidden' : '' ?>"
+  style="background-image: url('<?= base_url('images/Bg.png') ?>'); width: 100vw; height: 100vh; background-color: #1C4D8D; <?= $hideOverlay ? 'display: none;' : '' ?>">
+
+  <!-- Overlay digelapkan ke 70% -->
+  <div class="absolute inset-0 bg-black/70 z-0"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 0;">
   </div>
-  <div class="relative z-10 flex flex-col items-center justify-center px-4 w-full h-full">
-    <img src="<?= base_url('images/awan.png') ?>" alt="AWan Logo" class="w-64 mb-0 drop-shadow-lg"
-      onerror="this.style.display='none'"><i class="mb-8 text-gray-200">Tertib Administrasi, Mutasi Tanpa Batas</i>
-    <p class="text-gray-200 mb-10 mx-auto text-lg drop-shadow">
-      Sistem manajemen aset untuk mutasi dan tracking history perangkat<br>
 
-    </p>
-    <p class="text-gray-200 mb-10 mx-auto text-lg drop-shadow">
+  <div class="relative z-10 flex flex-grow flex-col items-center justify-center px-4 w-full">
+    <img src="<?= base_url('images/awan.png') ?>" alt="AWan Logo" class="w-64 mb-3 mt-64 drop-shadow-lg"
+      onerror="this.style.display='none'">
 
+    <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl mb-6 shadow-lg border border-white/20">
+      <i class="text-gray-100 text-[16px] font-medium">Tertib Administrasi, Mutasi Terkendali.</i>
+    </div>
+
+    <!-- Teks deskripsi agar tidak kosong -->
+    <p class="text-white mb-14 mt-20 mx-auto drop-shadow-md text-[21px] max-w-xl leading-relaxed font-medium">
     </p>
 
     <button type="button" onclick="closeHomepageOverlay()"
-      class="bg-[#1C4D8D] hover:bg-[#3E679E] text-white font-semibold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-lg flex items-center gap-2 border border-blue-400/30">
+      class="bg-[#1C4D8D] hover:bg-[#3E679E] text-white font-bold py-2.5 px-6 rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-lg border border-white/20">
       Lanjutkan
     </button>
   </div>
+
+  <footer class="relative z-10 text-xs text-white/50 pb-6 w-full text-center">
+    Unreleased &bull; PT. Aplikanusa Lintasarta &copy; <?= date('Y') ?>
+  </footer>
 </div>
 
 <div id="toast" class="fixed top-20 right-5 z-[70] hidden transform transition-all duration-300 translate-x-full">

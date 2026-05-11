@@ -66,7 +66,7 @@
   </main>
 
   <footer class="mt-auto text-xs text-[#1C4D8D] p-2 text-center">
-    &copy; <?= date('Y') ?> PT. Aplikanusa Lintasarta
+    Unreleased &bull; PT. Aplikanusa Lintasarta &copy; <?= date('Y') ?>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
