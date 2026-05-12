@@ -2,13 +2,11 @@
 
 <?= $this->section('content') ?>
 
-<!-- Homepage Overlay -->
 <?php $hideOverlay = session()->getFlashdata('success') || session()->getFlashdata('error') || session()->get('mutasi_pdf_ids'); ?>
 <div id="homepageOverlay"
   class="fixed inset-0 z-[40] flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat transition-all duration-[800ms] ease-in-out <?= $hideOverlay ? 'hidden' : '' ?>"
   style="background-image: url('<?= base_url('images/Bg.png') ?>'); width: 100vw; height: 100vh; background-color: #1C4D8D; <?= $hideOverlay ? 'display: none;' : '' ?>">
 
-  <!-- Overlay digelapkan ke 70% -->
   <div class="absolute inset-0 bg-black/70 z-0"
     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 0;">
   </div>
@@ -21,7 +19,6 @@
       <i class="text-gray-100 text-[16px] font-medium">Tertib Administrasi, Mutasi Terkendali.</i>
     </div>
 
-    <!-- Teks deskripsi agar tidak kosong -->
     <p class="text-white mb-14 mt-20 mx-auto drop-shadow-md text-[21px] max-w-xl leading-relaxed font-medium">
     </p>
 
@@ -257,11 +254,8 @@
           title: "Data berhasil disimpan!",
           text: "Download Bukti Request Perangkat",
           icon: "success",
-          showCancelButton: true,
           confirmButtonColor: "#1C4D8D",
-          cancelButtonColor: "#858585",
           confirmButtonText: '<i class="fa-solid fa-file-pdf"></i> Download PDF',
-          cancelButtonText: "Lewati",
           allowOutsideClick: false,
           allowEscapeKey: false
         }).then((result) => {
