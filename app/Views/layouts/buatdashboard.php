@@ -154,6 +154,7 @@
         Unreleased &bull; PT. Aplikanusa Lintasarta &copy; <?= date('Y') ?>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <?= $this->renderSection('scripts') ?>
 

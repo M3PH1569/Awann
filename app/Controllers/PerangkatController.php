@@ -210,6 +210,88 @@ class PerangkatController extends BaseController
         ]);
     }
 
+    public function validateCsvNoreg()
+    {
+        $json = $this->request->getJSON();
+        $noregList = $json->noreg_list ?? [];
+
+        $results = [];
+        // Count occurrences in CSV to detect internal duplicates
+        $csvCounts = array_count_values(array_map('trim', $noregList));
+
+        foreach ($noregList as $index => $noreg) {
+            $noreg = trim($noreg);
+
+            if (empty($noreg)) {
+                $results[] = ['index' => $index, 'noreg' => $noreg, 'status' => 'invalid', 'message' => 'Noreg kosong'];
+                continue;
+            }
+
+            // Check CSV internal duplicates
+            if ($csvCounts[$noreg] > 1) {
+                $results[] = ['index' => $index, 'noreg' => $noreg, 'status' => 'csv_duplicate', 'message' => 'Duplikat dalam CSV'];
+                continue;
+            }
+
+            // Check database
+            $exist = $this->perangkatModel->where('noreg', $noreg)->first();
+            if ($exist) {
+                $results[] = ['index' => $index, 'noreg' => $noreg, 'status' => 'db_duplicate', 'message' => 'Sudah terdaftar di database'];
+            } else {
+                $results[] = ['index' => $index, 'noreg' => $noreg, 'status' => 'tersedia', 'message' => 'Tersedia'];
+            }
+        }
+
+        return $this->response->setJSON(['success' => true, 'results' => $results]);
+    }
+
+    public function importCsv()
+    {
+        $json = $this->request->getJSON();
+        $rows = $json->rows ?? [];
+
+        if (empty($rows)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada data untuk diimport']);
+        }
+
+        $inserted = 0;
+        $skipped = 0;
+
+        foreach ($rows as $row) {
+            $noreg = trim($row->noreg ?? '');
+            $nama = trim($row->nama ?? '');
+
+            if (empty($noreg) || empty($nama)) {
+                $skipped++;
+                continue;
+            }
+
+            // Double-check duplicate before insert
+            $exist = $this->perangkatModel->where('noreg', $noreg)->first();
+            if ($exist) {
+                $skipped++;
+                continue;
+            }
+
+            try {
+                $this->perangkatModel->insert([
+                    'noreg' => $noreg,
+                    'nama' => $nama,
+                    'status' => 'Tersedia'
+                ]);
+                $inserted++;
+            } catch (\Exception $e) {
+                $skipped++;
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'inserted' => $inserted,
+            'skipped' => $skipped
+        ]);
+    }
+
     private function mapStatusPerangkat($statusMutasi)
     {
         if (empty($statusMutasi)) {

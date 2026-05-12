@@ -1196,6 +1196,10 @@
     if (id === 'bulkEditModal') {
       destroyBulkTomSelects();
     }
+    if (id === 'tambahModal') {
+      resetCsvImport();
+      switchTambahTab('manual');
+    }
     _originalCloseModal(id);
   };
 
@@ -1265,6 +1269,368 @@
       });
     });
   }
+
+  // ========== CSV IMPORT ==========
+  let csvParsedData = [];
+  let csvValidationResults = [];
+
+  function switchTambahTab(tab) {
+    const tabManual = document.getElementById('tabManual');
+    const tabCsv = document.getElementById('tabCsv');
+    const contentManual = document.getElementById('tabContentManual');
+    const contentCsv = document.getElementById('tabContentCsv');
+    const modalContent = document.getElementById('tambahModalContent');
+
+    const activeClass = 'flex-1 px-4 py-2.5 text-xs font-semibold text-center transition-all duration-200 border-b-2 border-[#1C4D8D] text-[#1C4D8D]';
+    const inactiveClass = 'flex-1 px-4 py-2.5 text-xs font-semibold text-center transition-all duration-200 border-b-2 border-transparent text-gray-400 hover:text-[#1C4D8D]';
+
+    if (tab === 'manual') {
+      tabManual.className = activeClass;
+      tabCsv.className = inactiveClass;
+      contentManual.classList.remove('hidden');
+      contentCsv.classList.add('hidden');
+      modalContent.style.maxWidth = '500px';
+    } else {
+      tabCsv.className = activeClass;
+      tabManual.className = inactiveClass;
+      contentCsv.classList.remove('hidden');
+      contentManual.classList.add('hidden');
+      modalContent.style.maxWidth = '750px';
+    }
+  }
+
+  function downloadCsvTemplate() {
+    const csvContent = "noreg,nama\nABC001,Laptop Dell Latitude 5520\nXYZ002,Monitor LG 24 inch";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'template_perangkat.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function parseCsvLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"' && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else if (ch === '"') {
+          inQuotes = false;
+        } else {
+          current += ch;
+        }
+      } else {
+        if (ch === '"') {
+          inQuotes = true;
+        } else if (ch === ',') {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+    }
+    result.push(current.trim());
+    return result;
+  }
+
+  function handleCsvFile(file) {
+    if (!file) return;
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    const validExts = ['csv', 'xlsx', 'xls'];
+
+    if (!validExts.includes(ext)) {
+      showToast('Format file harus .csv, .xlsx, atau .xls', 'warning');
+      return;
+    }
+
+    if (ext === 'csv') {
+      // Parse CSV with text reader
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+
+        if (lines.length < 2) {
+          showToast('File kosong atau hanya berisi header', 'warning');
+          return;
+        }
+
+        const header = parseCsvLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+        const noregIdx = header.indexOf('noreg');
+        const namaIdx = header.indexOf('nama');
+
+        if (noregIdx === -1 || namaIdx === -1) {
+          showToast('Header harus mengandung kolom "noreg" dan "nama"', 'error');
+          return;
+        }
+
+        csvParsedData = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = parseCsvLine(lines[i]);
+          const noreg = (cols[noregIdx] || '').trim();
+          const nama = (cols[namaIdx] || '').trim();
+          if (noreg || nama) {
+            csvParsedData.push({ noreg, nama, status: 'checking', message: 'Memeriksa...' });
+          }
+        }
+
+        finishFileParse();
+      };
+      reader.readAsText(file);
+    } else {
+      // Parse Excel with SheetJS
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+          if (jsonData.length === 0) {
+            showToast('File Excel kosong atau tidak ada data', 'warning');
+            return;
+          }
+
+          // Find noreg and nama columns (case-insensitive)
+          const firstRow = jsonData[0];
+          const keys = Object.keys(firstRow);
+          const noregKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9_]/g, '') === 'noreg');
+          const namaKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9_]/g, '') === 'nama');
+
+          if (!noregKey || !namaKey) {
+            showToast('Header harus mengandung kolom "noreg" dan "nama"', 'error');
+            return;
+          }
+
+          csvParsedData = [];
+          jsonData.forEach(row => {
+            const noreg = String(row[noregKey] || '').trim();
+            const nama = String(row[namaKey] || '').trim();
+            if (noreg || nama) {
+              csvParsedData.push({ noreg, nama, status: 'checking', message: 'Memeriksa...' });
+            }
+          });
+
+          finishFileParse();
+        } catch (err) {
+          console.error(err);
+          showToast('Gagal membaca file Excel. Pastikan format file benar.', 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  }
+
+  function finishFileParse() {
+    if (csvParsedData.length === 0) {
+      showToast('Tidak ada data valid dalam file', 'warning');
+      return;
+    }
+
+    document.getElementById('csvUploadZone').classList.add('hidden');
+    document.getElementById('csvPreviewArea').classList.remove('hidden');
+    renderCsvPreview();
+    validateCsvData();
+  }
+
+  function renderCsvPreview() {
+    const tbody = document.getElementById('csvPreviewBody');
+    tbody.innerHTML = '';
+
+    let valid = 0, dup = 0, inv = 0;
+
+    csvParsedData.forEach((row, idx) => {
+      let statusBadge = '';
+      if (row.status === 'checking') {
+        statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500"><i class="fa-solid fa-spinner fa-spin"></i> Memeriksa</span>';
+      } else if (row.status === 'tersedia') {
+        statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-green-100 text-green-700"><i class="fa-solid fa-circle-check"></i> Tersedia</span>';
+        valid++;
+      } else if (row.status === 'db_duplicate') {
+        statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-red-100 text-red-600"><i class="fa-solid fa-circle-xmark"></i> Duplikat DB</span>';
+        dup++;
+      } else if (row.status === 'csv_duplicate') {
+        statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-orange-100 text-orange-600"><i class="fa-solid fa-copy"></i> Duplikat CSV</span>';
+        dup++;
+      } else if (row.status === 'invalid') {
+        statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-700"><i class="fa-solid fa-triangle-exclamation"></i> Invalid</span>';
+        inv++;
+      }
+
+      const rowClass = row.status === 'tersedia' ? 'bg-white' : (row.status === 'checking' ? 'bg-white' : 'bg-red-50/50');
+
+      tbody.innerHTML += `
+        <tr class="${rowClass} hover:bg-gray-50 transition">
+          <td class="px-3 py-2 text-center border border-gray-300">${idx + 1}</td>
+          <td class="px-3 py-2 text-left border border-gray-300 font-mono">${row.noreg || '<em class="text-gray-400">-</em>'}</td>
+          <td class="px-3 py-2 text-left border border-gray-300">${row.nama || '<em class="text-gray-400">-</em>'}</td>
+          <td class="px-3 py-2 text-center border border-gray-300">${statusBadge}</td>
+        </tr>`;
+    });
+
+    document.getElementById('csvTotalCount').textContent = csvParsedData.length;
+    document.getElementById('csvValidCount').textContent = valid;
+    document.getElementById('csvDupCount').textContent = dup;
+    document.getElementById('csvInvCount').textContent = inv;
+
+    const importBtn = document.getElementById('btn_import_csv');
+    if (valid > 0) {
+      importBtn.disabled = false;
+      importBtn.querySelector('span').textContent = `Import ${valid} Data`;
+    } else {
+      importBtn.disabled = true;
+      importBtn.querySelector('span').textContent = 'Import Data';
+    }
+  }
+
+  function validateCsvData() {
+    const noregList = csvParsedData.map(r => r.noreg);
+
+    fetch("<?= base_url('perangkat/validateCsvNoreg') ?>", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: JSON.stringify({ noreg_list: noregList })
+    })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success && res.results) {
+          res.results.forEach(r => {
+            if (csvParsedData[r.index]) {
+              csvParsedData[r.index].status = r.status;
+              csvParsedData[r.index].message = r.message;
+            }
+          });
+
+          // Also mark rows with empty nama as invalid
+          csvParsedData.forEach((row, idx) => {
+            if (row.status === 'tersedia' && !row.nama) {
+              row.status = 'invalid';
+              row.message = 'Nama kosong';
+            }
+          });
+
+          renderCsvPreview();
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('Gagal memvalidasi data CSV', 'error');
+      });
+  }
+
+  function resetCsvImport() {
+    csvParsedData = [];
+    csvValidationResults = [];
+    const fileInput = document.getElementById('csvFileInput');
+    if (fileInput) fileInput.value = '';
+    document.getElementById('csvUploadZone').classList.remove('hidden');
+    document.getElementById('csvPreviewArea').classList.add('hidden');
+    document.getElementById('csvPreviewBody').innerHTML = '';
+    const importBtn = document.getElementById('btn_import_csv');
+    if (importBtn) {
+      importBtn.disabled = true;
+      importBtn.querySelector('span').textContent = 'Import Data';
+    }
+  }
+
+  function submitCsvImport() {
+    const validRows = csvParsedData.filter(r => r.status === 'tersedia');
+
+    if (validRows.length === 0) {
+      showToast('Tidak ada data valid untuk diimport', 'warning');
+      return;
+    }
+
+    Swal.fire({
+      title: `Import ${validRows.length} perangkat?`,
+      text: `${validRows.length} data dengan status Tersedia akan ditambahkan ke database`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#1C4D8D',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ya, Import!',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const importBtn = document.getElementById('btn_import_csv');
+        importBtn.disabled = true;
+        importBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Mengimport...</span>';
+
+        fetch("<?= base_url('perangkat/importCsv') ?>", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: JSON.stringify({ rows: validRows.map(r => ({ noreg: r.noreg, nama: r.nama })) })
+        })
+          .then(res => res.json())
+          .then(res => {
+            if (res.success) {
+              let msg = `Berhasil mengimport ${res.inserted} perangkat`;
+              if (res.skipped > 0) msg += ` (${res.skipped} dilewati)`;
+              showToast(msg, 'success');
+              setTimeout(() => location.reload(), 1500);
+            } else {
+              showToast(res.message || 'Gagal mengimport data', 'error');
+              importBtn.disabled = false;
+              importBtn.innerHTML = '<i class="fa-solid fa-file-import"></i> <span>Import Data</span>';
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            showToast('Terjadi kesalahan pada server', 'error');
+            importBtn.disabled = false;
+            importBtn.innerHTML = '<i class="fa-solid fa-file-import"></i> <span>Import Data</span>';
+          });
+      }
+    });
+  }
+
+  // CSV drag-drop and file input event listeners
+  document.addEventListener('DOMContentLoaded', function () {
+    const dropZone = document.getElementById('csvDropZone');
+    const fileInput = document.getElementById('csvFileInput');
+
+    if (dropZone && fileInput) {
+      dropZone.addEventListener('click', () => fileInput.click());
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-[#1C4D8D]', 'bg-blue-50');
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-[#1C4D8D]', 'bg-blue-50');
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-[#1C4D8D]', 'bg-blue-50');
+        const file = e.dataTransfer.files[0];
+        handleCsvFile(file);
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleCsvFile(file);
+      });
+    }
+  });
+
 </script>
 
 <?= $this->endSection() ?>

@@ -34,6 +34,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
     $routes->get('perangkat/getSpec', 'PerangkatController::getSpec');
     $routes->get('perangkat/getSpecById', 'PerangkatController::getSpecById');
+
+    $routes->post('perangkat/validateCsvNoreg', 'PerangkatController::validateCsvNoreg');
+    $routes->post('perangkat/importCsv', 'PerangkatController::importCsv');
 });
 
 $routes->get('/', 'FormController::index');
