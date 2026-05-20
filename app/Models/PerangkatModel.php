@@ -83,6 +83,25 @@ class PerangkatModel extends Model
             $whereSql = 'WHERE ' . implode(' AND ', $where);
         }
 
+        // Server-side sorting
+        $sortMap = [
+            'noreg'      => 'p.noreg',
+            'nama'       => 'p.nama',
+            'user'       => 'u.nama',
+            'keterangan' => 'm.keterangan',
+            'status'     => 'm.status',
+            'created'    => 'p.created_at',
+            'updated'    => 'm.updated_at',
+            'mutasi'     => 'm.is_checked',
+        ];
+
+        $orderSql = 'p.id ASC';
+        if (!empty($filters['sort_by']) && isset($sortMap[$filters['sort_by']])) {
+            $sortCol = $sortMap[$filters['sort_by']];
+            $sortDir = (!empty($filters['sort_dir']) && strtolower($filters['sort_dir']) === 'desc') ? 'DESC' : 'ASC';
+            $orderSql = "$sortCol $sortDir";
+        }
+
         $data = $this->db->query("
         SELECT
         p.*,
@@ -102,7 +121,7 @@ class PerangkatModel extends Model
         )
         LEFT JOIN users u ON u.id = m.id_users
         $whereSql
-        ORDER BY p.id ASC
+        ORDER BY $orderSql
         LIMIT $limit OFFSET $offset
         ")->getResultArray();
 

@@ -33,6 +33,8 @@ class DashboardController extends BaseController
             'status' => $this->request->getGet('status'),
             'filter_mutasi' => $this->request->getGet('filter_mutasi'),
             'user' => $this->request->getGet('user'),
+            'sort_by' => $this->request->getGet('sort_by'),
+            'sort_dir' => $this->request->getGet('sort_dir'),
         ];
 
         $result = $this->perangkatModel->getDataDash($filters, $limit, $offset);
@@ -130,39 +132,39 @@ class DashboardController extends BaseController
 
     public function addUser()
     {
-       try {
-        $nama = trim($this->request->getPost('nama'));
+        try {
+            $nama = trim($this->request->getPost('nama'));
 
-        if (!$nama){
-            return $this->response->setJSON([
-                'success'=>false,
-                'message'=>'Nama tidak boleh kosong'
+            if (!$nama) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Nama tidak boleh kosong'
+                ]);
+            }
+
+            $db = \Config\Database::connect();
+
+            $insert = $db->table('users')->insert([
+                'nama' => $nama
             ]);
-        }
 
-        $db = \Config\Database::connect();
+            if (!$insert) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'db_error' => $db->error()
+                ]);
+            }
 
-        $insert = $db->table('users')->insert([
-            'nama' => $nama
-        ]);
+            $insertID = $db->insertID();
 
-        if (!$insert) {
             return $this->response->setJSON([
-                'success' => false,
-                'db_error' => $db->error()
+                'success' => true,
+                'data' => [
+                    'id' => $insertID,
+                    'nama' => $nama
+                ]
             ]);
-        }
 
-        $insertID = $db->insertID();
-
-        return $this->response->setJSON([
-            'success' => true,
-            'data'=>[
-                'id'=>$insertID,
-                'nama'=>$nama
-            ]
-        ]);
-    
         } catch (\Throwable $e) {
             return $this->response->setJSON([
                 'success' => false,
@@ -175,28 +177,29 @@ class DashboardController extends BaseController
     {
         $db = \Config\Database::connect();
 
-        $deleted = $db->table('users')->delete(['id'=>$id]);
+        $deleted = $db->table('users')->delete(['id' => $id]);
         return $this->response->setJSON([
-            'success' => $deleted ? true : false]);
-    } 
+            'success' => $deleted ? true : false
+        ]);
+    }
 
     public function updateUser($id)
     {
         $nama = trim($this->request->getPost('nama'));
 
-        if(!$nama){
+        if (!$nama) {
             return $this->response->setJSON([
-                'success'=>false,
-                'message'=>'Nama tidak boleh kosong'
+                'success' => false,
+                'message' => 'Nama tidak boleh kosong'
             ]);
         }
 
         $db = \Config\Database::connect();
 
         $db->table('users')->where('id', $id)->update([
-            'nama'=>$nama
+            'nama' => $nama
         ]);
 
-        return $this->response->setJSON(['success'=>true]);
+        return $this->response->setJSON(['success' => true]);
     }
 }

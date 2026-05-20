@@ -22,7 +22,9 @@ class HistoryController extends BaseController
             'search' => $this->request->getGet('search'),
             'status' => $this->request->getGet('status'),
             'filter_mutasi' => $this->request->getGet('filter_mutasi'),
-            'user' => $this->request->getGet('user')
+            'user' => $this->request->getGet('user'),
+            'sort_by' => $this->request->getGet('sort_by'),
+            'sort_dir' => $this->request->getGet('sort_dir'),
         ];
 
         $result = $mutasiModel->getAllHistory($filters, $limit, $offset);

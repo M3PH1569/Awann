@@ -55,19 +55,40 @@
     <div class="flex-1 bg-white rounded-md shadow flex flex-col overflow-hidden">
         <div class="flex-1 overflow-auto max-h-[calc(100vh-250px)]">
 
+            <?php
+            $currentSort = $_GET['sort_by'] ?? '';
+            $currentDir = $_GET['sort_dir'] ?? '';
+            function sortIcon($col, $currentSort, $currentDir)
+            {
+                if ($currentSort === $col) {
+                    return $currentDir === 'desc'
+                        ? '<i class="fa-solid fa-sort-down ml-1 text-[10px] opacity-100"></i>'
+                        : '<i class="fa-solid fa-sort-up ml-1 text-[10px] opacity-100"></i>';
+                }
+                return '<i class="fa-solid fa-sort ml-1 text-[10px] opacity-50"></i>';
+            }
+            ?>
             <table class="min-w-full text-xs text-left border border-gray-300">
                 <thead class="sticky top-0 z-10 bg-[#0F2854] text-white">
                     <tr>
                         <th class="px-4 py-3 text-xs text-center border border-gray-300">Action</th>
                         <th class="px-4 py-3 text-xs text-center border border-gray-300">No</th>
-                        <th class="px-4 py-3 text-xs text-left border border-gray-300">No Registrasi</th>
-                        <th class="px-4 py-3 text-xs text-left border border-gray-300">Nama Perangkat</th>
-                        <th class="px-4 py-3 text-xs text-center border border-gray-300">User</th>
-                        <th class="px-4 py-3 text-xs text-left border border-gray-300">Keterangan</th>
-                        <th class="px-4 py-3 text-xs text-center border border-gray-300">Status</th>
-                        <th class="px-4 py-3 text-xs text-center border border-gray-300">Created</th>
-                        <th class="px-4 py-3 text-xs text-center border border-gray-300">Updated</th>
-                        <th class="px-4 py-3 text-xs text-center border border-gray-300">Mutasi</th>
+                        <th class="px-4 py-3 text-xs text-left border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
+                            onclick="sortTable('noreg')">No Registrasi <?= sortIcon('noreg', $currentSort, $currentDir) ?></th>
+                        <th class="px-4 py-3 text-xs text-left border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
+                            onclick="sortTable('nama')">Nama Perangkat <?= sortIcon('nama', $currentSort, $currentDir) ?></th>
+                        <th class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
+                            onclick="sortTable('user')">User <?= sortIcon('user', $currentSort, $currentDir) ?></th>
+                        <th class="px-4 py-3 text-xs text-left border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
+                            onclick="sortTable('keterangan')">Keterangan <?= sortIcon('keterangan', $currentSort, $currentDir) ?></th>
+                        <th class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
+                            onclick="sortTable('status')">Status <?= sortIcon('status', $currentSort, $currentDir) ?></th>
+                        <th class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
+                            onclick="sortTable('created')">Created <?= sortIcon('created', $currentSort, $currentDir) ?></th>
+                        <th class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
+                            onclick="sortTable('updated')">Updated <?= sortIcon('updated', $currentSort, $currentDir) ?></th>
+                        <th class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
+                            onclick="sortTable('mutasi')">Mutasi <?= sortIcon('mutasi', $currentSort, $currentDir) ?></th>
                     </tr>
                 </thead>
 
@@ -202,6 +223,26 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<script>
+    // SERVER-SIDE TABLE SORTING
+    function sortTable(column) {
+        const params = new URLSearchParams(window.location.search);
+        const currentSort = params.get('sort_by');
+        const currentDir = params.get('sort_dir');
+
+        // Toggle direction: if same column, flip; otherwise default to asc
+        let newDir = 'asc';
+        if (currentSort === column) {
+            newDir = currentDir === 'asc' ? 'desc' : 'asc';
+        }
+
+        params.set('sort_by', column);
+        params.set('sort_dir', newDir);
+        params.set('page', '1'); // Reset to page 1 on sort
+
+        window.location.search = params.toString();
+    }
+</script>
 <script>
     function openModal(id) {
         document.getElementById(id).classList.remove("hidden");

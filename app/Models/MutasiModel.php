@@ -8,13 +8,13 @@ helper('utf8');
 
 class MutasiModel extends Model
 {
-  protected $table            = 'mutasi';
-  protected $primaryKey       = 'id';
+  protected $table = 'mutasi';
+  protected $primaryKey = 'id';
   protected $useAutoIncrement = true;
-  protected $returnType       = 'array';
-  protected $useSoftDeletes   = false;
-  protected $protectFields    = true;
-  protected $allowedFields    = ['id_perangkat', 'id_users', 'status', 'keterangan', 'is_checked', 'checked_at'];
+  protected $returnType = 'array';
+  protected $useSoftDeletes = false;
+  protected $protectFields = true;
+  protected $allowedFields = ['id_perangkat', 'id_users', 'status', 'keterangan', 'is_checked', 'checked_at'];
 
   protected bool $allowEmptyInserts = false;
   protected bool $updateOnlyChanged = true;
@@ -24,38 +24,38 @@ class MutasiModel extends Model
 
   // Dates
   protected $useTimestamps = true;
-  protected $dateFormat    = 'datetime';
-  protected $createdField  = 'created_at';
-  protected $updatedField  = 'updated_at';
-  protected $deletedField  = 'deleted_at';
+  protected $dateFormat = 'datetime';
+  protected $createdField = 'created_at';
+  protected $updatedField = 'updated_at';
+  protected $deletedField = 'deleted_at';
 
   // Validation
-  protected $validationRules      = [];
-  protected $validationMessages   = [];
-  protected $skipValidation       = false;
+  protected $validationRules = [];
+  protected $validationMessages = [];
+  protected $skipValidation = false;
   protected $cleanValidationRules = true;
 
   // Callbacks
   protected $allowCallbacks = true;
-  protected $beforeInsert   = [];
-  protected $afterInsert    = [];
-  protected $beforeUpdate   = [];
-  protected $afterUpdate    = [];
-  protected $beforeFind     = [];
-  protected $afterFind      = [];
-  protected $beforeDelete   = [];
-  protected $afterDelete    = [];
+  protected $beforeInsert = [];
+  protected $afterInsert = [];
+  protected $beforeUpdate = [];
+  protected $afterUpdate = [];
+  protected $beforeFind = [];
+  protected $afterFind = [];
+  protected $beforeDelete = [];
+  protected $afterDelete = [];
 
   public function getAllHistory($filters = [], $limit = 50, $offset = 0)
   {
     $builder = $this->db->table('mutasi m');
 
     $subQuery = $this->db->table('mutasi')
-    ->select('id_perangkat, MAX(updated_at) as latest')
-    ->groupBy('id_perangkat')
-    ->getCompiledSelect();
+      ->select('id_perangkat, MAX(updated_at) as latest')
+      ->groupBy('id_perangkat')
+      ->getCompiledSelect();
 
-    $builder=$this->db->table('mutasi m');
+    $builder = $this->db->table('mutasi m');
     $builder->select('
       m.*,
       u.nama as nm_user,
@@ -63,9 +63,11 @@ class MutasiModel extends Model
       p.nama as nm_perangkat
     ');
 
-    $builder->join("($subQuery) latest_data",
-    'm.id_perangkat = latest_data.id_perangkat
-    AND m.updated_at = latest_data.latest');
+    $builder->join(
+      "($subQuery) latest_data",
+      'm.id_perangkat = latest_data.id_perangkat
+    AND m.updated_at = latest_data.latest'
+    );
 
     $builder->join('users u', 'u.id=m.id_users', 'left');
     $builder->join('perangkat p', 'p.id = m.id_perangkat', 'left');
@@ -76,23 +78,23 @@ class MutasiModel extends Model
       $keyword = $this->db->escapeLikeString($keyword);
 
       $builder->groupStart()
-      ->where("u.nama ILIKE '%$keyword%'", null, false)
-      ->orWhere("sp.nama_perangkat ILIKE '%$keyword%'", null, false)
-      ->orWhere("p.noreg ILIKE '%$keyword%'", null, false)
-      ->orWhere("m.status ILIKE '%$keyword%'", null, false)
-      ->orWhere("m.keterangan ILIKE '%$keyword%'", null, false)
-      ->groupEnd();
+        ->where("u.nama ILIKE '%$keyword%'", null, false)
+        ->orWhere("sp.nama_perangkat ILIKE '%$keyword%'", null, false)
+        ->orWhere("p.noreg ILIKE '%$keyword%'", null, false)
+        ->orWhere("m.status ILIKE '%$keyword%'", null, false)
+        ->orWhere("m.keterangan ILIKE '%$keyword%'", null, false)
+        ->groupEnd();
     }
 
-    if (!empty($filters['status'])){
+    if (!empty($filters['status'])) {
       $builder->where('m.status', $filters['status']);
     }
-    
-    if (!empty($filters['user'])){
+
+    if (!empty($filters['user'])) {
       $builder->where('m.id_users', $filters['user']);
     }
 
-    switch ($filters['filter_mutasi'] ?? ''){
+    switch ($filters['filter_mutasi'] ?? '') {
       case 'belum':
         $builder->whereNotIn('m.status', ['Terpasang', 'Terkirim']);
         $builder->where('m.is_checked', 0);
@@ -111,10 +113,29 @@ class MutasiModel extends Model
     $countBuilder = clone $builder;
     $total = $countBuilder->countAllResults();
 
-    $data = $builder->orderBy('m.created_at', 'DESC')
-        ->limit($limit, $offset)
-        ->get()
-        ->getResultArray();
+    // Server-side sorting
+    $sortMap = [
+        'noreg'      => 'p.noreg',
+        'nama'       => 'p.nama',
+        'user'       => 'u.nama',
+        'keterangan' => 'm.keterangan',
+        'status'     => 'm.status',
+        'created'    => 'm.created_at',
+        'updated'    => 'm.updated_at',
+        'mutasi'     => 'm.is_checked',
+    ];
+
+    $sortCol = 'm.created_at';
+    $sortDir = 'DESC';
+    if (!empty($filters['sort_by']) && isset($sortMap[$filters['sort_by']])) {
+        $sortCol = $sortMap[$filters['sort_by']];
+        $sortDir = (!empty($filters['sort_dir']) && strtolower($filters['sort_dir']) === 'desc') ? 'DESC' : 'ASC';
+    }
+
+    $data = $builder->orderBy($sortCol, $sortDir)
+      ->limit($limit, $offset)
+      ->get()
+      ->getResultArray();
 
     return [
       'data' => $data,
