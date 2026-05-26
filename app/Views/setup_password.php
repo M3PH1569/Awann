@@ -32,14 +32,12 @@
                 <div class="bg-[#1C4D8D] text-white rounded-full w-14 h-14 flex items-center justify-center mb-3 shadow-md">
                     <i class="fa-solid fa-key text-2xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-[#1C4D8D] tracking-wide">Atur Password</h2>
-                <p class="text-xs text-gray-500 mt-1 text-center">Akun Anda belum memiliki password. Silakan atur password sebelum melanjutkan.</p>
+                <h2 class="text-2xl font-bold text-[#1C4D8D] tracking-wide">Aktivasi Akun</h2>
             </div>
 
-            <!-- Warning Banner -->
             <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg px-4 py-3 text-xs flex items-start gap-2 mb-6">
                 <i class="fa-solid fa-triangle-exclamation mt-0.5 text-yellow-500"></i>
-                <span>Anda login sebagai <strong><?= esc(session('admin')['username'] ?? '') ?></strong>. Anda diwajibkan mengatur password baru sebelum dapat mengakses dashboard.</span>
+                <span>Anda login sebagai <strong><?= esc(session('admin')['username'] ?? '') ?></strong>. Anda diwajibkan mengatur password baru untuk aktivasi akun.</span>
             </div>
 
             <?php if (session()->getFlashdata('error')): ?>
@@ -84,7 +82,7 @@
 
                 <button type="submit"
                     class="bg-[#1C4D8D] w-full text-sm text-white p-3 rounded-lg font-bold shadow-md hover:bg-[#3E679E] transition mt-2">
-                    <i class="fa-solid fa-lock mr-2"></i> Simpan & Login Ulang
+                    <i class="fa-solid fa-lock mr-2"></i> Submit & Login Ulang
                 </button>
             </form>
         </div>

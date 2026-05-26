@@ -4,10 +4,10 @@
 <div class="flex justify-center items-center min-h-[70vh]">
     <div class="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-lg">
         <h2 class="text-center text-2xl font-bold text-[#1C4D8D] mb-8 tracking-wide">LOGIN</h2>
-        <p class="text-xs text-blue-800 mb-2">
-            <i class="fa-solid fa-circle-info mr-1"></i>
-            Akses Terbatas, Administrator Auth Required
-        </p>
+        <div class="bg-blue-50 border border-blue-300 text-blue-800 rounded-lg px-4 py-3 text-xs flex items-start gap-2 mb-6">
+                <i class="fa-solid fa-triangle-exclamation mt-0.5 text-blue-500"></i>
+                <span>Khusus user baru, silakan hubungi admin terlebih dahulu untuk proses pendaftaran akun.</span>
+            </div>
         <form action="<?= base_url('login') ?>" method="post" class="flex-flex-col gap-6">
             <div class="flex flex-col">
                 <label class="font-semibold text-[#1C4D8D] text-sm mb-2" for="username">
