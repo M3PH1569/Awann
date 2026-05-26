@@ -13,6 +13,7 @@ class AdminSeeder extends Seeder
             'nama'=>'admin',
             'username'=>'admin',
             'password'=>password_hash('admin123', PASSWORD_DEFAULT),
+            'is_super'=>1,
             'created_at'=>Time::now(),
             'updated_at'=>Time::now(),
         ]);

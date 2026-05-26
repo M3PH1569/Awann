@@ -23,6 +23,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('dashboard/deleteUser/(:num)', 'DashboardController::deleteUser/$1');
     $routes->post('dashboard/updateUser/(:num)', 'DashboardController::updateUser/$1');
 
+    $routes->get('dashboard/adminList', 'DashboardController::adminList');
+    $routes->post('dashboard/addAdmin', 'DashboardController::addAdmin');
+    $routes->post('dashboard/deleteAdmin/(:num)', 'DashboardController::deleteAdmin/$1');
+
     $routes->get('dashboard/edit/(:num)', 'PerangkatController::editPerangkat/$1');
     $routes->post('dashboard/update', 'PerangkatController::updatePerangkat');
     $routes->post('dashboard/bulkUpdate', 'PerangkatController::bulkUpdatePerangkat');
@@ -54,6 +58,8 @@ $routes->get('history/log/(:num)', 'HistoryController::historylog/$1');
 $routes->post('history/log/(:num)', 'HistoryController::historylog/$1');
 
 $routes->get('logout', 'AdminController::logout');
+$routes->get('setup-password', 'AdminController::setupPassword');
+$routes->post('setup-password', 'AdminController::setupPassword');
 $routes->get('export/excel', 'ExportController::exportExcel');
 $routes->get('export/pdf', 'ExportController::exportPdf');
 $routes->post('update-password', 'AdminController::updatePassword');

@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  asset_app:
+    build: .
+    container_name: container_asset_management
+    ports:
+      - "8080:80"
+    environment:
+      - CI_ENVIRONMENT=production
+    volumes:
+      - .:/var/www/html
+    restart: always

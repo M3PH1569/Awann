@@ -289,7 +289,8 @@
 
       <!-- First page + dots -->
       <?php if ($start > 1): ?>
-        <a href="?page=1" class="px-3 py-1 text-xs bg-gray-200 rounded">1</a>
+        <?php $query['page'] = 1; ?>
+        <a href="?<?= http_build_query($query) ?>" class="px-3 py-1 text-xs bg-gray-200 rounded">1</a>
         <?php if ($start > 2): ?>
           <span class="px-2">...</span>
         <?php endif; ?>
@@ -309,7 +310,8 @@
         <?php if ($end < $totalPage - 1): ?>
           <span class="px-2">...</span>
         <?php endif; ?>
-        <a href="?page=<?= $totalPage ?>" class="px-3 py-1 text-xs bg-gray-200 rounded">
+        <?php $query['page'] = $totalPage; ?>
+        <a href="?<?= http_build_query($query) ?>" class="px-3 py-1 text-xs bg-gray-200 rounded">
           <?= $totalPage ?>
         </a>
       <?php endif; ?>
@@ -1416,7 +1418,7 @@
     URL.revokeObjectURL(url);
   }
 
-  function parseCsvLine(line) {
+  function parseCsvLine(line, delimiter = ',') {
     const result = [];
     let current = '';
     let inQuotes = false;
@@ -1434,7 +1436,7 @@
       } else {
         if (ch === '"') {
           inQuotes = true;
-        } else if (ch === ',') {
+        } else if (ch === delimiter) {
           result.push(current.trim());
           current = '';
         } else {
@@ -1468,7 +1470,16 @@
           return;
         }
 
-        const header = parseCsvLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+        // Auto-detect delimiter: comma (,) or semicolon (;)
+        let delimiter = ',';
+        const firstLine = lines[0];
+        const commaCount = (firstLine.match(/,/g) || []).length;
+        const semiCount = (firstLine.match(/;/g) || []).length;
+        if (semiCount > commaCount) {
+          delimiter = ';';
+        }
+
+        const header = parseCsvLine(lines[0], delimiter).map(h => h.toLowerCase().replace(/[^a-z0-9_]/g, ''));
         const noregIdx = header.indexOf('noreg');
         const namaIdx = header.indexOf('nama');
 
@@ -1479,9 +1490,21 @@
 
         csvParsedData = [];
         for (let i = 1; i < lines.length; i++) {
-          const cols = parseCsvLine(lines[i]);
-          const noreg = (cols[noregIdx] || '').trim();
-          const nama = (cols[namaIdx] || '').trim();
+          const cols = parseCsvLine(lines[i], delimiter);
+          
+          let noreg = '';
+          let nama = '';
+          
+          if (noregIdx < namaIdx) {
+            // Layout: noreg first, then nama (e.g. Column A = noreg, Column B = nama)
+            noreg = (cols[0] || '').trim();
+            nama = cols.slice(1).join(delimiter).trim();
+          } else {
+            // Layout: nama first, then noreg (e.g. Column A = nama, Column B = noreg)
+            noreg = (cols[cols.length - 1] || '').trim();
+            nama = cols.slice(0, cols.length - 1).join(delimiter).trim();
+          }
+
           if (noreg || nama) {
             csvParsedData.push({ noreg, nama, status: 'checking', message: 'Memeriksa...' });
           }

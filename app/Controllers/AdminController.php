@@ -39,6 +39,10 @@ class AdminController extends BaseController
         $admin = $this->db->table('admin')->where('username', $username)->get()->getRowArray();
         if ($admin && password_verify($password, $admin['password'])) {
             $this->session->set('admin', $admin);
+            // If password is blank, redirect to setup page before dashboard
+            if (password_verify('', $admin['password'])) {
+                return redirect()->to('/setup-password');
+            }
             return redirect()->to('/dashboard');
         } else {
             return redirect()->back()->with('error', 'Username atau password salah');
@@ -51,6 +55,48 @@ class AdminController extends BaseController
         return redirect()->to('login');
     }
 
+    public function setupPassword()
+    {
+        $adminSession = session()->get('admin');
+
+        // Must be logged in
+        if (!$adminSession || !isset($adminSession['id'])) {
+            return redirect()->to('/login');
+        }
+
+        // If password is already set, go straight to dashboard
+        $adminDb = $this->db->table('admin')->where('id', $adminSession['id'])->get()->getRowArray();
+        if (!password_verify('', $adminDb['password'])) {
+            return redirect()->to('/dashboard');
+        }
+
+        if (strtolower($this->request->getMethod()) === 'post') {
+            $newPass  = trim($this->request->getPost('new_password'));
+            $confPass = trim($this->request->getPost('confirm_password'));
+
+            if (empty($newPass)) {
+                return redirect()->back()->with('error', 'Password baru harus diisi.');
+            }
+            if (strlen($newPass) < 5) {
+                return redirect()->back()->with('error', 'Password baru harus minimal 5 karakter.');
+            }
+            if ($newPass !== $confPass) {
+                return redirect()->back()->with('error', 'Konfirmasi password tidak cocok.');
+            }
+
+            $this->db->table('admin')->where('id', $adminSession['id'])->update([
+                'password'   => password_hash($newPass, PASSWORD_DEFAULT),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            // Destroy the session and force fresh login
+            $this->session->destroy();
+            return redirect()->to('/login')->with('success', 'Password berhasil diatur. Silakan login dengan password baru.');
+        }
+
+        return view('setup_password');
+    }
+
     public function updatePassword()
     {
         $adminSession = session()->get('admin');
@@ -61,12 +107,12 @@ class AdminController extends BaseController
 
         $adminId = $adminSession['id'];
 
-        $oldPass = trim($this->request->getPost('current_password'));
-        $newPass = trim($this->request->getPost('new_password'));
+        $oldPass  = trim($this->request->getPost('current_password'));
+        $newPass  = trim($this->request->getPost('new_password'));
         $confPass = trim($this->request->getPost('confirm_password'));
 
         if (empty($oldPass) || empty($newPass)) {
-            return redirect()->back()->with('error', 'Semua field password harus diisi.');
+            return redirect()->back()->with('error', 'Semua field password harus diisi.')->with('openModal', true);
         }
 
         $adminDb = $this->db->table('admin')->where('id', $adminId)->get()->getRowArray();
@@ -94,10 +140,11 @@ class AdminController extends BaseController
         ]);
 
         if ($update) {
-            session()->destroy();
-            return redirect()->to('login');
+            // Destroy session and force fresh login
+            $this->session->destroy();
+            return redirect()->to('/login')->with('success', 'Password berhasil diubah. Silakan login dengan password baru.');
         }
 
-        return redirect()->back()->with('error', 'Gagal memperbarui database.');
+        return redirect()->back()->with('error', 'Gagal memperbarui database.')->with('openModal', true);
     }
 }

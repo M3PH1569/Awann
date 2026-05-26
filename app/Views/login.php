@@ -24,7 +24,7 @@
                 </label>
 
                 <div class="relative">
-                    <input name="password" id="password" type="password" required placeholder="Masukkan password"
+                    <input name="password" id="password" type="password" placeholder="Masukkan password"
                         class="w-full text-sm border border-gray-200 rounded-lg p-3 pr-10 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400">
 
                     <button type="button" onclick="showHide('password', 'eye_password')"
@@ -33,6 +33,14 @@
                     </button>
                 </div>
             </div>
+            <?php if (session()->getFlashdata('success')): ?>
+                <div class="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative mb-2 flex items-center gap-3"
+                    role="alert">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span class="block sm:inline text-sm"><?= session()->getFlashdata('success') ?></span>
+                </div>
+            <?php endif; ?>
+
             <?php if (session()->getFlashdata('error')): ?>
                 <div class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-2 flex items-center gap-3"
                     role="alert">

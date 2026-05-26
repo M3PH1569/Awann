@@ -202,4 +202,72 @@ class DashboardController extends BaseController
 
         return $this->response->setJSON(['success' => true]);
     }
+
+    // ── Admin Manage ────────────────────────────────────────────────────────
+
+    public function adminList()
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $db = \Config\Database::connect();
+        $admins = $db->table('admin')->select('id, nama, username')->get()->getResultArray();
+        return $this->response->setJSON($admins);
+    }
+
+    public function addAdmin()
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $db   = \Config\Database::connect();
+        $nama     = trim($this->request->getPost('nama'));
+        $username = trim($this->request->getPost('username'));
+
+        if (!$nama || !$username) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Nama dan Username wajib diisi']);
+        }
+
+        // Check duplicate username
+        $exist = $db->table('admin')->where('username', $username)->get()->getRowArray();
+        if ($exist) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Username sudah digunakan']);
+        }
+
+        $db->table('admin')->insert([
+            'nama'       => $nama,
+            'username'   => $username,
+            'password'   => password_hash('', PASSWORD_DEFAULT),
+            'is_super'   => 0,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    public function deleteAdmin($id)
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        // Prevent self-deletion
+        if ($adminSession && $adminSession['id'] == $id) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Tidak dapat menghapus akun sendiri']);
+        }
+
+        $db = \Config\Database::connect();
+        $db->table('admin')->delete(['id' => $id]);
+
+        return $this->response->setJSON(['success' => true]);
+    }
 }

@@ -31,6 +31,8 @@
         .text-custom-blue {
             color: #1e4b8f;
         }
+
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 
@@ -45,12 +47,12 @@
                 class="flex items-center gap-2 cursor-pointer transition group text-white hover:text-[#B3B3B3]">
                 <i class="fa-regular fa-circle-user text-xl mb-1"></i>
                 <span class="text-sm font-medium">
-                    <?= session('nama_admin') ?? 'admin' ?>
+                    <?= session('admin')['username'] ?? 'admin' ?>
                 </span>
                 <i class="fa-solid fa-chevron-down text-xs transition-transform" :class="{'rotate-180' : open}"></i>
             </button>
 
-            <div x-show="open" x-transition @click.outside="open = false"
+            <div x-show="open" x-cloak x-transition @click.outside="open = false"
                 class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-2xl text-sm">
 
                 <button onclick="bukaModalPassword()" @click="open = false"
@@ -64,7 +66,17 @@
                     <i class="fa-solid fa-user-gear mr-2" style="color: #1C4D8D;"></i>
                     User Manage
                 </button>
-                <!-- <hr class="mx-3 border-t-1 border-gray-300 my-1"/> -->
+                <?php 
+                $adminSess = session()->get('admin');
+                $isSuperAdmin = $adminSess && ((isset($adminSess['is_super']) && $adminSess['is_super'] == 1) || $adminSess['username'] === 'admin');
+                if ($isSuperAdmin): 
+                ?>
+                <button onclick="openAdminManage()" @click="open = false"
+                    class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                    <i class="fa-solid fa-user-shield mr-2" style="color: #1C4D8D;"></i>
+                    Admin Manage
+                </button>
+                <?php endif; ?>
                 <a href="<?= base_url('logout') ?>"
                     class="rounded-b-md block px-4 py-3 text-[#1C4D8D] hover:bg-gray-200">
                     <i class="fa-solid fa-right-from-bracket mr-2" style="color: #1C4D8D;"></i>
@@ -85,7 +97,6 @@
     <div id="overlayPassword"
         class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
         <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
-
             <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
                 <h3 class="font-bold">Ganti Password</h3>
 
@@ -157,6 +168,13 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <?= $this->renderSection('scripts') ?>
+    <?php 
+    $adminSess = session()->get('admin');
+    $isSuperAdmin = $adminSess && ((isset($adminSess['is_super']) && $adminSess['is_super'] == 1) || $adminSess['username'] === 'admin');
+    if ($isSuperAdmin): 
+    ?>
+    <?= view('components/adminmanage') ?>
+    <?php endif; ?>
 
     <script>
         const overlay = document.getElementById('overlayPassword');
@@ -165,7 +183,6 @@
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             localStorage.setItem('showModal', 'true');
-
         }
 
         function tutupModalPassword() {
@@ -202,16 +219,31 @@
                 ikon.classList.remove('fa-eye');
                 ikon.classList.add('fa-eye-slash');
             }
-            document.addEventListener("DOMContentLoaded", function () {
-                <?php if (session()->getFlashdata('show_modal')): ?>
-                    const modal = document.getElementById('modalUpdatePassword');
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        modal.classList.add('flex');
-                    }
-                <?php endif; ?>
-            });
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            <?php if (session()->getFlashdata('openModal') || session()->getFlashdata('show_modal')): ?>
+                bukaModalPassword();
+            <?php endif; ?>
+
+            <?php if (session()->getFlashdata('success')): ?>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: '<?= esc(session()->getFlashdata('success')) ?>',
+                    confirmButtonColor: '#1C4D8D'
+                });
+            <?php endif; ?>
+
+            <?php if (session()->getFlashdata('error') && !session()->getFlashdata('openModal') && !session()->getFlashdata('show_modal')): ?>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Perhatian',
+                    text: '<?= esc(session()->getFlashdata('error')) ?>',
+                    confirmButtonColor: '#1C4D8D'
+                });
+            <?php endif; ?>
+        });
     </script>
 </body>
 

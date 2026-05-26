@@ -10,9 +10,15 @@ class Auth implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        if (!session()->get('admin')) {
+        $admin = session()->get('admin');
+        if (!$admin) {
             return redirect()->to('/login')
             ->with('error', 'Session habis, Silakan login kembali');
+        }
+
+        // Force password setup if the admin password is blank
+        if (password_verify('', $admin['password'] ?? '')) {
+            return redirect()->to('/setup-password');
         }
     }
 
