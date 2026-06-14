@@ -51,7 +51,7 @@
 
                 <div x-show="open" x-cloak @click.outside="open = false" class="absolute right-0 mt-6 w-80 bg-white text-black rounded-lg shadow-2xl overflow-hidden z-50 border border-gray-200">
                     <div class="bg-[#1C4D8D] text-white px-4 py-3 font-bold text-sm flex justify-between items-center shadow-inner">
-                        <span>Notifikasi Pengembalian</span>
+                        <span>Notifikasi</span>
                         <span x-show="count > 0" x-text="count + ' Baru'" class="bg-red-500 px-2 py-0.5 rounded-full text-[10px]"></span>
                     </div>
                     <div class="max-h-[330px] overflow-y-auto divide-y divide-gray-100">
@@ -79,7 +79,7 @@
                 <div x-show="reviewOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
                     <div @click.outside="closeReviewModal()" class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden flex flex-col">
                         <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
-                            <h3 class="font-bold text-sm">Review Pengembalian</h3>
+                            <h3 class="font-bold text-sm">Request Pengembalian</h3>
                             <button @click="closeReviewModal()" class="text-white hover:text-gray-300 transition">
                                 <i class="fa-solid fa-xmark fa-lg"></i>
                             </button>
@@ -97,9 +97,7 @@
                             <table class="w-full text-left text-sm mb-6 border-collapse">
                                 <thead>
                                     <tr>
-                                        <th class="w-8 pb-2 text-center">
-                                            <input type="checkbox" checked disabled class="w-3 h-3 accent-[#1C4D8D]">
-                                        </th>
+                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2">Action</th>
                                         <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2">No Registrasi</th>
                                         <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2 pl-4">Nama Perangkat</th>
                                     </tr>
@@ -121,16 +119,13 @@
                                 </tbody>
                             </table>
                             
-                            <div class="border-t border-gray-200 pt-4 flex justify-between items-center mt-2">
+                            <div class="border-t border-gray-200 pt-4 flex justify-end gap-2 mt-2">
                                 <button @click="refuseAll()" class="bg-red-500 text-white px-4 py-2 rounded-md shadow hover:bg-red-600 transition font-semibold text-sm">
                                     <i class="fa-solid fa-xmark mr-1"></i> Tolak
                                 </button>
-                                <div class="flex gap-2">
-                                    <button @click="closeReviewModal()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition">Batal</button>
-                                    <button @click="approveSelected()" class="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition font-semibold text-sm">
-                                        <i class="fa-solid fa-check mr-1"></i> Setuju
-                                    </button>
-                                </div>
+                                <button @click="approveSelected()" class="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition font-semibold text-sm">
+                                    <i class="fa-solid fa-check mr-1"></i> Approve
+                                </button>
                             </div>
                         </div>
                     </div>
