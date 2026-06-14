@@ -2,7 +2,6 @@
 
 <?= $this->section('content') ?>
 
-<!-- Content MASIH TEMPLATE YA BELOM DIGANTI!!!-->
     <h2 class="text-xl font-semibold mb-4">Mutasi Barang</h2>
     <?php if (empty($registeredEvents)): ?>
         <p class="text-gray-500">Belum ada DATANYA</p>

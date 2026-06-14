@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Database\Migrations;
+
+use CodeIgniter\Database\Migration;
+
+class CreateReturnRequestsTable extends Migration
+{
+    public function up()
+    {
+        $this->forge->addField([
+            'id' => [
+                'type' => 'INT',
+                'unsigned' => true,
+                'auto_increment' => true,
+            ],
+            'id_mutasi' => [
+                'type' => 'INT',
+                'unsigned' => true,
+            ],
+            'status' => [
+                'type' => 'ENUM',
+                'constraint' => ['Pending', 'Approved', 'Rejected'],
+                'default' => 'Pending',
+            ],
+            'created_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+        ]);
+
+        $this->forge->addKey('id', true);
+        $this->forge->addForeignKey('id_mutasi', 'mutasi', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->createTable('return_requests');
+    }
+
+    public function down()
+    {
+        $this->forge->dropTable('return_requests');
+    }
+}

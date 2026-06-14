@@ -41,8 +41,211 @@
 
     <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 pt-1 pb-1 flex justify-between items-center shadow-md z-[49]">
         <img src="<?= base_url('images/awan.png') ?>" width="200px">
+        <div class="flex items-center gap-6">
+            <!-- Notification Bell -->
+            <div x-data="notificationComponent()" x-init="init()" class="relative mt-1">
+                <button @click="open = !open; if(open) fetchPendingReturns()" class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center">
+                    <i class="fa-solid fa-bell text-xl"></i>
+                    <span x-show="count > 0" x-text="count" x-cloak class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
+                </button>
 
-        <div x-data="{open:false}" class="relative">
+                <div x-show="open" x-cloak @click.outside="open = false" class="absolute right-0 mt-6 w-80 bg-white text-black rounded-lg shadow-2xl overflow-hidden z-50 border border-gray-200">
+                    <div class="bg-[#1C4D8D] text-white px-4 py-3 font-bold text-sm flex justify-between items-center shadow-inner">
+                        <span>Notifikasi Pengembalian</span>
+                        <span x-show="count > 0" x-text="count + ' Baru'" class="bg-red-500 px-2 py-0.5 rounded-full text-[10px]"></span>
+                    </div>
+                    <div class="max-h-[330px] overflow-y-auto divide-y divide-gray-100">
+                        <template x-if="requests.length === 0">
+                            <div class="p-6 text-center text-gray-500 text-sm">
+                                <i class="fa-regular fa-bell-slash text-2xl mb-2 text-gray-300"></i>
+                                <p>Tidak ada request pengembalian.</p>
+                            </div>
+                        </template>
+                        <template x-for="req in requests" :key="req.group_id">
+                            <div @click="openReviewModal(req)" class="p-4 hover:bg-[#F9FBFF] cursor-pointer transition-colors border-l-4 border-transparent hover:border-[#1C4D8D]">
+                                <div class="flex justify-between items-start mb-1">
+                                    <div class="font-bold text-sm text-[#1C4D8D]">
+                                        <i class="fa-solid fa-user-circle mr-1 opacity-70"></i> <span x-text="req.nama_user || '-'"></span>
+                                    </div>
+                                    <span x-show="!req.is_read" class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">NEW</span>
+                                </div>
+                                <div class="text-[10px] text-gray-500 font-medium" x-text="req.created_at"></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Review Modal -->
+                <div x-show="reviewOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+                    <div @click.outside="closeReviewModal()" class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden flex flex-col">
+                        <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+                            <h3 class="font-bold text-sm">Review Pengembalian</h3>
+                            <button @click="closeReviewModal()" class="text-white hover:text-gray-300 transition">
+                                <i class="fa-solid fa-xmark fa-lg"></i>
+                            </button>
+                        </div>
+                        <div class="p-6" x-show="selectedReq">
+                            <div class="mb-4">
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">User</label>
+                                <div class="font-semibold text-gray-800" x-text="selectedReq?.nama_user || '-'"></div>
+                            </div>
+                            <div class="mb-6">
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Tanggal Request</label>
+                                <div class="font-medium text-gray-700" x-text="selectedReq?.created_at"></div>
+                            </div>
+
+                            <table class="w-full text-left text-sm mb-6 border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th class="w-8 pb-2 text-center">
+                                            <input type="checkbox" checked disabled class="w-3 h-3 accent-[#1C4D8D]">
+                                        </th>
+                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2">No Registrasi</th>
+                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2 pl-4">Nama Perangkat</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(dev, index) in selectedReq?.devices" :key="index">
+                                        <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                            <td class="align-top py-2 px-2 border-b text-center">
+                                                <input type="checkbox" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]" :value="dev.request_id" x-model="checkedDevices">
+                                            </td>
+                                            <td class="align-top py-2 px-2 border-b">
+                                                <div class="font-medium text-gray-700" x-text="dev.noreg"></div>
+                                            </td>
+                                            <td class="align-top py-2 px-2 border-b pl-4">
+                                                <div class="font-medium text-gray-700 leading-tight" x-text="dev.nama_perangkat"></div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            
+                            <div class="border-t border-gray-200 pt-4 flex justify-between items-center mt-2">
+                                <button @click="refuseAll()" class="bg-red-500 text-white px-4 py-2 rounded-md shadow hover:bg-red-600 transition font-semibold text-sm">
+                                    <i class="fa-solid fa-xmark mr-1"></i> Tolak
+                                </button>
+                                <div class="flex gap-2">
+                                    <button @click="closeReviewModal()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition">Batal</button>
+                                    <button @click="approveSelected()" class="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition font-semibold text-sm">
+                                        <i class="fa-solid fa-check mr-1"></i> Setuju
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function notificationComponent() {
+                        return {
+                            open: false,
+                            reviewOpen: false,
+                            selectedReq: null,
+                            checkedDevices: [],
+                            requests: [],
+                            count: 0,
+                            init() {
+                                this.fetchPendingReturns();
+                                setInterval(() => this.fetchPendingReturns(), 15000);
+                            },
+                            openReviewModal(req) {
+                                this.selectedReq = req;
+                                this.checkedDevices = req.devices.map(d => d.request_id.toString());
+                                this.reviewOpen = true;
+                                this.open = false;
+
+                                if (!req.is_read) {
+                                    this.markAsRead(req);
+                                }
+                            },
+                            markAsRead(req) {
+                                req.is_read = true;
+                                this.count = this.requests.filter(r => !r.is_read).length;
+
+                                let params = new URLSearchParams();
+                                req.devices.forEach(d => {
+                                    params.append('request_ids[]', d.request_id);
+                                });
+
+                                fetch(`<?= base_url("dashboard/returns/mark-read") ?>`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded',
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    },
+                                    body: params
+                                }).catch(err => console.error(err));
+                            },
+                            closeReviewModal() {
+                                this.reviewOpen = false;
+                                this.selectedReq = null;
+                                this.checkedDevices = [];
+                            },
+                            approveSelected() {
+                                if (this.selectedReq && this.selectedReq.devices) {
+                                    const approvedIds = this.checkedDevices;
+                                    const rejectedIds = this.selectedReq.devices
+                                        .filter(d => !this.checkedDevices.includes(d.request_id.toString()))
+                                        .map(d => d.request_id.toString());
+
+                                    this.approveReq(approvedIds, rejectedIds);
+                                }
+                            },
+                            refuseAll() {
+                                if (this.selectedReq && this.selectedReq.devices) {
+                                    const approvedIds = [];
+                                    const rejectedIds = this.selectedReq.devices.map(d => d.request_id.toString());
+                                    
+                                    this.approveReq(approvedIds, rejectedIds);
+                                }
+                            },
+                            fetchPendingReturns() {
+                                fetch('<?= base_url("dashboard/returns") ?>')
+                                    .then(res => res.json())
+                                    .then(res => {
+                                        if (res.success) {
+                                            this.requests = res.data;
+                                            this.count = res.data.filter(r => !r.is_read).length;
+                                        }
+                                    }).catch(err => console.error(err));
+                            },
+                            approveReq(approvedIds, rejectedIds) {
+                                let params = new URLSearchParams();
+                                approvedIds.forEach(id => {
+                                    params.append('approved_ids[]', id);
+                                });
+                                rejectedIds.forEach(id => {
+                                    params.append('rejected_ids[]', id);
+                                });
+
+                                fetch(`<?= base_url("dashboard/returns/approve") ?>`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded',
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    },
+                                    body: params
+                                })
+                                .then(res => res.json())
+                                .then(res => {
+                                    if (res.success) {
+                                        if(typeof showToast === 'function') showToast(res.msg, 'success');
+                                        this.closeReviewModal();
+                                        this.fetchPendingReturns();
+                                        setTimeout(() => window.location.reload(), 1500);
+                                    } else {
+                                        if(typeof showToast === 'function') showToast(res.msg, 'error');
+                                        else alert(res.msg);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                </script>
+            </div>
+
+            <div x-data="{open:false}" class="relative">
             <button @click="open = !open"
                 class="flex items-center gap-2 cursor-pointer transition group text-white hover:text-[#B3B3B3]">
                 <i class="fa-regular fa-circle-user text-xl mb-1"></i>
@@ -85,6 +288,7 @@
                 <!-- <a href="<?= base_url('admin-manage') ?>" @click="open = false" class="block px-4 py-2 hover:bg-gray-100">
                     Admin Manage
                 </a> -->
+            </div>
             </div>
         </div>
     </nav>

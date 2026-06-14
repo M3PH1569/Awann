@@ -10,7 +10,6 @@ class UsersSeeder extends Seeder
     {
         $nama = [
             'Andhika Septa',
-            'Sandiawan Izhart',
             'Khoerul Faizin',
             'Aryo Dewandaru',
             'Andre Pranata',
@@ -18,7 +17,6 @@ class UsersSeeder extends Seeder
             'Rusdiantoro',
             'Maulana Fachri',
             'Iqbal Mustofa',
-            'Gyo Prasetya',
             'Nawal Khazairy',
             'Yudi Yudianto',
             'Adhitya Gemeleonard',
@@ -31,6 +29,7 @@ class UsersSeeder extends Seeder
             'PPS Supriyadi',
             'PPS Erwin',
             'Catu Buana Fahrul',
+            'Catu Buana Technician',
             'Telkom Akses'
         ];
 
@@ -38,7 +37,22 @@ class UsersSeeder extends Seeder
         foreach($nama as $n){
             $data[]=['nama'=>$n];
         }
+        
+        // Get names that already exist in the database
+        $existing = $this->db->table('users')
+                             ->select('nama')
+                             ->get()
+                             ->getResultArray();
+        $existingNames = array_column($existing, 'nama');
 
-        $this->db->table('users')->insertBatch($data);
+        // Only insert names that are not already in the table
+        $newData = array_values(array_filter(
+            $data,
+            fn($row) => !in_array($row['nama'], $existingNames)
+        ));
+
+        if (!empty($newData)) {
+            $this->db->table('users')->insertBatch($newData);
+        }
     }
 }

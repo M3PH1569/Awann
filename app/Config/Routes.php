@@ -42,6 +42,11 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
     $routes->post('perangkat/validateCsvNoreg', 'PerangkatController::validateCsvNoreg');
     $routes->post('perangkat/importCsv', 'PerangkatController::importCsv');
+
+    // Return Requests Routes (Admin)
+    $routes->get('dashboard/returns', 'DashboardController::getPendingReturns');
+    $routes->post('dashboard/returns/approve', 'DashboardController::approveReturnGroup');
+    $routes->post('dashboard/returns/mark-read', 'DashboardController::markReturnRead');
 });
 
 $routes->get('/', 'FormController::index');
@@ -49,6 +54,11 @@ $routes->get('formmutasi', 'FormController::index');
 $routes->post('submit', 'FormController::submit');
 $routes->get('submit/pdf', 'FormController::generatePdf');
 $routes->get('submit/pdf/clear', 'FormController::clearPdfSession');
+
+// Return Requests Routes (Public)
+$routes->get('form/devices/(:num)', 'FormController::getDevicesDibawa/$1');
+$routes->post('form/return', 'FormController::submitReturnRequest');
+$routes->get('form/cek-noreg', 'FormController::cekNoreg');
 
 $routes->get('login', 'AdminController::index');
 $routes->post('login', 'AdminController::login');

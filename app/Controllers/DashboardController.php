@@ -49,7 +49,7 @@ class DashboardController extends BaseController
         $data['statuses'] = $configMutasi->status;
 
         $userModel = new \App\Models\UserModel();
-        $data['users'] = $userModel->findAll();
+        $data['users'] = $userModel->orderBy('nama', 'ASC')->findAll();
 
         return view('dashboard', $data);
     }
@@ -126,7 +126,7 @@ class DashboardController extends BaseController
     public function userList()
     {
         $db = \Config\Database::connect();
-        $users = $db->table('users')->get()->getResultArray();
+        $users = $db->table('users')->orderBy('nama', 'ASC')->get()->getResultArray();
         return $this->response->setJSON($users);
     }
 
@@ -267,6 +267,114 @@ class DashboardController extends BaseController
 
         $db = \Config\Database::connect();
         $db->table('admin')->delete(['id' => $id]);
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    // ── Return Requests ──────────────────────────────────────────────────────
+
+    public function getPendingReturns()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $returnRequestModel = new \App\Models\ReturnRequestModel();
+        $requests = $returnRequestModel->getPendingRequestsGrouped();
+
+        return $this->response->setJSON(['success' => true, 'data' => $requests]);
+    }
+
+    public function approveReturnGroup()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $approvedIds = $this->request->getPost('approved_ids');
+        $rejectedIds = $this->request->getPost('rejected_ids');
+        
+        if (empty($approvedIds) && empty($rejectedIds)) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Tidak ada perangkat yang dipilih.']);
+        }
+
+        $approvedIds = is_array($approvedIds) ? $approvedIds : [];
+        $rejectedIds = is_array($rejectedIds) ? $rejectedIds : [];
+
+        $returnRequestModel = new \App\Models\ReturnRequestModel();
+        $mutasiModel = new \App\Models\MutasiModel();
+        $perangkatModel = new \App\Models\PerangkatModel();
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        // Process Approved Requests
+        foreach ($approvedIds as $requestId) {
+            $request = $returnRequestModel->find($requestId);
+            if (!$request || $request['status'] !== 'Pending') {
+                continue;
+            }
+
+            // Update return_requests status
+            $returnRequestModel->update($requestId, ['status' => 'Approved']);
+
+            // Insert new mutasi status to preserve history
+            $mutasiId = $request['id_mutasi'];
+            $mutasi = $mutasiModel->find($mutasiId);
+            
+            if ($mutasi) {
+                $mutasiModel->insert([
+                    'id_perangkat' => $mutasi['id_perangkat'],
+                    'id_users'     => $mutasi['id_users'],
+                    'status'       => 'Kembali',
+                    'keterangan'   => '-'
+                ]);
+                
+                // Update perangkat status to Tersedia
+                $perangkatId = $mutasi['id_perangkat'];
+                $perangkatModel->update($perangkatId, ['status' => 'Tersedia']);
+            }
+        }
+
+        // Process Rejected Requests
+        foreach ($rejectedIds as $requestId) {
+            $request = $returnRequestModel->find($requestId);
+            if (!$request || $request['status'] !== 'Pending') {
+                continue;
+            }
+
+            // Reject the return request, device remains 'Dibawa'
+            $returnRequestModel->update($requestId, ['status' => 'Rejected']);
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Gagal memproses request pengembalian.']);
+        }
+
+        return $this->response->setJSON(['success' => true, 'msg' => 'Data pengembalian berhasil diproses.']);
+    }
+
+    public function markReturnRead()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $requestIds = $this->request->getPost('request_ids');
+        if (empty($requestIds) || !is_array($requestIds)) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Request ID tidak valid.']);
+        }
+
+        $returnRequestModel = new \App\Models\ReturnRequestModel();
+        
+        foreach ($requestIds as $id) {
+            $returnRequestModel->update($id, ['is_read' => true]);
+        }
 
         return $this->response->setJSON(['success' => true]);
     }

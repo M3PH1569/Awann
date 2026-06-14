@@ -4,7 +4,7 @@
 
 <?php $hideOverlay = session()->getFlashdata('success') || session()->getFlashdata('error') || session()->get('mutasi_pdf_ids'); ?>
 <div id="homepageOverlay"
-  class="fixed inset-0 z-[40] flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat transition-all duration-[800ms] ease-in-out <?= $hideOverlay ? 'hidden' : '' ?>"
+  class="fixed inset-0 z-[100] flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat transition-all duration-[800ms] ease-in-out <?= $hideOverlay ? 'hidden' : '' ?>"
   style="background-image: url('<?= base_url('images/Bg.png') ?>'); width: 100vw; height: 100vh; background-color: #1C4D8D; <?= $hideOverlay ? 'display: none;' : '' ?>">
 
   <div class="absolute inset-0 bg-black/70 z-0"
@@ -70,14 +70,27 @@
     </div>
 
     <div class="mt-8">
-
     </div>
   </div>
 
   <div class="w-full md:w-4/5 bg-white p-6 md:p-10 min-h-[510px]">
-    <h2 class="text-center text-xl font-extrabold text-[#1C4D8D] mb-8">FORM REQUEST PERANGKAT</h2>
+    <!-- TABS -->
+    <div class="flex border-b border-gray-200 mb-8">
+      <button type="button" onclick="switchTab('request')" id="tab_request" class="w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] transition-all focus:outline-none">
+        PEMINJAMAN
+      </button>
+      <button type="button" onclick="switchTab('return')" id="tab_return" class="w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent transition-all hover:text-[#1C4D8D] focus:outline-none">
+        PENGEMBALIAN
+      </button>
+    </div>
 
-    <form action="<?= base_url('/submit') ?>" method="POST">
+    <!-- SLIDER CONTAINER -->
+    <div class="overflow-hidden w-full relative">
+      <div id="slider_container" class="flex transition-transform duration-500 ease-in-out w-[200%]">
+        
+        <!-- TAB 1: PEMINJAMAN -->
+        <div class="w-1/2 flex-shrink-0 pr-4 pl-1">
+          <form action="<?= base_url('/submit') ?>" method="POST">
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 mb-5">
 
         <div class="w-full flex flex-col relative">
@@ -179,9 +192,61 @@
           Submit
         </button>
       </div>
-    </form>
+          </form>
+        </div>
+
+        <!-- TAB 2: PENGEMBALIAN -->
+        <div class="w-1/2 flex-shrink-0 pl-4 pr-1 flex flex-col">
+          <div class="flex flex-col mb-4">
+            <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Pilih User</label>
+            <select id="return_user" class="border rounded-md px-3 py-2 text-sm focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+              <option value="">Pilih User...</option>
+              <?php foreach ($users as $u): ?>
+                <option value="<?= $u['id'] ?>"><?= $u['nama'] ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="mt-4 mb-2 flex-1">
+            <div class="flex justify-between items-end mb-3">
+              <h3 class="font-semibold text-sm text-[#1C4D8D]">Perangkat yang dibawa (<span id="total_dibawa_count">0</span>)</h3>
+            </div>
+            <div class="overflow-auto rounded-lg border border-gray-200 shadow-sm max-h-[40vh]">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-gray-50 border-b border-gray-200 sticky top-0">
+                  <tr>
+                    <th class="px-2 py-2 font-semibold text-gray-600 text-center w-12">
+                      <input type="checkbox" id="selectAllReturn" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]">
+                    </th>
+                    <th class="px-2 py-2 font-semibold text-gray-600">No Registrasi</th>
+                    <th class="px-2 py-2 font-semibold text-gray-600">Nama Perangkat</th>
+                    <th class="px-2 py-2 font-semibold text-gray-600 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="return_devices_list" class="divide-y divide-gray-100 bg-white">
+                  <tr>
+                    <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+                      Pilih user untuk melihat perangkat.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-gray-200 flex justify-between items-center mt-4">
+            <div class="text-xs text-gray-500 font-medium">
+              Terpilih: <span id="selected_dibawa_count" class="font-bold text-[#1C4D8D]">0</span> perangkat
+            </div>
+            <button type="button" onclick="submitReturnRequest()" class="bg-[#1C4D8D] px-6 py-2 text-sm text-white rounded-md shadow hover:bg-[#7AAACE] transition disabled:opacity-50" id="btn_submit_return" disabled>
+              Submit Request
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
-</div>
 
 <!-- Modal Scanner -->
 <div id="scannerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
@@ -196,6 +261,8 @@
       <div id="reader" class="w-full"></div>
     </div>
   </div>
+</div>
+
 </div>
 
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -237,10 +304,12 @@
 
   function closeHomepageOverlay() {
     const overlay = document.getElementById('homepageOverlay');
-    overlay.classList.remove('translate-y-0');
-    overlay.classList.add('-translate-y-full');
+    if (!overlay) return;
+    overlay.style.transition = 'transform 800ms ease-in-out, opacity 800ms ease-in-out';
+    overlay.style.transform = 'translateY(-100%)';
+    overlay.style.opacity = '0';
 
-    setTimeout(() => {
+    setTimeout(function() {
       overlay.style.display = 'none';
     }, 800);
   }
@@ -269,7 +338,6 @@
       <?php endif; ?>
     <?php endif; ?>
 
-    const daftarPerangkat = <?= json_encode($perangkat) ?>;
     const inputScan = document.getElementById('noreg_input');
 
     let cart = [];
@@ -282,26 +350,33 @@
         return;
       }
 
-      const hasil = daftarPerangkat.find(p => p.noreg.toLowerCase() === noreg.toLowerCase());
+      fetch(`<?= base_url('form/cek-noreg') ?>?noreg=${encodeURIComponent(noreg)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (!res.exists) {
+            showToast(res.message || "No registrasi tidak tersedia", res.toast_type || "error");
+            return;
+          }
 
-      if (!hasil) {
-        showToast("No registrasi tidak tersedia", "error");
-        return;
-      }
+          const hasil = res.data;
 
-      if (cart.some(item => item.noreg === hasil.noreg)) {
-        showToast("Perangkat sudah ditambahkan!", "warning");
-        return;
-      }
+          if (cart.some(item => item.noreg.toLowerCase() === hasil.noreg.toLowerCase())) {
+            showToast("Perangkat sudah ditambahkan!", "warning");
+            return;
+          }
 
-      cart.push({
-        id: hasil.id,
-        noreg: hasil.noreg,
-        nama: hasil.nama
-      });
+          cart.push({
+            id: hasil.id,
+            noreg: hasil.noreg,
+            nama: hasil.nama
+          });
 
-      renderTable();
-      inputScan.value = "";
+          renderTable();
+          inputScan.value = "";
+        })
+        .catch(err => {
+          showToast("Gagal memeriksa perangkat", "error");
+        });
     }
 
     inputScan.addEventListener('keydown', function (e) {
@@ -504,6 +579,171 @@
     new TomSelect("#user", {
       create: false,
     });
+    
+    // Return Request Logic
+    let tsReturnUser = new TomSelect("#return_user", {
+      create: false,
+    });
+
+    tsReturnUser.on('change', function(userId) {
+      if (!userId) {
+        document.getElementById('return_devices_list').innerHTML = `
+          <tr>
+            <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+              Pilih user untuk melihat perangkat.
+            </td>
+          </tr>
+        `;
+        document.getElementById('btn_submit_return').disabled = true;
+        document.getElementById('total_dibawa_count').innerText = '0';
+        document.getElementById('selected_dibawa_count').innerText = '0';
+        return;
+      }
+
+      document.getElementById('return_devices_list').innerHTML = `
+        <tr>
+          <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+            <i class="fa-solid fa-spinner fa-spin"></i> Memuat perangkat...
+          </td>
+        </tr>
+      `;
+
+      fetch(`<?= base_url('form/devices') ?>/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById('return_devices_list');
+          tbody.innerHTML = '';
+          
+          if (data.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+                  Tidak ada perangkat yang dibawa oleh user ini.
+                </td>
+              </tr>
+            `;
+            document.getElementById('btn_submit_return').disabled = true;
+            document.getElementById('total_dibawa_count').innerText = '0';
+            document.getElementById('selected_dibawa_count').innerText = '0';
+            return;
+          }
+
+          document.getElementById('total_dibawa_count').innerText = data.length;
+          document.getElementById('selected_dibawa_count').innerText = '0';
+
+          data.forEach(device => {
+            tbody.innerHTML += `
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-2 py-2 text-center border-b">
+                  <input type="checkbox" class="return-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">
+                </td>
+                <td class="px-2 py-2 border-b text-gray-700">${device.noreg}</td>
+                <td class="px-2 py-2 border-b text-gray-700 max-w-[200px] truncate" title="${device.nama}">${device.nama}</td>
+                <td class="px-2 py-2 border-b text-center"><span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span></td>
+              </tr>
+            `;
+          });
+
+           document.getElementById('btn_submit_return').disabled = false;
+
+          // Reset select all checkbox
+          var selectAll = document.getElementById('selectAllReturn');
+          if (selectAll) selectAll.checked = false;
+        });
+    });
+
+    function updateSelectedCount() {
+      var selectedCount = document.querySelectorAll('.return-device-cb:checked').length;
+      document.getElementById('selected_dibawa_count').innerText = selectedCount;
+    }
+
+    // Use event delegation for dynamically created checkboxes
+    var returnList = document.getElementById('return_devices_list');
+    if (returnList) {
+      returnList.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('return-device-cb')) {
+          updateSelectedCount();
+          
+          // Update "Select All" checkbox state
+          var allCbs = document.querySelectorAll('.return-device-cb');
+          var checkedCbs = document.querySelectorAll('.return-device-cb:checked');
+          var selectAll = document.getElementById('selectAllReturn');
+          if (selectAll) {
+            selectAll.checked = (allCbs.length > 0 && allCbs.length === checkedCbs.length);
+          }
+        }
+      });
+    }
+
+    var selectAllEl = document.getElementById('selectAllReturn');
+    if (selectAllEl) {
+      selectAllEl.addEventListener('change', function() {
+        var isChecked = this.checked;
+        var checkboxes = document.querySelectorAll('.return-device-cb');
+        checkboxes.forEach(function(cb) { cb.checked = isChecked; });
+        updateSelectedCount();
+      });
+    }
+    
+    window.switchTab = function(tab) {
+      const slider = document.getElementById('slider_container');
+      const tabReq = document.getElementById('tab_request');
+      const tabRet = document.getElementById('tab_return');
+
+      if (tab === 'request') {
+        slider.style.transform = 'translateX(0%)';
+        tabReq.className = 'w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] transition-all focus:outline-none';
+        tabRet.className = 'w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent transition-all hover:text-[#1C4D8D] focus:outline-none';
+      } else {
+        slider.style.transform = 'translateX(-50%)';
+        tabReq.className = 'w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent transition-all hover:text-[#1C4D8D] focus:outline-none';
+        tabRet.className = 'w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] transition-all focus:outline-none';
+      }
+    }
+
+    window.submitReturnRequest = function() {
+      const checkboxes = document.querySelectorAll('.return-device-cb:checked');
+      if (checkboxes.length === 0) {
+        showToast('Pilih setidaknya satu perangkat untuk dikembalikan', 'warning');
+        return;
+      }
+
+      const mutasiIds = Array.from(checkboxes).map(cb => cb.value);
+      const btn = document.getElementById('btn_submit_return');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+
+      var params = new URLSearchParams();
+      mutasiIds.forEach(function(id) {
+        params.append('mutasi_ids[]', id);
+      });
+
+      fetch(`<?= base_url('form/return') ?>`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: params
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          showToast(res.message, 'success');
+          switchTab('request');
+          tsReturnUser.clear();
+        } else {
+          showToast(res.message, 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Terjadi kesalahan', 'error');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Request';
+      });
+    }
   });
 </script>
 <?= $this->endSection() ?>

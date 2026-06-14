@@ -34,7 +34,7 @@ class HistoryController extends BaseController
             'totalPage' => ceil($result['total'] / $limit),
             'currentPage' => $page,
             'limit' => $limit,
-            'users' => $userModel->findAll()
+            'users' => $userModel->orderBy('nama', 'ASC')->findAll()
         ];
 
         return view('history', $data);

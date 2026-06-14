@@ -22,7 +22,9 @@
 <body class="bg-[#F1F1F1] min-h-screen flex flex-col">
 
     <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 pt-1 pb-1 flex justify-between items-center shadow-md z-10">
-        <img src="<?= base_url('images/awan.png') ?>" width="200px">
+        <a href="<?= base_url('/login') ?>">
+            <img src="<?= base_url('images/awan.png') ?>" width="200px">
+        </a>
     </nav>
 
     <main class="flex-1 flex items-center justify-center pt-20 pb-8 px-4">

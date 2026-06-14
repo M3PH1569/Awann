@@ -22,12 +22,64 @@ class FormController extends BaseController
 
     public function index()
     {
-        $perangkat = $this->perangkatModel->where('status', 'Tersedia')->findAll();
-        $user = $this->userModel->findAll();
+        $user = $this->userModel->orderBy('nama', 'ASC')->findAll();
 
         return view('formmutasi', [
-            'perangkat' => $perangkat,
             'users' => $user
+        ]);
+    }
+
+    public function cekNoreg()
+    {
+        $noreg = $this->request->getGet('noreg');
+        
+        $perangkat = $this->perangkatModel
+            ->where('noreg', $noreg)
+            ->first();
+
+        if (!$perangkat) {
+            return $this->response->setJSON([
+                'exists' => false,
+                'toast_type' => 'error',
+                'message' => 'No registrasi tidak ditemukan di database.'
+            ]);
+        }
+
+        if (strtolower($perangkat['status']) !== 'tersedia') {
+            $mutasiModel = new MutasiModel();
+            $latestMutasi = $mutasiModel->where('id_perangkat', $perangkat['id'])
+                                        ->orderBy('id', 'DESC')
+                                        ->first();
+            
+            $userName = 'User';
+            $statusStr = $perangkat['status'];
+
+            if ($latestMutasi) {
+                $statusStr = $latestMutasi['status'];
+                $user = $this->userModel->find($latestMutasi['id_users']);
+                if ($user) {
+                    $userName = $user['nama'];
+                }
+                
+                $message = "Status No registrasi {$statusStr} oleh {$userName}";
+            } else {
+                $message = "Status No registrasi {$statusStr}";
+            }
+            
+            return $this->response->setJSON([
+                'exists' => false,
+                'toast_type' => 'warning',
+                'message' => $message
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'exists' => true,
+            'data' => [
+                'id' => $perangkat['id'],
+                'noreg' => $perangkat['noreg'],
+                'nama' => $perangkat['nama']
+            ]
         ]);
     }
 
@@ -409,5 +461,60 @@ class FormController extends BaseController
             return 'Tersedia';
         }
         return 'Tersedia';
+    }
+    public function getDevicesDibawa($userId)
+    {
+        $db = \Config\Database::connect();
+        
+        // Subquery to get the latest mutasi ID for each perangkat
+        $subQuery = $db->table('mutasi')
+            ->select('MAX(id) as max_id')
+            ->groupBy('id_perangkat')
+            ->getCompiledSelect();
+
+        $builder = $db->table('mutasi m');
+        $builder->select('m.id as mutasi_id, p.noreg, p.nama');
+        // Join to ensure we are only looking at the LATEST mutasi for the device
+        $builder->join("($subQuery) latest", 'latest.max_id = m.id', 'inner');
+        $builder->join('perangkat p', 'p.id = m.id_perangkat');
+        
+        $builder->where('m.id_users', $userId);
+        $builder->where('m.status', 'Dibawa');
+        
+        // Ensure there is no pending return request for this mutasi
+        $builder->where('NOT EXISTS (SELECT 1 FROM return_requests rr WHERE rr.id_mutasi = m.id AND rr.status = \'Pending\')', null, false);
+        
+        $devices = $builder->get()->getResultArray();
+        
+        return $this->response->setJSON($devices);
+    }
+
+    public function submitReturnRequest()
+    {
+        $mutasiIds = $this->request->getPost('mutasi_ids');
+        
+        if (empty($mutasiIds)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Belum ada perangkat yang dipilih.']);
+        }
+        
+        $returnRequestModel = new \App\Models\ReturnRequestModel();
+        
+        $db = \Config\Database::connect();
+        $db->transStart();
+        
+        foreach ($mutasiIds as $mutasiId) {
+            $returnRequestModel->insert([
+                'id_mutasi' => $mutasiId,
+                'status'    => 'Pending'
+            ]);
+        }
+        
+        $db->transComplete();
+        
+        if ($db->transStatus() === false) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Gagal mengirim request pengembalian.']);
+        }
+        
+        return $this->response->setJSON(['success' => true, 'message' => 'Request pengembalian berhasil dikirim.']);
     }
 }
