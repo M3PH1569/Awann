@@ -346,7 +346,7 @@
       const noreg = noregInput.trim();
 
       if (!noreg) {
-        showToast("Masukkan noreg terlebih dahulu", "warning");
+        showToast("Masukkan No Registrasi terlebih dahulu", "warning");
         return;
       }
 

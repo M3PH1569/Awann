@@ -164,7 +164,7 @@
               <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[250px]">
                 <?= esc($p['nama']) ?>
               </td>
-              <td class="px-4 py-3 text-center text-xs border border-gray-300"><?= $p['nama_user'] ?? '-' ?></td>
+              <td class="px-4 py-3 text-center text-xs border border-gray-300 text-wrap"><?= $p['nama_user'] ?? '-' ?></td>
               <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[225px]">
                 <?= esc($p['keterangan_mutasi']) ?: '-' ?>
               </td>
