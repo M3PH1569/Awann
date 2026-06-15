@@ -397,4 +397,59 @@ class DashboardController extends BaseController
 
         return $this->response->setJSON(['success' => true]);
     }
+
+    public function followUpItems()
+    {
+        $db = \Config\Database::connect();
+        
+        // Find latest mutasi for each perangkat
+        $subQuery = $db->table('mutasi')
+            ->select('id_perangkat, MAX(updated_at) as latest')
+            ->groupBy('id_perangkat')
+            ->getCompiledSelect();
+
+        $builder = $db->table('mutasi m');
+        $builder->select('p.noreg, u.nama as nama_user, m.status, m.is_checked, m.updated_at');
+        $builder->join("($subQuery) latest_data", 'm.id_perangkat = latest_data.id_perangkat AND m.updated_at = latest_data.latest');
+        $builder->join('perangkat p', 'p.id = m.id_perangkat');
+        $builder->join('users u', 'u.id = m.id_users', 'left');
+        
+        // Older than 1 day
+        $builder->where('m.updated_at <', date('Y-m-d H:i:s', strtotime('-1 day')));
+        
+        // Status condition: Dibawa OR (Terpasang/Terkirim AND is_checked = 0)
+        $builder->groupStart()
+            ->where('m.status', 'Dibawa')
+            ->orGroupStart()
+                ->whereIn('m.status', ['Terpasang', 'Terkirim'])
+                ->where('m.is_checked', 0)
+            ->groupEnd()
+        ->groupEnd();
+        
+        $builder->orderBy('m.updated_at', 'ASC');
+        
+        $items = $builder->get()->getResultArray();
+        
+        $result = [];
+        $now = time();
+        foreach ($items as $item) {
+            $updatedTime = strtotime($item['updated_at']);
+            $diff = $now - $updatedTime;
+            $days = floor($diff / (60 * 60 * 24));
+            
+            $displayStatus = $item['status'];
+            if (in_array($item['status'], ['Terpasang', 'Terkirim']) && $item['is_checked'] == 0) {
+                $displayStatus = 'Crosscheck Intan';
+            }
+            
+            $result[] = [
+                'noreg' => $item['noreg'],
+                'user' => $item['nama_user'] ?? '-',
+                'status' => $displayStatus,
+                'days_ago' => $days
+            ];
+        }
+        
+        return $this->response->setJSON($result);
+    }
 }

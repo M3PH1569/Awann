@@ -47,6 +47,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard/returns', 'DashboardController::getPendingReturns');
     $routes->post('dashboard/returns/approve', 'DashboardController::approveReturnGroup');
     $routes->post('dashboard/returns/mark-read', 'DashboardController::markReturnRead');
+
+    $routes->get('dashboard/followUpItems', 'DashboardController::followUpItems');
 });
 
 $routes->get('/', 'FormController::index');

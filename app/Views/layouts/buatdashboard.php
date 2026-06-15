@@ -240,6 +240,118 @@
                 </script>
             </div>
 
+            <!-- Follow Up Component -->
+            <div x-data="followUpComponent()" x-init="init()" class="relative mt-1">
+                <button @click="openModal()" class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center mr-2" title="Follow Up">
+                    <i class="fa-solid fa-clipboard-list text-xl"></i>
+                    <span x-show="count > 0" x-text="count" x-cloak class="absolute -top-1.5 -right-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
+                </button>
+
+                <!-- Follow Up Modal -->
+                <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+                    <div @click.outside="closeModal()" class="bg-white rounded-lg shadow-xl w-[90%] md:w-[650px] overflow-hidden flex flex-col max-h-[80vh]">
+                        <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+                            <h3 class="font-bold text-sm">Follow Up Perangkat</h3>
+                            <button @click="closeModal()" class="text-white hover:text-gray-300 transition">
+                                <i class="fa-solid fa-xmark fa-lg"></i>
+                            </button>
+                        </div>
+                        <div class="p-4 flex-1 overflow-y-auto bg-[#F9FBFF]">
+                            <template x-if="items.length === 0">
+                                <div class="p-6 text-center text-gray-500 text-sm">
+                                    <i class="fa-solid fa-check-circle text-3xl mb-3 text-green-500"></i>
+                                    <p>Semua perangkat aman. Tidak ada yang perlu di-follow up.</p>
+                                </div>
+                            </template>
+                            <template x-if="items.length > 0">
+                                <div>
+                                    <div class="mb-3">
+                                        <input type="text" x-model="searchQuery" placeholder="Cari User, Status, No Registrasi..." class="w-full border border-gray-300 rounded-md px-3 py-2 text-xs text-[#1C4D8D] focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+                                    </div>
+                                    <table class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
+                                    <thead class="bg-gray-100 border-b border-gray-200">
+                                        <tr>
+                                            <th class="p-2 font-semibold text-gray-700">No Registrasi</th>
+                                            <th class="p-2 font-semibold text-gray-700">User</th>
+                                            <th class="p-2 font-semibold text-gray-700">Status</th>
+                                            <th class="p-2 font-semibold text-gray-700">Log</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <template x-for="item in filteredItems" :key="item.noreg">
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="p-2 text-gray-800 font-medium" x-text="item.noreg"></td>
+                                                <td class="p-2 text-gray-600" x-text="item.user"></td>
+                                                <td class="p-2">
+                                                    <span class="px-2 py-1 rounded-full text-[10px] font-semibold"
+                                                        :class="{
+                                                            'bg-yellow-100 text-yellow-800': item.status === 'Dibawa',
+                                                            'bg-orange-100 text-orange-800': item.status === 'Crosscheck Intan'
+                                                        }" x-text="item.status"></span>
+                                                </td>
+                                                <td class="p-2">
+                                                    <span class="font-semibold flex items-center gap-1"
+                                                        :class="{
+                                                            'text-yellow-600': item.days_ago >= 2 && item.days_ago <= 3,
+                                                            'text-red-600': item.days_ago > 3,
+                                                            'text-gray-600': item.days_ago < 2
+                                                        }">
+                                                        <i class="fa-regular fa-clock"></i> <span x-text="item.days_ago + ' days ago'"></span>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function followUpComponent() {
+                        return {
+                            modalOpen: false,
+                            count: 0,
+                            items: [],
+                            searchQuery: '',
+                            get filteredItems() {
+                                if (this.searchQuery === '') {
+                                    return this.items;
+                                }
+                                const lowerCaseQuery = this.searchQuery.toLowerCase();
+                                return this.items.filter(item => {
+                                    return (item.user && item.user.toLowerCase().includes(lowerCaseQuery)) ||
+                                           (item.status && item.status.toLowerCase().includes(lowerCaseQuery)) ||
+                                           (item.noreg && item.noreg.toLowerCase().includes(lowerCaseQuery)) ||
+                                           ((item.days_ago + ' days ago').includes(lowerCaseQuery));
+                                });
+                            },
+                            init() {
+                                this.fetchItems();
+                            },
+                            fetchItems() {
+                                fetch('<?= base_url("dashboard/followUpItems") ?>')
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        this.items = data;
+                                        this.count = data.length;
+                                    })
+                                    .catch(err => console.error(err));
+                            },
+                            openModal() {
+                                this.fetchItems();
+                                this.modalOpen = true;
+                            },
+                            closeModal() {
+                                this.modalOpen = false;
+                            }
+                        }
+                    }
+                </script>
+            </div>
+
             <div x-data="{open:false}" class="relative">
             <button @click="open = !open"
                 class="flex items-center gap-2 cursor-pointer transition group text-white hover:text-[#B3B3B3]">
