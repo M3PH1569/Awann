@@ -27,6 +27,7 @@
                             <th class="px-4 py-3 text-left border border-gray-300">Update</th>
                             <th class="px-4 py-3 text-center border border-gray-300">User</th>
                             <th class="px-4 py-3 text-center border border-gray-300">Status</th>
+                            <th class="px-4 py-3 text-center border border-gray-300">Updated By</th>
                             <th class="px-4 py-3 text-left border border-gray-300">Keterangan</th>
                         </tr>
                     </thead>

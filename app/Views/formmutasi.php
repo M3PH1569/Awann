@@ -62,7 +62,7 @@
 
       <p class="text-[11px] font-bold mt-5 mb-1">BUTUH BANTUAN?</p>
       <p class="text-[11px] mb-4">Silakan hubungi admin melalui whatsapp di bawah ini</p>
-      <a href="https://wa.me/6282133601435?text=Admin,%20terkendala%20No.Registrasi%20perangkat%20tidak%20terdaftar"
+      <a href="https://wa.me/6282133601435?text=Admin,%20terkendala%20No.Registrasi%20perangkat%20tidak%20terdaftar,%20ingin%20menambahkan%20user%20atau%20ingin%20mendaftarkan%20akun"
         target="_blank"
         class="bg-white text-[#1C4D8D] font-bold px-2 py-3 rounded-lg w-full text-sm shadow hover:bg-gray-300 transition text-center flex items-center justify-center gap-2">
         Hubungi Admin
@@ -76,10 +76,10 @@
   <div class="w-full md:w-4/5 bg-white p-6 md:p-10 min-h-[510px]">
     <!-- TABS -->
     <div class="flex border-b border-gray-200 mb-8">
-      <button type="button" onclick="switchTab('request')" id="tab_request" class="w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] transition-all focus:outline-none">
+      <button type="button" onclick="switchTab('request')" id="tab_request" class="w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all">
         PEMINJAMAN
       </button>
-      <button type="button" onclick="switchTab('return')" id="tab_return" class="w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent transition-all hover:text-[#1C4D8D] focus:outline-none">
+      <button type="button" onclick="switchTab('return')" id="tab_return" class="w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all">
         PENGEMBALIAN
       </button>
     </div>
@@ -119,9 +119,9 @@
 
       <div class="mt-4 mb-6">
         <h3 class="font-semibold text-sm mb-3 text-[#1C4D8D]">Daftar Perangkat</h3>
-        <div class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+        <div class="overflow-y-auto rounded-lg border border-gray-200 shadow-sm max-h-[245px]">
           <table class="w-full text-xs text-left">
-            <thead class="bg-gray-50 border-b border-gray-200">
+            <thead class="bg-gray-50 border-b border-gray-200 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th class="px-2 py-2 font-semibold text-gray-600 text-center w-12">No</th>
                 <th class="px-2 py-2 font-semibold text-gray-600">Nomor Registrasi</th>
@@ -208,8 +208,9 @@
           </div>
 
           <div class="mt-4 mb-2 flex-1">
-            <div class="flex justify-between items-end mb-3">
+            <div class="flex justify-between items-center mb-3">
               <h3 class="font-semibold text-sm text-[#1C4D8D]">Perangkat yang dibawa (<span id="total_dibawa_count">0</span>)</h3>
+              <input type="text" id="search_return_devices" placeholder="Cari perangkat..." class="border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D] hidden">
             </div>
             <div class="overflow-auto rounded-lg border border-gray-200 shadow-sm max-h-[40vh]">
               <table class="w-full text-xs text-left">
@@ -597,6 +598,8 @@
         document.getElementById('btn_submit_return').disabled = true;
         document.getElementById('total_dibawa_count').innerText = '0';
         document.getElementById('selected_dibawa_count').innerText = '0';
+        document.getElementById('search_return_devices').classList.add('hidden');
+        document.getElementById('search_return_devices').value = '';
         return;
       }
 
@@ -625,15 +628,18 @@
             document.getElementById('btn_submit_return').disabled = true;
             document.getElementById('total_dibawa_count').innerText = '0';
             document.getElementById('selected_dibawa_count').innerText = '0';
+            document.getElementById('search_return_devices').classList.add('hidden');
+            document.getElementById('search_return_devices').value = '';
             return;
           }
 
           document.getElementById('total_dibawa_count').innerText = data.length;
           document.getElementById('selected_dibawa_count').innerText = '0';
+          document.getElementById('search_return_devices').classList.remove('hidden');
 
           data.forEach(device => {
             tbody.innerHTML += `
-              <tr class="hover:bg-gray-50 transition-colors">
+              <tr class="device-row hover:bg-gray-50 transition-colors">
                 <td class="px-2 py-2 text-center border-b">
                   <input type="checkbox" class="return-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">
                 </td>
@@ -655,6 +661,18 @@
     function updateSelectedCount() {
       var selectedCount = document.querySelectorAll('.return-device-cb:checked').length;
       document.getElementById('selected_dibawa_count').innerText = selectedCount;
+    }
+
+    const searchReturnInput = document.getElementById('search_return_devices');
+    if (searchReturnInput) {
+      searchReturnInput.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#return_devices_list tr.device-row');
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(keyword) ? '' : 'none';
+        });
+      });
     }
 
     // Use event delegation for dynamically created checkboxes
@@ -692,12 +710,12 @@
 
       if (tab === 'request') {
         slider.style.transform = 'translateX(0%)';
-        tabReq.className = 'w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] transition-all focus:outline-none';
-        tabRet.className = 'w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent transition-all hover:text-[#1C4D8D] focus:outline-none';
+        tabReq.className = 'w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all';
+        tabRet.className = 'w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all';
       } else {
         slider.style.transform = 'translateX(-50%)';
-        tabReq.className = 'w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent transition-all hover:text-[#1C4D8D] focus:outline-none';
-        tabRet.className = 'w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] transition-all focus:outline-none';
+        tabReq.className = 'w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all';
+        tabRet.className = 'w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all';
       }
     }
 

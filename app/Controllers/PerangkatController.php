@@ -121,12 +121,16 @@ class PerangkatController extends BaseController
         $id_users = $this->request->getPost('id_users');
         $keterangan = sanitize_utf8($this->request->getPost('keterangan'));
 
+        $adminSession = session()->get('admin');
+        $updatedBy = $adminSession ? $adminSession['username'] : 'admin';
+
         $this->mutasiModel->insert([
             'id_perangkat' => $id_perangkat,
             'id_users' => $id_users,
             'status' => $statusMutasi,
             'keterangan' => $keterangan,
-            'is_checked' => 0
+            'is_checked' => 0,
+            'updated_by' => $updatedBy
         ]);
 
         $statusPerangkat = $this->mapStatusPerangkat($statusMutasi);
@@ -142,6 +146,10 @@ class PerangkatController extends BaseController
 
     public function delete($id)
     {
+        $adminSession = session()->get('admin');
+        if (!$adminSession || $adminSession['username'] !== 'admin') {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
         $perangkat = $this->perangkatModel->find($id);
 
         if ($perangkat) {
@@ -154,6 +162,11 @@ class PerangkatController extends BaseController
 
     public function bulkDelete()
     {
+        $adminSession = session()->get('admin');
+        if (!$adminSession || $adminSession['username'] !== 'admin') {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
         $json = $this->request->getJSON();
         $ids = $json->ids ?? [];
 
@@ -208,13 +221,16 @@ class PerangkatController extends BaseController
             $finalStatus = !empty($status_mutasi) ? $status_mutasi : ($currentMutasi['status'] ?? null);
             $finalKet = !empty($keterangan) ? $keterangan : ($currentMutasi['keterangan'] ?? '');
 
-            // Insert new mutasi record (same as single edit)
+            $adminSession = session()->get('admin');
+            $updatedBy = $adminSession ? $adminSession['username'] : 'admin';
+
             $this->mutasiModel->insert([
                 'id_perangkat' => $id_perangkat,
                 'id_users'     => $finalUser,
                 'status'       => $finalStatus,
                 'keterangan'   => $finalKet,
-                'is_checked'   => 0
+                'is_checked'   => 0,
+                'updated_by'   => $updatedBy
             ]);
 
             // Update perangkat status

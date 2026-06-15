@@ -96,13 +96,17 @@ class FormController extends BaseController
 
         $mutasiIds = [];
 
+        $adminSession = session()->get('admin');
+        $updatedBy = $adminSession ? $adminSession['username'] : 'admin';
+
         foreach ($perangkatList as $pl) {
             $mutasiModel->insert([
                 'id_perangkat' => $pl['id'],
                 'noreg' => $pl['noreg'],
                 'id_users' => $this->request->getPost('user'),
                 'keterangan' => sanitize_utf8($this->request->getPost('keterangan')),
-                'status' => 'Dibawa'
+                'status' => 'Dibawa',
+                'updated_by' => $updatedBy
             ]);
 
             $mutasiIds[] = $mutasiModel->getInsertID();

@@ -111,6 +111,7 @@ class PerangkatModel extends Model
         m.created_at as mutasi_created,
         m.updated_at as mutasi_updated,
         m.is_checked as mutasi_check,
+        m.updated_by as mutasi_updated_by,
         u.nama as nama_user
         FROM perangkat p
         LEFT JOIN mutasi m ON m.id = (
@@ -190,6 +191,7 @@ class PerangkatModel extends Model
         m.created_at as mutasi_created,
         m.updated_at as mutasi_updated,
         m.is_checked as mutasi_check,
+        m.updated_by as mutasi_updated_by,
         u.nama as nama_user
         FROM perangkat p
         LEFT JOIN mutasi m ON m.id = (
@@ -215,6 +217,7 @@ class PerangkatModel extends Model
         m.status,
         m.keterangan,
         m.is_checked,
+        m.updated_by,
         u.nama as nama_user
         FROM perangkat p
         LEFT JOIN mutasi m ON m.id = (

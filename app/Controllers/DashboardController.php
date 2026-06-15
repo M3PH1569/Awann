@@ -132,6 +132,12 @@ class DashboardController extends BaseController
 
     public function addUser()
     {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
         try {
             $nama = trim($this->request->getPost('nama'));
 
@@ -175,6 +181,12 @@ class DashboardController extends BaseController
 
     public function deleteUser($id)
     {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
         $db = \Config\Database::connect();
 
         $deleted = $db->table('users')->delete(['id' => $id]);
@@ -185,6 +197,12 @@ class DashboardController extends BaseController
 
     public function updateUser($id)
     {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
         $nama = trim($this->request->getPost('nama'));
 
         if (!$nama) {
@@ -325,11 +343,12 @@ class DashboardController extends BaseController
             $mutasi = $mutasiModel->find($mutasiId);
             
             if ($mutasi) {
-                $mutasiModel->insert([
+                $this->mutasiModel->insert([
                     'id_perangkat' => $mutasi['id_perangkat'],
                     'id_users'     => $mutasi['id_users'],
                     'status'       => 'Kembali',
-                    'keterangan'   => '-'
+                    'keterangan'   => '-',
+                    'updated_by'   => $adminSession['username']
                 ]);
                 
                 // Update perangkat status to Tersedia

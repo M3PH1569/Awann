@@ -259,16 +259,16 @@
                     Ganti Password
                 </button>
                 <!-- <hr class="mx-3 border-t-1 border-gray-300 my-1"/> -->
-                <button onclick="openUserManage()" @click="open = false"
-                    class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
-                    <i class="fa-solid fa-user-gear mr-2" style="color: #1C4D8D;"></i>
-                    User Manage
-                </button>
                 <?php 
                 $adminSess = session()->get('admin');
                 $isSuperAdmin = $adminSess && ((isset($adminSess['is_super']) && $adminSess['is_super'] == 1) || $adminSess['username'] === 'admin');
                 if ($isSuperAdmin): 
                 ?>
+                <button onclick="openUserManage()" @click="open = false"
+                    class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                    <i class="fa-solid fa-user-gear mr-2" style="color: #1C4D8D;"></i>
+                    User Manage
+                </button>
                 <button onclick="openAdminManage()" @click="open = false"
                     class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
                     <i class="fa-solid fa-user-shield mr-2" style="color: #1C4D8D;"></i>

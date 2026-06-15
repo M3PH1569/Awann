@@ -87,6 +87,8 @@
                             onclick="sortTable('created')">Created <?= sortIcon('created', $currentSort, $currentDir) ?></th>
                         <th class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
                             onclick="sortTable('updated')">Updated <?= sortIcon('updated', $currentSort, $currentDir) ?></th>
+                        <th class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition text-nowrap"
+                            onclick="sortTable('updated_by')">Updated By <?= sortIcon('updated_by', $currentSort, $currentDir) ?></th>
                         <th class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
                             onclick="sortTable('mutasi')">Mutasi <?= sortIcon('mutasi', $currentSort, $currentDir) ?></th>
                     </tr>
@@ -134,6 +136,9 @@
                             </td>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
                                 <?= $h['updated_at'] ?>
+                            </td>
+                            <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
+                                <?= esc($h['updated_by'] ?? '-') ?>
                             </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
@@ -295,6 +300,7 @@
             <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[125px]">${row.updated_at ?? '-'}</td>
             <td class="px-4 py-3 text-center">${row.nm_user ?? '-'}</td>
             <td class="px-4 py-3 text-center">${row.status ?? '-'}</td>            
+            <td class="px-4 py-3 text-center">${row.updated_by ?? '-'}</td>
             <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[200px]">${row.keterangan ?? '-'}</td>
           </tr>`;
                 });

@@ -132,6 +132,9 @@
               onclick="sortTable('updated')">Updated <?= sortIcon('updated', $currentSort, $currentDir) ?></th>
             <th
               class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
+              onclick="sortTable('updated_by')">Updated By <?= sortIcon('updated_by', $currentSort, $currentDir) ?></th>
+            <th
+              class="px-4 py-3 text-xs text-center border border-gray-300 cursor-pointer select-none hover:bg-[#1a3d6e] transition"
               onclick="sortTable('mutasi')">Mutasi <?= sortIcon('mutasi', $currentSort, $currentDir) ?></th>
           </tr>
         </thead>
@@ -153,10 +156,12 @@
                 <button type="button" onclick="openHistory(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
+                <?php if (session('admin')['username'] === 'admin'): ?>
                 <button type="button" onclick="confirmDelete(<?= $p['id'] ?>)"
                   class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
+                <?php endif; ?>
               </td>
 
               <td class="px-4 py-3 text-center text-xs border border-gray-300"><?= $no++ ?></td>
@@ -183,6 +188,7 @@
 
               <td class="px-4 py-3 text-center text-xs border border-gray-300"><?= $p['created_at'] ?></td>
               <td class="px-4 py-3 text-center text-xs border border-gray-300"><?= $p['mutasi_updated'] ?></td>
+              <td class="px-4 py-3 text-center text-xs border border-gray-300"><?= esc($p['mutasi_updated_by'] ?? '-') ?></td>
 
               <td class="px-4 py-3 text-center text-xs border border-gray-300">
                 <?php if (in_array($p['status_mutasi'], ['Terpasang', 'Terkirim'])): ?>
@@ -236,11 +242,13 @@
           <i class="fa-solid fa-pen-to-square"></i>
           Edit Selected
         </button>
+        <?php if (session('admin')['username'] === 'admin'): ?>
         <button onclick="bulkDelete()"
           class="flex items-center gap-2 bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-xs font-semibold transition">
           <i class="fa-solid fa-trash-can"></i>
           Delete Selected
         </button>
+        <?php endif; ?>
         <button onclick="clearSelection()"
           class="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-xs transition">
           <i class="fa-solid fa-xmark"></i>
@@ -867,7 +875,8 @@
             <td class="px-4 py-3 text-center border border-gray-300">${no++}</td>
             <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[125px] border border-gray-300">${highlightText(row.updated_at ?? '-', keyword)}</td>
             <td class="px-4 py-3 text-center border border-gray-300">${highlightText(row.nm_user ?? '-', keyword)}</td>
-            <td class="px-4 py-3 text-center border border-gray-300">${highlightText(row.status ?? '-', keyword)}</td>            
+            <td class="px-4 py-3 text-center border border-gray-300">${highlightText(row.status ?? '-', keyword)}</td>
+            <td class="px-4 py-3 text-center border border-gray-300">${highlightText(row.updated_by ?? '-', keyword)}</td>
             <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[200px] border border-gray-300">${highlightText(row.keterangan ?? '-', keyword)}</td>
           </tr>`;
         });
