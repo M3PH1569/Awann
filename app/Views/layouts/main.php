@@ -37,29 +37,73 @@
 <body class="bg-[#F1F1F1] h-screen flex flex-col">
   <?php $uri = service('uri'); ?>
 
-  <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 pt-1 pb-1 flex justify-between items-center shadow-md">
-    <img src="<?= base_url('images/awan.png') ?>" width="200px">
+  <nav id="mainNav" class="fixed w-full bg-[#1C4D8D] text-white px-4 md:px-6 py-2 flex justify-between items-center shadow-md z-50">
+    <img src="<?= base_url('images/awan.png') ?>" class="w-[140px] md:w-[200px]">
 
-    <div class="flex gap-8 items-center">
-      <a href="<?= base_url('/') ?>" class="flex flex-col items-center cursor-pointer transition group
-        <?= $uri->getSegment(1) == '' ? 'text-[#B3B3B3] font-semibold' : 'hover:text-[#B3B3B3]' ?>">
+    <!-- Hamburger button (mobile only) -->
+    <button id="hamburgerBtn" onclick="toggleMobileMenu()" class="md:hidden text-white focus:outline-none p-2">
+      <i id="hamburgerIcon" class="fa-solid fa-bars text-xl"></i>
+    </button>
+
+    <!-- Desktop nav -->
+    <div class="hidden md:flex gap-8 items-center">
+      <a href="<?= base_url('/') ?>" class="flex flex-col items-center cursor-pointer transition group py-2 border-b-2
+        <?= $uri->getSegment(1) == '' ? 'border-white text-white font-semibold' : 'border-transparent hover:text-[#B3B3B3] hover:border-[#B3B3B3]' ?>">
         <i class="fa-solid fa-table-list text-lg mb-1"></i>
         <span class="text-sm">Form</span>
       </a>
 
-      <a href="<?= base_url('history') ?>" class="flex flex-col items-center cursor-pointer transition group
-        <?= $uri->getSegment(1) == 'history' ? 'text-[#B3B3B3] font-semibold' : 'hover:text-[#B3B3B3]' ?>">
+      <a href="<?= base_url('history') ?>" class="flex flex-col items-center cursor-pointer transition group py-2 border-b-2
+        <?= $uri->getSegment(1) == 'history' ? 'border-white text-white font-semibold' : 'border-transparent hover:text-[#B3B3B3] hover:border-[#B3B3B3]' ?>">
         <i class="fa-solid fa-clock-rotate-left text-lg mb-1"></i>
         <span class="text-sm">History</span>
       </a>
 
-      <a href="<?= base_url('login') ?>" class="flex flex-col items-center cursor-pointer transition group
-        <?= $uri->getSegment(1) == 'login' ? 'text-[#B3B3B3] font-semibold' : 'hover:text-[#B3B3B3]' ?>">
+      <a href="<?= base_url('login') ?>" class="flex flex-col items-center cursor-pointer transition group py-2 border-b-2
+        <?= $uri->getSegment(1) == 'login' ? 'border-white text-white font-semibold' : 'border-transparent hover:text-[#B3B3B3] hover:border-[#B3B3B3]' ?>">
         <i class="fa-solid fa-arrow-right-to-bracket text-lg mb-1"></i>
         <span class="text-sm">Login</span>
       </a>
     </div>
   </nav>
+
+  <!-- Mobile menu (hidden by default) -->
+  <div id="mobileMenu" class="fixed left-0 w-full bg-[#1C4D8D] text-white z-40 shadow-lg hidden md:hidden">
+    <div class="flex flex-col divide-y divide-[#2a5fa0]">
+      <a href="<?= base_url('/') ?>" class="flex items-center gap-3 px-6 py-3 transition
+        <?= $uri->getSegment(1) == '' ? 'bg-[#163d73] font-semibold border-l-4 border-white' : 'hover:bg-[#163d73] border-l-4 border-transparent' ?>">
+        <i class="fa-solid fa-table-list"></i>
+        <span class="text-sm">Form</span>
+      </a>
+      <a href="<?= base_url('history') ?>" class="flex items-center gap-3 px-6 py-3 transition
+        <?= $uri->getSegment(1) == 'history' ? 'bg-[#163d73] font-semibold border-l-4 border-white' : 'hover:bg-[#163d73] border-l-4 border-transparent' ?>">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span class="text-sm">History</span>
+      </a>
+      <a href="<?= base_url('login') ?>" class="flex items-center gap-3 px-6 py-3 transition
+        <?= $uri->getSegment(1) == 'login' ? 'bg-[#163d73] font-semibold border-l-4 border-white' : 'hover:bg-[#163d73] border-l-4 border-transparent' ?>">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+        <span class="text-sm">Login</span>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const icon = document.getElementById('hamburgerIcon');
+      const nav = document.getElementById('mainNav');
+      menu.style.top = nav.offsetHeight + 'px';
+      menu.classList.toggle('hidden');
+      if (menu.classList.contains('hidden')) {
+        icon.classList.remove('fa-xmark');
+        icon.classList.add('fa-bars');
+      } else {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-xmark');
+      }
+    }
+  </script>
 
   <main class="flex-1 pt-24 pl-4 pr-4">
     <?= $this->renderSection('content') ?>

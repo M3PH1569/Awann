@@ -478,6 +478,7 @@ class FormController extends BaseController
 
         $builder = $db->table('mutasi m');
         $builder->select('m.id as mutasi_id, p.noreg, p.nama');
+        $builder->select('CASE WHEN EXISTS (SELECT 1 FROM return_requests rr WHERE rr.id_mutasi = m.id AND rr.status = \'Pending\') THEN 1 ELSE 0 END as is_pending', false);
         // Join to ensure we are only looking at the LATEST mutasi for the device
         $builder->join("($subQuery) latest", 'latest.max_id = m.id', 'inner');
         $builder->join('perangkat p', 'p.id = m.id_perangkat');
@@ -485,8 +486,7 @@ class FormController extends BaseController
         $builder->where('m.id_users', $userId);
         $builder->where('m.status', 'Dibawa');
         
-        // Ensure there is no pending return request for this mutasi
-        $builder->where('NOT EXISTS (SELECT 1 FROM return_requests rr WHERE rr.id_mutasi = m.id AND rr.status = \'Pending\')', null, false);
+        // Return all Dibawa devices regardless of pending status, frontend will handle UI
         
         $devices = $builder->get()->getResultArray();
         

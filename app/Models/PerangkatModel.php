@@ -49,13 +49,23 @@ class PerangkatModel extends Model
         $where = [];
 
         if (!empty($filters['keyword'])) {
-            $keyword = strtolower($this->db->escapeLikeString(sanitize_utf8($filters['keyword'])));
-            $where[] = "(LOWER(p.noreg) LIKE '%$keyword%' OR 
-                        LOWER(p.nama) LIKE '%$keyword%' OR 
-                        LOWER(u.nama) LIKE '%$keyword%' OR
-                        LOWER(m.status) LIKE '%$keyword%' OR
-                        LOWER(m.keterangan) LIKE '%$keyword%' OR
-                        LOWER(m.is_checked::text) LIKE '%$keyword%')";
+            $keywords = explode(';', $filters['keyword']);
+            $keywordConditions = [];
+            foreach ($keywords as $kw) {
+                $kw = trim($kw);
+                if ($kw !== '') {
+                    $escaped_kw = strtolower($this->db->escapeLikeString(sanitize_utf8($kw)));
+                    $keywordConditions[] = "(LOWER(p.noreg) LIKE '%$escaped_kw%' OR 
+                                LOWER(p.nama) LIKE '%$escaped_kw%' OR 
+                                LOWER(u.nama) LIKE '%$escaped_kw%' OR
+                                LOWER(m.status) LIKE '%$escaped_kw%' OR
+                                LOWER(m.keterangan) LIKE '%$escaped_kw%' OR
+                                LOWER(m.is_checked::text) LIKE '%$escaped_kw%')";
+                }
+            }
+            if (!empty($keywordConditions)) {
+                $where[] = '(' . implode(' OR ', $keywordConditions) . ')';
+            }
         }
 
         if (!empty($filters['status'])) {

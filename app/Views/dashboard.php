@@ -43,8 +43,14 @@
   </div>
 
   <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center sticky top-[70px]">
-    <input type="text" name="keyword" value="<?= $_GET['keyword'] ?? '' ?>" placeholder="Search..."
-      class="border text-xs rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+    <?php $isBulk = strpos($_GET['keyword'] ?? '', ';') !== false; ?>
+    <div class="relative flex items-center transition-all duration-500 ease-in-out" id="searchContainer" style="width: <?= $isBulk ? '350px' : '200px' ?>;">
+      <input type="text" id="searchInput" name="keyword" value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" placeholder="<?= $isBulk ? 'Bulk search (pisahkan dengan ;)' : 'Search...' ?>"
+        class="border text-xs rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#1C4D8D] pr-8 transition-all duration-500 ease-in-out">
+      <button type="button" onclick="toggleBulkSearch()" class="absolute right-2 text-[#1C4D8D] hover:text-[#3E679E] transition" title="Toggle Bulk Search">
+        <i class="fa-solid fa-layer-group"></i>
+      </button>
+    </div>
 
     <div>
       <select name="status" onchange="this.form.submit()"
@@ -422,7 +428,22 @@
     }, 3000);
   }
 
-  function openModal(id) {
+  function toggleBulkSearch() {
+    const container = document.getElementById('searchContainer');
+    const input = document.getElementById('searchInput');
+    const isBulk = container.style.width === '350px';
+    
+    if (isBulk) {
+      container.style.width = '200px';
+      input.placeholder = 'Search...';
+    } else {
+      container.style.width = '350px';
+      input.placeholder = 'Multi-search...';
+      input.focus();
+    }
+  }
+
+  function toggleActions(id) {
     document.getElementById(id).classList.remove("hidden");
     document.getElementById(id).classList.add("flex");
 

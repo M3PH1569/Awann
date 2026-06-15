@@ -198,7 +198,12 @@
         <!-- TAB 2: PENGEMBALIAN -->
         <div class="w-1/2 flex-shrink-0 pl-4 pr-1 flex flex-col">
           <div class="flex flex-col mb-4">
-            <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Pilih User</label>
+            <div class="flex items-center gap-2 mb-2">
+              <label class="font-semibold text-[#1C4D8D] text-sm">Pilih User</label>
+              <a href="javascript:void(0)" onclick="resetReturnForm()" class="text-gray-500 hover:text-[#1C4D8D] hover:border-[#1C4D8D] transition text-[11px] flex items-center gap-1 border border-gray-300 rounded-full px-2 py-0.5" title="Reset">
+                <i class="fa-solid fa-rotate-right text-[10px]"></i> Reset
+              </a>
+            </div>
             <select id="return_user" class="border rounded-md px-3 py-2 text-sm focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
               <option value="">Pilih User...</option>
               <?php foreach ($users as $u): ?>
@@ -254,9 +259,14 @@
   <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
     <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
       <h3 class="font-bold">Scan Barcode / QR Code</h3>
-      <button type="button" id="closeScanner" class="text-white hover:text-gray-400 transition">
-        <i class="fa-solid fa-xmark fa-xl"></i>
-      </button>
+      <div class="flex items-center gap-3">
+        <button type="button" id="switchCamera" title="Switch Camera" class="text-white hover:text-gray-300 transition">
+          <i class="fa-solid fa-camera-rotate text-lg"></i>
+        </button>
+        <button type="button" id="closeScanner" class="text-white hover:text-gray-400 transition">
+          <i class="fa-solid fa-xmark fa-xl"></i>
+        </button>
+      </div>
     </div>
     <div class="p-4 flex flex-col items-center">
       <div id="reader" class="w-full"></div>
@@ -389,6 +399,7 @@
 
     let html5QrCode;
     let isScanning = false;
+    let currentFacingMode = 'environment';
 
     async function stopScanner() {
       if (html5QrCode && isScanning) {
@@ -407,41 +418,51 @@
       }
     }
 
-    document.getElementById('btn_tambah').addEventListener('click', async function () {
-      const scannerModal = document.getElementById('scannerModal');
-      scannerModal.classList.remove('hidden');
+    function getFormatsToSupport() {
+      return [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.AZTEC,
+        Html5QrcodeSupportedFormats.CODABAR,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.CODE_93,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.DATA_MATRIX,
+        Html5QrcodeSupportedFormats.MAXICODE,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.PDF_417,
+        Html5QrcodeSupportedFormats.RSS_14,
+        Html5QrcodeSupportedFormats.RSS_EXPANDED,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION,
+      ];
+    }
 
-      if (!html5QrCode) {
-        const formatsToSupport = [
-          Html5QrcodeSupportedFormats.QR_CODE,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.ITF
-        ];
-        html5QrCode = new Html5Qrcode("reader", { formatsToSupport: formatsToSupport });
-      }
-
-      const config = {
+    function getScanConfig() {
+      return {
         fps: 25,
         qrbox: (viewfinderWidth, viewfinderHeight) => {
-          const widthPercentage = 0.8;
-          const heightPercentage = 0.6;
-          const width = Math.floor(viewfinderWidth * widthPercentage);
-          const height = Math.floor(viewfinderHeight * heightPercentage);
-          return {
-            width: width,
-            height: height
-          };
+          const width = Math.floor(viewfinderWidth * 0.8);
+          const height = Math.floor(viewfinderHeight * 0.6);
+          return { width, height };
         },
         aspectRatio: 1.0,
         experimentalFeatures: {
           useBarCodeDetectorIfSupported: true
         }
       };
+    }
+
+    async function startScanner(facingMode) {
+      currentFacingMode = facingMode || 'environment';
+
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader", { formatsToSupport: getFormatsToSupport() });
+      }
+
+      const config = getScanConfig();
 
       if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         showToast("Error: Kamera membutuhkan koneksi HTTPS (Secure Context)", "error");
@@ -451,7 +472,7 @@
 
       try {
         await html5QrCode.start(
-          { facingMode: "environment" },
+          { facingMode: currentFacingMode },
           config,
           onScanSuccess,
           onScanFailure
@@ -507,6 +528,26 @@
         showToast(errorMsg, "error");
         scannerModal.classList.add('hidden');
       }
+    }
+
+    document.getElementById('btn_tambah').addEventListener('click', async function () {
+      const scannerModal = document.getElementById('scannerModal');
+      scannerModal.classList.remove('hidden');
+      await startScanner('environment');
+    });
+
+    document.getElementById('switchCamera').addEventListener('click', async function () {
+      if (!isScanning) return;
+      try {
+        await html5QrCode.stop();
+        isScanning = false;
+        const guide = document.getElementById('scanner-guide');
+        if (guide) guide.remove();
+      } catch (err) {
+        console.error('Failed to stop before switch', err);
+      }
+      const newMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+      await startScanner(newMode);
     });
 
     function onScanSuccess(decodedText, decodedResult) {
@@ -638,14 +679,22 @@
           document.getElementById('search_return_devices').classList.remove('hidden');
 
           data.forEach(device => {
+            const isPending = device.is_pending == 1;
+            const statusHtml = isPending 
+                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan</span>'
+                : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span>';
+            const cbHtml = isPending 
+                ? `<input type="checkbox" class="return-device-cb w-3 h-3 cursor-not-allowed opacity-50" disabled value="${device.mutasi_id}" title="Sedang dalam pengajuan">`
+                : `<input type="checkbox" class="return-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">`;
+
             tbody.innerHTML += `
-              <tr class="device-row hover:bg-gray-50 transition-colors">
+              <tr class="device-row hover:bg-gray-50 transition-colors ${isPending ? 'opacity-75' : ''}">
                 <td class="px-2 py-2 text-center border-b">
-                  <input type="checkbox" class="return-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">
+                  ${cbHtml}
                 </td>
                 <td class="px-2 py-2 border-b text-gray-700">${device.noreg}</td>
                 <td class="px-2 py-2 border-b text-gray-700 max-w-[200px] truncate" title="${device.nama}">${device.nama}</td>
-                <td class="px-2 py-2 border-b text-center"><span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span></td>
+                <td class="px-2 py-2 border-b text-center">${statusHtml}</td>
               </tr>
             `;
           });
@@ -674,6 +723,12 @@
         });
       });
     }
+
+    window.resetReturnForm = function() {
+      if (typeof tsReturnUser !== 'undefined') {
+        tsReturnUser.clear();
+      }
+    };
 
     // Use event delegation for dynamically created checkboxes
     var returnList = document.getElementById('return_devices_list');

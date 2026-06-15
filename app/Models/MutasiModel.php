@@ -74,16 +74,22 @@ class MutasiModel extends Model
     $builder->join('spec_perangkat sp', 'sp.id=p.id_spec', 'left');
 
     if (!empty($filters['search'])) {
-      $keyword = sanitize_utf8($filters['search']);
-      $keyword = $this->db->escapeLikeString($keyword);
-
-      $builder->groupStart()
-        ->where("u.nama ILIKE '%$keyword%'", null, false)
-        ->orWhere("sp.nama_perangkat ILIKE '%$keyword%'", null, false)
-        ->orWhere("p.noreg ILIKE '%$keyword%'", null, false)
-        ->orWhere("m.status ILIKE '%$keyword%'", null, false)
-        ->orWhere("m.keterangan ILIKE '%$keyword%'", null, false)
-        ->groupEnd();
+      $keywords = explode(';', $filters['search']);
+      $builder->groupStart();
+      foreach ($keywords as $kw) {
+        $kw = trim($kw);
+        if ($kw !== '') {
+          $escaped_kw = $this->db->escapeLikeString(sanitize_utf8($kw));
+          $builder->orGroupStart()
+            ->where("u.nama ILIKE '%$escaped_kw%'", null, false)
+            ->orWhere("sp.nama_perangkat ILIKE '%$escaped_kw%'", null, false)
+            ->orWhere("p.noreg ILIKE '%$escaped_kw%'", null, false)
+            ->orWhere("m.status ILIKE '%$escaped_kw%'", null, false)
+            ->orWhere("m.keterangan ILIKE '%$escaped_kw%'", null, false)
+            ->groupEnd();
+        }
+      }
+      $builder->groupEnd();
     }
 
     if (!empty($filters['status'])) {
