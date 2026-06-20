@@ -43,7 +43,7 @@
 
     <nav
         class="fixed top-0 left-0 w-full bg-[#1C4D8D] text-white px-6 py-3 flex justify-between items-center shadow-md z-[49]">
-        <img src="<?= base_url('images/awan.png') ?>" width="150px">
+        <img src="<?= base_url('images/awan.png') ?>" class="w-[160px] md:w-[200px] -my-3">
         <div class="flex items-center gap-6">
             <!-- Notification Bell -->
             <div x-data="notificationComponent()" x-init="init()" class="relative mt-1">
