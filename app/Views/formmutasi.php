@@ -302,13 +302,13 @@
             <div class="flex flex-col">
               <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Arep</label>
               <select id="install_arep" class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
-                <option value="">Pilih Arep...</option>
+                <option value="">Pilih Arep</option>
               </select>
             </div>
             <div class="flex flex-col">
               <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Node Sentral</label>
               <select id="install_node" class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]" disabled>
-                <option value="">Pilih Arep dahulu...</option>
+                <option value="">Pilih Arep dahulu</option>
               </select>
             </div>
           </div>
@@ -926,7 +926,7 @@
 
     installArepSelect.addEventListener('change', function() {
       const selectedArep = this.value;
-      installNodeSelect.innerHTML = '<option value="">Pilih Node Sentral...</option>';
+      installNodeSelect.innerHTML = '<option value="">Pilih Node Sentral</option>';
       
       if (selectedArep && nodeData[selectedArep]) {
         installNodeSelect.disabled = false;
