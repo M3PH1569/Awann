@@ -56,10 +56,18 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     // Nodes CRUD Routes (Admin)
     $routes->get('dashboard/nodeList', 'DashboardController::nodeList');
     $routes->post('dashboard/addNode', 'DashboardController::addNode');
+    $routes->post('dashboard/importNodes', 'DashboardController::importNodes');
     $routes->post('dashboard/deleteNode/(:num)', 'DashboardController::deleteNode/$1');
+    $routes->post('dashboard/bulkDeleteNodes', 'DashboardController::bulkDeleteNodes');
+    $routes->post('dashboard/deleteAllNodes', 'DashboardController::deleteAllNodes');
 
     $routes->get('dashboard/followUpItems', 'DashboardController::followUpItems');
     $routes->get('dashboard/checkUpdates', 'DashboardController::checkUpdates');
+
+    // BRP (Bukti Request Perangkat) Routes
+    $routes->get('dashboard/brpMonths', 'DashboardController::brpAvailableMonths');
+    $routes->get('dashboard/brpList', 'DashboardController::brpList');
+    $routes->get('dashboard/brpDownload/(:num)', 'DashboardController::brpDownload/$1');
 });
 
 $routes->get('/', 'FormController::index');

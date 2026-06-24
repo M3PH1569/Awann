@@ -9,6 +9,7 @@
                 <span>Khusus user baru, silakan hubungi admin terlebih dahulu untuk proses pendaftaran akun.</span>
             </div>
         <form action="<?= base_url('login') ?>" method="post" class="flex-flex-col gap-6">
+            <?= csrf_field() ?>
             <div class="flex flex-col">
                 <label class="font-semibold text-[#1C4D8D] text-sm mb-2" for="username">
                     Username

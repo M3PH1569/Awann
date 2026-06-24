@@ -278,7 +278,7 @@
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
-                                        'X-Requested-With': 'XMLHttpRequest'
+                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
                                     },
                                     body: params
                                 }).catch(err => console.error(err));
@@ -344,7 +344,7 @@
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
-                                        'X-Requested-With': 'XMLHttpRequest'
+                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
                                     },
                                     body: params
                                 })
@@ -648,6 +648,195 @@
                                         });
                                     }
                                 });
+                            }
+                        }
+                    }
+                </script>
+            </div>
+
+            <!-- BRP (Bukti Request Perangkat) Component -->
+            <div x-data="brpComponent()" class="relative mt-1">
+                <button @click="openModal()"
+                    class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center mr-1"
+                    title="BRP - Bukti Request Perangkat">
+                    <i class="fa-solid fa-file-pdf text-xl"></i>
+                </button>
+
+                <!-- BRP Modal -->
+                <div x-show="modalOpen" x-cloak
+                    class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+                    <div @click.outside="closeModal()"
+                        class="bg-white rounded-lg shadow-xl w-[95%] md:w-[850px] overflow-hidden flex flex-col max-h-[80vh]">
+                        <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+                            <h3 class="font-bold text-sm">
+                                <i class="fa-solid fa-file-pdf mr-1"></i> BRP - Bukti Request Perangkat
+                            </h3>
+                            <button @click="closeModal()" class="text-white hover:text-gray-300 transition">
+                                <i class="fa-solid fa-xmark fa-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- Month/Year Selector -->
+                        <div class="px-4 pt-4 pb-2 bg-gray-50 border-b border-gray-200">
+                            <div class="flex items-center gap-3">
+                                <label class="text-xs font-semibold text-gray-600">Periode:</label>
+                                <select x-model="selectedMonth" @change="fetchDocuments()"
+                                    class="border border-gray-300 rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-gray-100 text-gray-700 font-medium cursor-pointer">
+                                    <option value="1">Januari</option>
+                                    <option value="2">Februari</option>
+                                    <option value="3">Maret</option>
+                                    <option value="4">April</option>
+                                    <option value="5">Mei</option>
+                                    <option value="6">Juni</option>
+                                    <option value="7">Juli</option>
+                                    <option value="8">Agustus</option>
+                                    <option value="9">September</option>
+                                    <option value="10">Oktober</option>
+                                    <option value="11">November</option>
+                                    <option value="12">Desember</option>
+                                </select>
+                                <select x-model="selectedYear" @change="fetchDocuments()"
+                                    class="border border-gray-300 rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-gray-100 text-gray-700 font-medium cursor-pointer">
+                                    <template x-for="y in yearOptions" :key="y">
+                                        <option :value="y" x-text="y"></option>
+                                    </template>
+                                </select>
+                                <div class="ml-auto flex items-center gap-2">
+                                    <span class="text-xs text-gray-500 font-medium"
+                                        x-text="documents.length + ' dokumen'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents List -->
+                        <div class="p-4 flex-1 overflow-y-auto bg-[#F9FBFF]">
+                            <template x-if="loading">
+                                <div class="p-6 text-center text-gray-500 text-sm">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-3 text-[#1C4D8D]"></i>
+                                    <p>Memuat data...</p>
+                                </div>
+                            </template>
+                            <template x-if="!loading && documents.length === 0">
+                                <div class="p-6 text-center text-gray-500 text-sm">
+                                    <i class="fa-regular fa-folder-open text-3xl mb-3 text-gray-300"></i>
+                                    <p>Belum ada dokumen BRP untuk periode ini.</p>
+                                </div>
+                            </template>
+                            <template x-if="!loading && documents.length > 0">
+                                <div>
+                                    <!-- Search -->
+                                    <div class="mb-3">
+                                        <input type="text" x-model="searchQuery"
+                                            placeholder="Cari nama file, user..."
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-xs text-[#1C4D8D] focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+                                    </div>
+                                    <table
+                                        class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
+                                        <thead class="bg-gray-100 border-b border-gray-200">
+                                            <tr>
+                                                <th class="p-2 font-semibold text-gray-700 text-center w-12">No</th>
+                                                <th class="p-2 font-semibold text-gray-700">Nama File</th>
+                                                <th class="p-2 font-semibold text-gray-700">User</th>
+                                                <th class="p-2 font-semibold text-gray-700 text-center">Nomor</th>
+                                                <th class="p-2 font-semibold text-gray-700 text-center">Tanggal</th>
+                                                <th class="p-2 font-semibold text-gray-700 text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100">
+                                            <template x-for="(doc, index) in filteredDocuments" :key="doc.id">
+                                                <tr class="hover:bg-gray-50 transition-colors">
+                                                    <td class="p-2 text-center text-gray-600" x-text="index + 1"></td>
+                                                    <td class="p-2 text-gray-800 font-medium">
+                                                        <div class="flex items-center gap-1.5">
+                                                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                                                            <span x-text="doc.filename" class="truncate max-w-[250px]" :title="doc.filename"></span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="p-2 text-gray-600" x-text="doc.user_name"></td>
+                                                    <td class="p-2 text-center">
+                                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px] font-bold"
+                                                            x-text="String(doc.generated_number).padStart(5, '0')"></span>
+                                                    </td>
+                                                    <td class="p-2 text-center text-gray-500 text-[10px]" x-text="formatDate(doc.created_at)"></td>
+                                                    <td class="p-2 text-center">
+                                                        <a :href="'<?= base_url('dashboard/brpDownload') ?>/' + doc.id"
+                                                            target="_blank"
+                                                            class="bg-[#1C4D8D] text-white hover:bg-[#2A62AA] transition px-2.5 py-1 rounded text-[10px] font-semibold inline-flex items-center gap-1 shadow-sm">
+                                                            <i class="fa-solid fa-download"></i> Download
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function brpComponent() {
+                        const now = new Date();
+                        return {
+                            modalOpen: false,
+                            loading: false,
+                            documents: [],
+                            searchQuery: '',
+                            selectedMonth: String(now.getMonth() + 1),
+                            selectedYear: String(now.getFullYear()),
+                            get yearOptions() {
+                                const startYear = 2026;
+                                const endYear = startYear + 5;
+                                const years = [];
+                                for (let y = startYear; y <= endYear; y++) {
+                                    years.push(String(y));
+                                }
+                                return years;
+                            },
+                            get filteredDocuments() {
+                                if (!this.searchQuery) return this.documents;
+                                const q = this.searchQuery.toLowerCase();
+                                return this.documents.filter(d =>
+                                    (d.filename && d.filename.toLowerCase().includes(q)) ||
+                                    (d.user_name && d.user_name.toLowerCase().includes(q))
+                                );
+                            },
+                            openModal() {
+                                this.modalOpen = true;
+                                this.fetchDocuments();
+                            },
+                            closeModal() {
+                                this.modalOpen = false;
+                            },
+                            fetchDocuments() {
+                                this.loading = true;
+                                fetch(`<?= base_url('dashboard/brpList') ?>?month=${this.selectedMonth}&year=${this.selectedYear}`)
+                                    .then(res => res.json())
+                                    .then(res => {
+                                        if (res.success) {
+                                            this.documents = res.data;
+                                        } else {
+                                            this.documents = [];
+                                        }
+                                        this.loading = false;
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                        this.documents = [];
+                                        this.loading = false;
+                                    });
+                            },
+                            formatDate(dateStr) {
+                                if (!dateStr) return '-';
+                                const d = new Date(dateStr);
+                                const day = String(d.getDate()).padStart(2, '0');
+                                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                                const month = monthNames[d.getMonth()];
+                                const year = d.getFullYear();
+                                const hours = String(d.getHours()).padStart(2, '0');
+                                const mins = String(d.getMinutes()).padStart(2, '0');
+                                return `${day} ${month} ${year}, ${hours}:${mins}`;
                             }
                         }
                     }

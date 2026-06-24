@@ -573,7 +573,7 @@
     fetch("<?= base_url('dashboard/updateUser') ?>/" + id, {
       method: "POST",
       headers: {
-        "X-Requested-With": "XMLHttpRequest"
+        "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
       },
       body: new URLSearchParams({ nama })
     })
@@ -671,7 +671,7 @@
     fetch("<?= base_url('dashboard/addUser') ?>", {
       method: "POST",
       headers: {
-        "X-Requested-With": "XMLHttpRequest"
+        "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
       },
       body: new URLSearchParams({ nama })
     })
@@ -703,7 +703,7 @@
         fetch("<?= base_url('dashboard/deleteUser') ?>/" + id, {
           method: "POST",
           headers: {
-            "X-Requested-With": "XMLHttpRequest"
+            "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
           }
         })
           .then(res => res.json())
@@ -948,7 +948,7 @@
         fetch("<?= base_url('dashboard/check') ?>/" + id, {
           method: "POST",
           headers: {
-            "X-Requested-With": "XMLHttpRequest"
+            "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
           }
         })
           .then(res => res.json())
@@ -1030,7 +1030,7 @@
         fetch("<?= base_url('dashboard/simpan') ?>", {
           method: "POST",
           body: formData,
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>' }
         })
           .then(res => res.json())
           .then(res => {
@@ -1235,7 +1235,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest"
+            "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
           },
           body: JSON.stringify({ ids: ids })
         })
@@ -1369,7 +1369,7 @@
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "X-Requested-With": "XMLHttpRequest"
+              "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
             },
             body: JSON.stringify({
               ids: ids,
@@ -1470,6 +1470,15 @@
     return result;
   }
 
+  function resetCsvDropZoneUI() {
+    const defaultZone = document.getElementById('csvDropZoneDefault');
+    const loadingZone = document.getElementById('csvDropZoneLoading');
+    if (defaultZone && loadingZone) {
+      defaultZone.classList.remove('hidden');
+      loadingZone.classList.add('hidden');
+    }
+  }
+
   function handleCsvFile(file) {
     if (!file) return;
 
@@ -1481,7 +1490,16 @@
       return;
     }
 
-    if (ext === 'csv') {
+    // Tampilkan animasi loading parsing
+    const defaultZone = document.getElementById('csvDropZoneDefault');
+    const loadingZone = document.getElementById('csvDropZoneLoading');
+    if (defaultZone && loadingZone) {
+      defaultZone.classList.add('hidden');
+      loadingZone.classList.remove('hidden');
+    }
+
+    setTimeout(() => {
+      if (ext === 'csv') {
       const reader = new FileReader();
       reader.onload = function (e) {
         const text = e.target.result;
@@ -1489,6 +1507,7 @@
 
         if (lines.length < 2) {
           showToast('File kosong atau hanya berisi header', 'warning');
+          resetCsvDropZoneUI();
           return;
         }
 
@@ -1507,6 +1526,7 @@
 
         if (noregIdx === -1 || namaIdx === -1) {
           showToast('Header harus mengandung kolom "noreg" dan "nama"', 'error');
+          resetCsvDropZoneUI();
           return;
         }
 
@@ -1547,6 +1567,7 @@
 
           if (jsonData.length === 0) {
             showToast('File Excel kosong atau tidak ada data', 'warning');
+            resetCsvDropZoneUI();
             return;
           }
 
@@ -1557,6 +1578,7 @@
 
           if (!noregKey || !namaKey) {
             showToast('Header harus mengandung kolom "noreg" dan "nama"', 'error');
+            resetCsvDropZoneUI();
             return;
           }
 
@@ -1573,10 +1595,12 @@
         } catch (err) {
           console.error(err);
           showToast('Gagal membaca file Excel. Pastikan format file benar.', 'error');
+          resetCsvDropZoneUI();
         }
       };
       reader.readAsArrayBuffer(file);
     }
+    }, 50);
   }
 
   function finishFileParse() {
@@ -1648,7 +1672,7 @@
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest"
+        "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
       },
       body: JSON.stringify({ noreg_list: noregList })
     })
@@ -1680,11 +1704,10 @@
 
   function resetCsvImport() {
     csvParsedData = [];
-    csvValidationResults = [];
-    const fileInput = document.getElementById('csvFileInput');
-    if (fileInput) fileInput.value = '';
+    document.getElementById('csvFileInput').value = '';
     document.getElementById('csvUploadZone').classList.remove('hidden');
     document.getElementById('csvPreviewArea').classList.add('hidden');
+    resetCsvDropZoneUI();
     document.getElementById('csvPreviewBody').innerHTML = '';
     const importBtn = document.getElementById('btn_import_csv');
     if (importBtn) {
@@ -1720,7 +1743,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest"
+            "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
           },
           body: JSON.stringify({ rows: validRows.map(r => ({ noreg: r.noreg, nama: r.nama })) })
         })

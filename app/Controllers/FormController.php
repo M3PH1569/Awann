@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\PerangkatModel;
 use App\Models\UserModel;
 use App\Models\MutasiModel;
+use App\Models\BrpModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use Dompdf\Dompdf;
 
@@ -440,7 +441,29 @@ class FormController extends BaseController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $filename = 'BRP_' . date('Ymd') . '_' . date('His') . '_' . str_replace(' ', '_', $userName) . '.pdf';
+        // Generate sequential BRP number and filename
+        $brpModel = new BrpModel();
+        $currentMonth = (int) date('m');
+        $currentYear  = (int) date('Y');
+        $nextNumber   = $brpModel->getNextNumber($currentMonth, $currentYear);
+        $filename     = BrpModel::generateFilename($userName, $nextNumber);
+
+        // Save PDF to disk
+        $pdfContent = $dompdf->output();
+        $savePath   = WRITEPATH . 'brp' . DIRECTORY_SEPARATOR . $filename;
+        file_put_contents($savePath, $pdfContent);
+
+        // Save BRP document record
+        $brpModel->saveDocument([
+            'filename'         => $filename,
+            'user_name'        => $userName,
+            'generated_number' => $nextNumber,
+            'period_month'     => $currentMonth,
+            'period_year'      => $currentYear,
+            'mutasi_ids'       => json_encode($mutasiIds),
+            'created_at'       => date('Y-m-d H:i:s'),
+        ]);
+
         $dompdf->stream($filename, ['Attachment' => true]);
         exit;
     }
@@ -478,7 +501,10 @@ class FormController extends BaseController
 
         $builder = $db->table('mutasi m');
         $builder->select('m.id as mutasi_id, p.noreg, p.nama');
-        $builder->select('CASE WHEN EXISTS (SELECT 1 FROM return_requests rr WHERE rr.id_mutasi = m.id AND rr.status = \'Pending\') THEN 1 ELSE 0 END as is_pending', false);
+        $builder->select('CASE 
+            WHEN EXISTS (SELECT 1 FROM return_requests rr WHERE rr.id_mutasi = m.id AND rr.status = \'Pending\') THEN 1 
+            WHEN EXISTS (SELECT 1 FROM installation_requests ir WHERE ir.id_mutasi = m.id AND ir.status = \'Pending\') THEN 1 
+            ELSE 0 END as is_pending', false);
         // Join to ensure we are only looking at the LATEST mutasi for the device
         $builder->join("($subQuery) latest", 'latest.max_id = m.id', 'inner');
         $builder->join('perangkat p', 'p.id = m.id_perangkat');

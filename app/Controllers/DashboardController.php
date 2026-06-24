@@ -7,6 +7,7 @@ use App\Controllers\BaseController;
 use App\Models\PerangkatModel;
 use App\Models\MutasiModel;
 use App\Models\UserModel;
+use App\Models\BrpModel;
 use Config\Database;
 use Config\Services;
 
@@ -604,6 +605,58 @@ class DashboardController extends BaseController
         return $this->response->setJSON(['success' => true, 'msg' => 'Node berhasil ditambahkan.']);
     }
 
+    public function importNodes()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Akses ditolak.']);
+        }
+
+        $json = $this->request->getJSON();
+        $rows = $json->rows ?? [];
+
+        if (empty($rows)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada data valid untuk diimport.']);
+        }
+
+        $nodeModel = new \App\Models\NodeModel();
+        $inserted = 0;
+        $skipped = 0;
+
+        foreach ($rows as $row) {
+            $arep = trim($row->arep ?? '');
+            $nodeSentral = trim($row->node_sentral ?? '');
+
+            if (empty($arep) || empty($nodeSentral)) {
+                $skipped++;
+                continue;
+            }
+
+            // Check duplicate
+            $exist = $nodeModel->where('arep', $arep)->where('node_sentral', $nodeSentral)->first();
+            if ($exist) {
+                $skipped++;
+                continue;
+            }
+
+            try {
+                $nodeModel->insert([
+                    'arep' => $arep,
+                    'node_sentral' => $nodeSentral
+                ]);
+                $inserted++;
+            } catch (\Exception $e) {
+                $skipped++;
+            }
+        }
+
+        if ($inserted > 0) {
+            return $this->response->setJSON(['success' => true, 'inserted' => $inserted, 'skipped' => $skipped]);
+        } else {
+            return $this->response->setJSON(['success' => false, 'message' => 'Semua data gagal diimport atau duplikat.']);
+        }
+    }
+
     public function deleteNode($id)
     {
         $adminSession = session()->get('admin');
@@ -612,9 +665,50 @@ class DashboardController extends BaseController
         }
 
         $nodeModel = new \App\Models\NodeModel();
-        $nodeModel->delete($id);
+        if ($nodeModel->delete($id)) {
+            return $this->response->setJSON(['success' => true]);
+        }
 
-        return $this->response->setJSON(['success' => true, 'msg' => 'Node berhasil dihapus.']);
+        return $this->response->setJSON(['success' => false, 'msg' => 'Node gagal dihapus.']);
+    }
+
+    public function bulkDeleteNodes()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Akses ditolak.']);
+        }
+
+        $json = $this->request->getJSON();
+        $ids = $json->ids ?? [];
+
+        if (empty($ids) || !is_array($ids)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada node yang dipilih.']);
+        }
+
+        $nodeModel = new \App\Models\NodeModel();
+        try {
+            $nodeModel->whereIn('id', $ids)->delete();
+            return $this->response->setJSON(['success' => true, 'deleted' => count($ids)]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Terjadi kesalahan saat menghapus data.']);
+        }
+    }
+
+    public function deleteAllNodes()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Akses ditolak.']);
+        }
+
+        $nodeModel = new \App\Models\NodeModel();
+        try {
+            $nodeModel->emptyTable();
+            return $this->response->setJSON(['success' => true]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Terjadi kesalahan saat mengosongkan data.']);
+        }
     }
 
     /**
@@ -632,5 +726,77 @@ class DashboardController extends BaseController
             'latest' => $row['latest'] ?? '',
             'total'  => (int)($countRow['total'] ?? 0),
         ]);
+    }
+
+    // ── BRP (Bukti Request Perangkat) ────────────────────────────────────────
+
+    /**
+     * Get list of available months/years that have BRP documents.
+     */
+    public function brpAvailableMonths()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $brpModel = new BrpModel();
+        $months = $brpModel->getAvailableMonths();
+
+        return $this->response->setJSON(['success' => true, 'data' => $months]);
+    }
+
+    /**
+     * Get BRP documents for a given month/year.
+     */
+    public function brpList()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $month = (int) $this->request->getGet('month');
+        $year  = (int) $this->request->getGet('year');
+
+        if ($month < 1 || $month > 12 || $year < 2020) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Bulan/tahun tidak valid.']);
+        }
+
+        $brpModel = new BrpModel();
+        $documents = $brpModel->getByMonth($month, $year);
+
+        return $this->response->setJSON(['success' => true, 'data' => $documents]);
+    }
+
+    /**
+     * Download a BRP PDF by document ID.
+     * TODO(security): Verify requesting admin has permission to access this document.
+     */
+    public function brpDownload($id)
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $brpModel = new BrpModel();
+        $doc = $brpModel->find((int) $id);
+
+        if (!$doc) {
+            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'Dokumen tidak ditemukan.']);
+        }
+
+        $filePath = WRITEPATH . 'brp' . DIRECTORY_SEPARATOR . $doc['filename'];
+
+        if (!file_exists($filePath)) {
+            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'File PDF tidak ditemukan di server.']);
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $doc['filename'] . '"')
+            ->setHeader('X-Content-Type-Options', 'nosniff')
+            ->setBody(file_get_contents($filePath));
     }
 }

@@ -5,7 +5,7 @@
 <?php $hideOverlay = session()->getFlashdata('success') || session()->getFlashdata('error') || session()->get('mutasi_pdf_ids'); ?>
 <div id="homepageOverlay"
   class="fixed inset-0 z-[100] flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat transition-all duration-[800ms] ease-in-out <?= $hideOverlay ? 'hidden' : '' ?>"
-  style="background-image: url('<?= base_url('images/Bg.png') ?>'); width: 100vw; height: 100vh; background-color: #1C4D8D; <?= $hideOverlay ? 'display: none;' : '' ?>">
+  style="background-image: url('<?= base_url('images/Bg.webp') ?>'); width: 100vw; height: 100vh; background-color: #1C4D8D; <?= $hideOverlay ? 'display: none;' : '' ?>">
 
   <div class="absolute inset-0 bg-black/70 z-0"
     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 0;">
@@ -877,7 +877,7 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
         },
         body: params
       })
@@ -1098,7 +1098,7 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
         },
         body: params
       })

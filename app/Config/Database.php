@@ -80,10 +80,10 @@ class Database extends Config
     //     */
     public array $default = [
         'DSN' => '',
-        'hostname' => '123.231.223.6',
-        'username' => 'akp',
-        'password' => 'S3pt4@',
-        'database' => 'assetmanage',
+        'hostname' => '',
+        'username' => '',
+        'password' => '',
+        'database' => '',
         'schema' => 'public',
         'DBDriver' => 'Postgre',
         'DBPrefix' => '',
@@ -93,7 +93,7 @@ class Database extends Config
         'DBCollat' => 'utf8_general_ci',
         'swapPre' => '',
         'failover' => [],
-        'port' => 5100,
+        'port' => 5432,
         'dateFormat' => [
             'date' => 'Y-m-d',
             'datetime' => 'Y-m-d H:i:s',

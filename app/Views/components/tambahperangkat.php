@@ -71,9 +71,15 @@
                 </p>
                 <div id="csvDropZone"
                     class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-[#1C4D8D] hover:bg-blue-50/50 transition-all duration-200">
-                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
-                    <p class="text-sm text-gray-600 font-medium">Drag & drop file di sini</p>
-                    <p class="text-xs text-gray-400 mt-1">atau klik untuk memilih file</p>
+                    <div id="csvDropZoneDefault">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-600 font-medium">Drag & drop file di sini</p>
+                        <p class="text-xs text-gray-400 mt-1">atau klik untuk memilih file</p>
+                    </div>
+                    <div id="csvDropZoneLoading" class="hidden">
+                        <i class="fa-solid fa-spinner fa-spin text-3xl text-[#1C4D8D] mb-2"></i>
+                        <p class="text-sm text-[#1C4D8D] font-medium mt-2">Memproses data...</p>
+                    </div>
                     <input type="file" id="csvFileInput" accept=".csv,.xlsx,.xls" class="hidden">
                 </div>
                 <div class="flex items-center justify-between mt-3">

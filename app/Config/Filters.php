@@ -53,7 +53,7 @@ class Filters extends BaseFilters
      */
     public array $required = [
         'before' => [
-            'forcehttps', // Force Global Secure Requests
+            // 'forcehttps', // Force Global Secure Requests (Uncomment in Production)
             'pagecache',  // Web Page Caching
         ],
         'after' => [
@@ -76,12 +76,12 @@ class Filters extends BaseFilters
         'before' => [
             'utf8sanitize',
             // 'honeypot',
-            // 'csrf',
+            'csrf',
             // 'invalidchars',
         ],
         'after' => [
             // 'honeypot',
-            // 'secureheaders',
+            'secureheaders',
         ],
     ];
 
