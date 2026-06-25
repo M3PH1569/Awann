@@ -26,6 +26,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard/adminList', 'DashboardController::adminList');
     $routes->post('dashboard/addAdmin', 'DashboardController::addAdmin');
     $routes->post('dashboard/deleteAdmin/(:num)', 'DashboardController::deleteAdmin/$1');
+    $routes->post('dashboard/updateAdmin/(:num)', 'DashboardController::updateAdmin/$1');
+    $routes->post('dashboard/resetAdminPassword/(:num)', 'DashboardController::resetAdminPassword/$1');
 
     $routes->get('dashboard/edit/(:num)', 'PerangkatController::editPerangkat/$1');
     $routes->post('dashboard/update', 'PerangkatController::updatePerangkat');
@@ -58,6 +60,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('dashboard/addNode', 'DashboardController::addNode');
     $routes->post('dashboard/importNodes', 'DashboardController::importNodes');
     $routes->post('dashboard/deleteNode/(:num)', 'DashboardController::deleteNode/$1');
+    $routes->post('dashboard/updateNode/(:num)', 'DashboardController::updateNode/$1');
     $routes->post('dashboard/bulkDeleteNodes', 'DashboardController::bulkDeleteNodes');
     $routes->post('dashboard/deleteAllNodes', 'DashboardController::deleteAllNodes');
 

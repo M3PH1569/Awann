@@ -6,6 +6,7 @@
         </div>
 
         <form id="editMutasi" class="p-4 flex flex-col justify-between">
+            <?= csrf_field() ?>
             <input type="hidden" name="id" id="edit_id">
 
             <div>

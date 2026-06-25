@@ -26,6 +26,14 @@
             </div>
 
             <!-- Admin List -->
+            <div class="mb-2">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fa-solid fa-search text-gray-400 text-xs"></i>
+                    </div>
+                    <input type="text" id="searchAdmin" onkeyup="filterAdmins()" placeholder="Cari Nama / Username..." class="w-full border border-gray-300 pl-8 pr-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
+                </div>
+            </div>
             <div class="overflow-y-auto flex-1">
                 <table class="min-w-full text-sm text-left border border-gray-300">
                     <thead class="sticky top-0 z-10 bg-[#0F2854] text-white">
@@ -55,13 +63,26 @@
         document.getElementById('adminManageModal').classList.remove('flex');
         document.getElementById('newAdminNama').value = '';
         document.getElementById('newAdminUsername').value = '';
-        document.getElementById('newAdminPassword').value = '';
+        document.getElementById('searchAdmin').value = '';
     }
+
+    let allAdmins = [];
 
     function loadAdmins() {
         fetch('<?= base_url('dashboard/adminList') ?>')
             .then(res => res.json())
-            .then(admins => renderAdmins(admins));
+            .then(admins => {
+                allAdmins = admins;
+                renderAdmins(admins);
+            });
+    }
+
+    function filterAdmins() {
+        const term = document.getElementById('searchAdmin').value.toLowerCase();
+        const filtered = allAdmins.filter(a => 
+            a.nama.toLowerCase().includes(term) || a.username.toLowerCase().includes(term)
+        );
+        renderAdmins(filtered);
     }
 
     function renderAdmins(admins) {
@@ -82,9 +103,17 @@
                     <td class="px-4 py-3 text-center border border-gray-300">
                         ${isSelf
                             ? `<span class="text-xs text-gray-400 italic">Anda</span>`
-                            : `<button type="button" onclick="deleteAdmin(${a.id})" class="text-red-500 hover:text-red-400 transition">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                               </button>`
+                            : `<div class="flex items-center justify-center gap-2">
+                                <button type="button" onclick="editAdmin(${a.id}, '${a.nama.replace(/'/g, "\\'")}', '${a.username.replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-400 transition" title="Edit">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                </button>
+                                <button type="button" onclick="resetAdminPassword(${a.id}, '${a.username.replace(/'/g, "\\'")}')" class="text-yellow-500 hover:text-yellow-400 transition" title="Reset Password">
+                                    <i class="fa-solid fa-key text-xs"></i>
+                                </button>
+                                <button type="button" onclick="deleteAdmin(${a.id})" class="text-red-500 hover:text-red-400 transition" title="Hapus">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                               </div>`
                         }
                     </td>
                     <td class="px-4 py-3 text-center text-xs border border-gray-300">${no++}</td>
@@ -103,10 +132,16 @@
             return;
         }
 
+        const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+        const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+
         fetch('<?= base_url('dashboard/addAdmin') ?>', {
             method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            body: new URLSearchParams({ nama, username })
+            headers: { 
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: new URLSearchParams({ nama, username, csrf_test_name: csrfToken })
         })
         .then(res => res.json())
         .then(res => {
@@ -121,6 +156,38 @@
         });
     }
 
+    function resetAdminPassword(id, username) {
+        Swal.fire({
+            title: 'Reset Password?',
+            html: `Yakin ingin mereset password admin <b>${username}</b> menjadi kosong?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Reset',
+            cancelButtonText: 'Batal'
+        }).then(result => {
+            if (result.isConfirmed) {
+                const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+                const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+
+                fetch('<?= base_url('dashboard/resetAdminPassword') ?>/' + id, {
+                    method: 'POST',
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        showToast('Password admin berhasil direset', 'success');
+                    } else {
+                        showToast(res.msg ?? 'Gagal mereset password', 'error');
+                    }
+                });
+            }
+        });
+    }
+
     function deleteAdmin(id) {
         Swal.fire({
             title: 'Hapus admin ini?',
@@ -130,9 +197,15 @@
             cancelButtonText: 'Batal'
         }).then(result => {
             if (result.isConfirmed) {
+                const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+                const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+
                 fetch('<?= base_url('dashboard/deleteAdmin') ?>/' + id, {
                     method: 'POST',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
                 })
                 .then(res => res.json())
                 .then(res => {
@@ -141,6 +214,55 @@
                         loadAdmins();
                     } else {
                         showToast(res.msg ?? 'Gagal menghapus admin', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    function editAdmin(id, oldNama, oldUsername) {
+        Swal.fire({
+            title: 'Edit Admin',
+            html: `
+                <input id="swal-nama" class="swal2-input" placeholder="Nama" value="${oldNama}">
+                <input id="swal-username" class="swal2-input" placeholder="Username" value="${oldUsername}">
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            cancelButtonText: 'Batal',
+            preConfirm: () => {
+                const nama = document.getElementById('swal-nama').value.trim();
+                const username = document.getElementById('swal-username').value.trim();
+                if (!nama || !username) {
+                    Swal.showValidationMessage('Semua field wajib diisi');
+                }
+                return { nama, username };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+                const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+
+                fetch('<?= base_url('dashboard/updateAdmin') ?>/' + id, {
+                    method: 'POST',
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: new URLSearchParams({
+                        ...result.value,
+                        csrf_test_name: csrfToken
+                    })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        showToast('Admin berhasil diupdate', 'success');
+                        loadAdmins();
+                    } else {
+                        showToast(res.msg ?? 'Gagal update admin', 'error');
                     }
                 });
             }

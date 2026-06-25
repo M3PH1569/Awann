@@ -57,6 +57,14 @@
             </div>
 
             <!-- Node List -->
+            <div class="mb-2">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fa-solid fa-search text-gray-400 text-xs"></i>
+                    </div>
+                    <input type="text" id="searchNode" onkeyup="filterNodes()" placeholder="Cari Arep / Node Sentral..." class="w-full border border-gray-300 pl-8 pr-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
+                </div>
+            </div>
             <div class="overflow-y-auto flex-1 min-h-[200px]">
                 <table class="min-w-full text-sm text-left border border-gray-300">
                     <thead class="sticky top-0 z-10 bg-[#0F2854] text-white">
@@ -176,15 +184,30 @@
         document.getElementById('nodeManageModal').classList.remove('flex');
         document.getElementById('newNodeArep').value = '';
         document.getElementById('newNodeSentral').value = '';
+        document.getElementById('searchNode').value = '';
     }
+
+    let allNodes = [];
 
     function loadNodes() {
         fetch('<?= base_url('dashboard/nodeList') ?>')
             .then(res => res.json())
-            .then(nodes => renderNodes(nodes))
+            .then(nodes => {
+                allNodes = nodes;
+                renderNodes(nodes);
+            })
             .catch(err => {
                 document.getElementById('nodeManageBody').innerHTML = `<tr><td colspan="4" class="text-center py-4 text-xs text-red-500">Gagal memuat data</td></tr>`;
             });
+    }
+
+    function filterNodes() {
+        const term = document.getElementById('searchNode').value.toLowerCase();
+        const filtered = allNodes.filter(n => 
+            (n.arep && n.arep.toLowerCase().includes(term)) || 
+            (n.node_sentral && n.node_sentral.toLowerCase().includes(term))
+        );
+        renderNodes(filtered);
     }
 
     function renderNodes(nodes) {
@@ -208,9 +231,14 @@
                         <input type="checkbox" class="node-row-checkbox w-3 h-3 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500" value="${n.id}" onchange="checkNodeBulkButton()">
                     </td>
                     <td class="px-4 py-3 text-center border border-gray-300">
-                        <button type="button" onclick="deleteNode(${n.id})" class="text-red-500 hover:text-red-400 transition" title="Hapus">
-                            <i class="fa-solid fa-trash-can text-xs"></i>
-                        </button>
+                        <div class="flex items-center justify-center gap-2">
+                            <button type="button" onclick="editNode(${n.id}, '${n.arep.replace(/'/g, "\\'")}', '${n.node_sentral.replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-400 transition" title="Edit">
+                                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                            </button>
+                            <button type="button" onclick="deleteNode(${n.id})" class="text-red-500 hover:text-red-400 transition" title="Hapus">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
                     </td>
                     <td class="px-4 py-3 text-center text-xs border border-gray-300">${no++}</td>
                     <td class="px-4 py-3 text-left text-xs border border-gray-300 font-semibold">${n.arep}</td>
@@ -246,6 +274,61 @@
                     showToast(res.msg ?? 'Gagal menambahkan node', 'error');
                 }
             });
+    }
+
+    function editNode(id, oldArep, oldNode) {
+        Swal.fire({
+            title: 'Edit Node',
+            html: `
+                <select id="swal-arep" class="swal2-input">
+                    <option value="Semarang" ${oldArep === 'Semarang' ? 'selected' : ''}>Semarang</option>
+                    <option value="Tegal" ${oldArep === 'Tegal' ? 'selected' : ''}>Tegal</option>
+                    <option value="Solo" ${oldArep === 'Solo' ? 'selected' : ''}>Solo</option>
+                    <option value="Yogyakarta" ${oldArep === 'Yogyakarta' ? 'selected' : ''}>Yogyakarta</option>
+                    <option value="Purwokerto" ${oldArep === 'Purwokerto' ? 'selected' : ''}>Purwokerto</option>
+                </select>
+                <input id="swal-node" class="swal2-input uppercase" placeholder="Node Sentral" value="${oldNode}">
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            cancelButtonText: 'Batal',
+            preConfirm: () => {
+                const arep = document.getElementById('swal-arep').value;
+                const node_sentral = document.getElementById('swal-node').value.trim().toUpperCase();
+                if (!arep || !node_sentral) {
+                    Swal.showValidationMessage('Semua field wajib diisi');
+                }
+                return { arep, node_sentral };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+                const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+                
+                fetch('<?= base_url('dashboard/updateNode') ?>/' + id, {
+                    method: 'POST',
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: new URLSearchParams({
+                        ...result.value,
+                        csrf_test_name: csrfToken
+                    })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        showToast('Node berhasil diupdate', 'success');
+                        loadNodes();
+                    } else {
+                        showToast(res.msg ?? 'Gagal update node', 'error');
+                    }
+                });
+            }
+        });
     }
 
     function deleteNode(id) {

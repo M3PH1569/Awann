@@ -12,6 +12,7 @@
         </div>
 
         <form id="bulkEditForm" class="p-4 flex flex-col gap-4">
+            <?= csrf_field() ?>
             <!-- Selected IDs (hidden, populated by JS) -->
             <input type="hidden" name="ids" id="bulk_ids">
 

@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard</title>
 
+    <script>
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) return;
+            originalWarn.apply(console, args);
+        };
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/alpinejs" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -351,7 +358,11 @@
                                     .then(res => res.json())
                                     .then(res => {
                                         if (res.success) {
-                                            if (typeof showToast === 'function') showToast(res.msg, 'success');
+                                            let msg = res.msg;
+                                            if (approvedIds.length === 0 && rejectedIds.length > 0) {
+                                                msg = "Pengajuan di tolak";
+                                            }
+                                            if (typeof showToast === 'function') showToast(msg, 'success');
                                             this.closeReviewModal();
                                             if (type === 'return') this.fetchPendingReturns();
                                             else this.fetchPendingInstalls();
@@ -397,10 +408,16 @@
                             </template>
                             <template x-if="items.length > 0">
                                 <div>
-                                    <div class="mb-3">
+                                    <div class="mb-3 flex gap-2">
                                         <input type="text" x-model="searchQuery"
                                             placeholder="Cari Nama Perangkat, User, Status, No Registrasi..."
-                                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-xs text-[#1C4D8D] focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+                                            class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-xs text-[#1C4D8D] focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+                                        <select x-model="durationFilter" class="border border-gray-300 rounded-md px-3 py-2 text-xs text-[#1C4D8D] focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+                                            <option value="all">Semua Durasi</option>
+                                            <option value="<5">&lt; 5 Days ago</option>
+                                            <option value="5-10">5 - 10 Days ago</option>
+                                            <option value=">10">&gt; 10 Days ago</option>
+                                        </select>
                                     </div>
                                     <table
                                         class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
@@ -477,18 +494,31 @@
                             count: 0,
                             items: [],
                             searchQuery: '',
+                            durationFilter: 'all',
                             get filteredItems() {
-                                if (this.searchQuery === '') {
-                                    return this.items;
+                                let result = this.items;
+
+                                if (this.durationFilter !== 'all') {
+                                    result = result.filter(item => {
+                                        if (this.durationFilter === '<5') return item.days_ago < 5;
+                                        if (this.durationFilter === '5-10') return item.days_ago >= 5 && item.days_ago <= 10;
+                                        if (this.durationFilter === '>10') return item.days_ago > 10;
+                                        return true;
+                                    });
                                 }
-                                const lowerCaseQuery = this.searchQuery.toLowerCase();
-                                return this.items.filter(item => {
-                                    return (item.user && item.user.toLowerCase().includes(lowerCaseQuery)) ||
-                                        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(lowerCaseQuery)) ||
-                                        (item.status && item.status.toLowerCase().includes(lowerCaseQuery)) ||
-                                        (item.noreg && item.noreg.toLowerCase().includes(lowerCaseQuery)) ||
-                                        ((item.days_ago + ' days ago').includes(lowerCaseQuery));
-                                });
+
+                                if (this.searchQuery !== '') {
+                                    const lowerCaseQuery = this.searchQuery.toLowerCase();
+                                    result = result.filter(item => {
+                                        return (item.user && item.user.toLowerCase().includes(lowerCaseQuery)) ||
+                                            (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(lowerCaseQuery)) ||
+                                            (item.status && item.status.toLowerCase().includes(lowerCaseQuery)) ||
+                                            (item.noreg && item.noreg.toLowerCase().includes(lowerCaseQuery)) ||
+                                            ((item.days_ago + ' days ago').includes(lowerCaseQuery));
+                                    });
+                                }
+
+                                return result;
                             },
                             init() {
                                 this.fetchItems();

@@ -290,6 +290,56 @@ class DashboardController extends BaseController
         return $this->response->setJSON(['success' => true]);
     }
 
+    public function updateAdmin($id)
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $nama = trim($this->request->getPost('nama'));
+        $username = trim($this->request->getPost('username'));
+
+        if (!$nama || !$username) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Nama dan Username wajib diisi']);
+        }
+
+        $db = \Config\Database::connect();
+        
+        // Check duplicate username
+        $exist = $db->table('admin')->where('username', $username)->where('id !=', $id)->get()->getRowArray();
+        if ($exist) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Username sudah digunakan']);
+        }
+
+        $db->table('admin')->where('id', $id)->update([
+            'nama' => $nama,
+            'username' => $username,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    public function resetAdminPassword($id)
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $db = \Config\Database::connect();
+        
+        $db->table('admin')->where('id', $id)->update([
+            'password' => password_hash('', PASSWORD_DEFAULT),
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
     // ── Return Requests ──────────────────────────────────────────────────────
 
     public function getPendingReturns()
@@ -415,8 +465,8 @@ class DashboardController extends BaseController
         $builder->join('perangkat p', 'p.id = m.id_perangkat');
         $builder->join('users u', 'u.id = m.id_users', 'left');
         
-        // Older than 1 day
-        $builder->where('m.updated_at <', date('Y-m-d H:i:s', strtotime('-1 day')));
+        // Removed 1 day restriction as requested
+        // $builder->where('m.updated_at <', date('Y-m-d H:i:s', strtotime('-1 day')));
         
         // Status condition: Dibawa OR (Terpasang/Terkirim AND is_checked = 0)
         $builder->groupStart()
@@ -670,6 +720,36 @@ class DashboardController extends BaseController
         }
 
         return $this->response->setJSON(['success' => false, 'msg' => 'Node gagal dihapus.']);
+    }
+
+    public function updateNode($id)
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $arep = trim($this->request->getPost('arep'));
+        $nodeSentral = trim($this->request->getPost('node_sentral'));
+
+        if (!$arep || !$nodeSentral) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Arep dan Node Sentral wajib diisi.']);
+        }
+
+        $nodeModel = new \App\Models\NodeModel();
+
+        // Check duplicate
+        $existing = $nodeModel->where('arep', $arep)->where('node_sentral', $nodeSentral)->where('id !=', $id)->first();
+        if ($existing) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Node sudah terdaftar.']);
+        }
+
+        $nodeModel->update($id, [
+            'arep' => $arep,
+            'node_sentral' => $nodeSentral
+        ]);
+
+        return $this->response->setJSON(['success' => true]);
     }
 
     public function bulkDeleteNodes()

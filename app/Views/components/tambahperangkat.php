@@ -23,6 +23,7 @@
 
         <div id="tabContentManual">
             <form id="tambahperangkat" class="p-4 flex flex-col justify-between">
+                <?= csrf_field() ?>
                 <input type="hidden" name="id" id="tambah_id">
 
                 <div class="grid grid-cols-1 md:grid-cols-[3fr_1fr] gap-6 mb-5">

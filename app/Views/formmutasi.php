@@ -94,6 +94,7 @@
         <!-- TAB 1: PEMINJAMAN -->
         <div class="w-1/3 flex-shrink-0 pr-4 pl-1">
           <form action="<?= base_url('/submit') ?>" method="POST">
+            <?= csrf_field() ?>
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 mb-5">
 
         <div class="w-full flex flex-col relative">
@@ -357,6 +358,8 @@
     const box = document.getElementById("toastBox");
     const msg = document.getElementById("toastMsg");
     const icon = document.getElementById("toastIcon");
+
+    if (!toast || !box || !msg || !icon) return;
 
     msg.innerText = message;
 
@@ -873,11 +876,15 @@
         params.append('mutasi_ids[]', id);
       });
 
+      const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+      const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+      params.append('csrf_test_name', csrfToken);
+
       fetch(`<?= base_url('form/return') ?>`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+          'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken
         },
         body: params
       })
@@ -1094,11 +1101,15 @@
       params.append('arep', arep);
       params.append('node_sentral', nodeSentral);
 
+      const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+      const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+      params.append('csrf_test_name', csrfToken);
+
       fetch(`<?= base_url('form/installation') ?>`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+          'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken
         },
         body: params
       })

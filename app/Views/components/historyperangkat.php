@@ -18,7 +18,7 @@
         </div>
 
         <div class="p-4 flex flex-col justify-between overflow-hidden">
-            <div class="border shadow bg-white rounded-xl">
+            <div class="border shadow bg-white rounded-xl overflow-y-auto max-h-[400px]">
 
                 <table class="min-w-full text-sm text-left border border-gray-300">
                     <thead class="sticky top-0 z-10 bg-[#0F2854] text-white">

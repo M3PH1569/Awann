@@ -272,12 +272,17 @@
     }
 
     function loadHistory(id, page = 1, search = '') {
+        const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+        const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+
         fetch(`<?= base_url('history/log') ?>/${id}`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": csrfToken
             },
-            body: `page=${page}&searchHistory=${encodeURIComponent(search)}`
+            body: `page=${page}&searchHistory=${encodeURIComponent(search)}&csrf_test_name=${csrfToken}`
         })
             .then(res => res.json())
             .then(res => {
@@ -294,7 +299,7 @@
                     return;
                 }
 
-                let no = (res.currentPage - 1) * 50 + 1;
+                let no = (res.currentPage - 1) * 10 + 1;
 
                 res.data.forEach(row => {
                     tbody.innerHTML += `

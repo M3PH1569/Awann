@@ -392,6 +392,8 @@
     const msg = document.getElementById("toastMsg");
     const icon = document.getElementById("toastIcon");
 
+    if (!toast || !box || !msg || !icon) return;
+
     msg.innerText = message;
 
     box.className = "flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm";
@@ -826,8 +828,18 @@
         body: formData
       })
         .then(res => res.json())
-        .then(() => location.reload())
+        .then(res => {
+          if (res.success) {
+            showToast("Perangkat berhasil diubah", "success");
+            setTimeout(() => location.reload(), 1500);
+          } else {
+            showToast(res.message || "Gagal mengubah perangkat", "error");
+            submitEdit.disabled = false;
+            submitEdit.innerText = "Simpan";
+          }
+        })
         .catch(() => {
+          showToast("Terjadi kesalahan pada server", "error");
           submitEdit.disabled = false;
           submitEdit.innerText = "Simpan";
         });
@@ -845,12 +857,17 @@
   }
 
   function loadHistory(id, page = 1, search = '') {
+    const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+    const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+
     fetch(`<?= base_url('dashboard/history') ?>/${id}`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRF-TOKEN": csrfToken
       },
-      body: `page=${page}&searchHistory=${encodeURIComponent(search)}`
+      body: `page=${page}&searchHistory=${encodeURIComponent(search)}&csrf_test_name=${csrfToken}`
     })
       .then(res => res.json())
       .then(res => {
@@ -869,7 +886,7 @@
           return;
         }
 
-        let no = (res.currentPage - 1) * 50 + 1;
+        let no = (res.currentPage - 1) * 15 + 1;
 
         const keyword = search.toLowerCase();
 
