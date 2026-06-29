@@ -14,7 +14,7 @@ class MutasiModel extends Model
   protected $returnType = 'array';
   protected $useSoftDeletes = false;
   protected $protectFields = true;
-  protected $allowedFields = ['id_perangkat', 'id_users', 'status', 'keterangan', 'is_checked', 'checked_at', 'updated_by'];
+  protected $allowedFields = ['id_perangkat', 'id_users', 'status', 'keterangan', 'is_checked', 'checked_at', 'updated_by', 'id_non_reg', 'qty'];
 
   protected bool $allowEmptyInserts = false;
   protected bool $updateOnlyChanged = true;
@@ -51,27 +51,35 @@ class MutasiModel extends Model
     $builder = $this->db->table('mutasi m');
 
     $subQuery = $this->db->table('mutasi')
-      ->select('id_perangkat, MAX(updated_at) as latest')
-      ->groupBy('id_perangkat')
+      ->select('MAX(id) as latest_id')
+      ->groupBy('COALESCE(id_perangkat, -id_non_reg)')
       ->getCompiledSelect();
 
     $builder = $this->db->table('mutasi m');
     $builder->select('
       m.*,
       u.nama as nm_user,
-      p.noreg,
-      p.nama as nm_perangkat
+      COALESCE(p.noreg, nr.kode_spec) as noreg,
+      COALESCE(sp.nama_perangkat, p.nama, nr.nama_material) as nm_perangkat
     ');
 
     $builder->join(
       "($subQuery) latest_data",
-      'm.id_perangkat = latest_data.id_perangkat
-    AND m.updated_at = latest_data.latest'
+      'm.id = latest_data.latest_id'
     );
 
     $builder->join('users u', 'u.id=m.id_users', 'left');
     $builder->join('perangkat p', 'p.id = m.id_perangkat', 'left');
     $builder->join('spec_perangkat sp', 'sp.id=p.id_spec', 'left');
+    $builder->join('non_registration nr', 'nr.id = m.id_non_reg', 'left');
+
+    if (!empty($filters['type'])) {
+      if ($filters['type'] === 'nonreg') {
+        $builder->where('m.id_non_reg IS NOT NULL', null, false);
+      } else {
+        $builder->where('m.id_perangkat IS NOT NULL', null, false);
+      }
+    }
 
     if (!empty($filters['search'])) {
       $keywords = explode(';', $filters['search']);
@@ -83,6 +91,7 @@ class MutasiModel extends Model
           $builder->orGroupStart()
             ->where("u.nama ILIKE '%$escaped_kw%'", null, false)
             ->orWhere("sp.nama_perangkat ILIKE '%$escaped_kw%'", null, false)
+            ->orWhere("p.nama ILIKE '%$escaped_kw%'", null, false)
             ->orWhere("p.noreg ILIKE '%$escaped_kw%'", null, false)
             ->orWhere("m.status ILIKE '%$escaped_kw%'", null, false)
             ->orWhere("m.keterangan ILIKE '%$escaped_kw%'", null, false)
@@ -155,6 +164,38 @@ class MutasiModel extends Model
     $builder->select('m.*, u.nama as nm_user');
     $builder->join('users u', 'u.id = m.id_users', 'left');
     $builder->where('m.id_perangkat', $id);
+
+    if (!empty($filters['searchHistory'])) {
+      $keyword = sanitize_utf8($filters['searchHistory']);
+      $fields = ['u.nama', 'm.status', 'm.keterangan'];
+
+      $builder->groupStart();
+      foreach ($fields as $field) {
+        $builder->orWhere("$field ILIKE '%$keyword%'", null, false);
+      }
+      $builder->groupEnd();
+    }
+
+    $countBuilder = clone $builder;
+    $total = $countBuilder->countAllResults(false);
+
+    $builder->orderBy('m.created_at', 'DESC');
+    $builder->limit($limit, $offset);
+
+    $data = $builder->get()->getResultArray();
+
+    return [
+      'data' => $data,
+      'total' => $total
+    ];
+  }
+
+  public function getNonRegHistory($id, $filters = [], $limit = 15, $offset = 0)
+  {
+    $builder = $this->db->table('mutasi m');
+    $builder->select('m.*, u.nama as nm_user');
+    $builder->join('users u', 'u.id = m.id_users', 'left');
+    $builder->where('m.id_non_reg', $id);
 
     if (!empty($filters['searchHistory'])) {
       $keyword = sanitize_utf8($filters['searchHistory']);

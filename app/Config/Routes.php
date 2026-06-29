@@ -9,6 +9,7 @@ use CodeIgniter\Router\RouteCollection;
 
 $routes->setAutoRoute(false);
 
+$routes->get('dashboard/runMigration', 'DashboardController::runMigration');
 $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'DashboardController::dashboard');
     $routes->post('dashboard', 'DashboardController::dashboard');
@@ -45,6 +46,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('perangkat/validateCsvNoreg', 'PerangkatController::validateCsvNoreg');
     $routes->post('perangkat/importCsv', 'PerangkatController::importCsv');
 
+    // Users with Dibawa Devices
+    $routes->get('dashboard/usersDibawa', 'DashboardController::getUsersWithDibawa');
+    $routes->post('dashboard/usersDibawa/markRead', 'DashboardController::markDibawaAsRead');
+
     // Return Requests Routes (Admin)
     $routes->get('dashboard/returns', 'DashboardController::getPendingReturns');
     $routes->post('dashboard/returns/approve', 'DashboardController::approveReturnGroup');
@@ -71,12 +76,21 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard/brpMonths', 'DashboardController::brpAvailableMonths');
     $routes->get('dashboard/brpList', 'DashboardController::brpList');
     $routes->get('dashboard/brpDownload/(:num)', 'DashboardController::brpDownload/$1');
+    
+    // Non-Registration Material Routes (Admin)
+    $routes->get('dashboard/nonreg', 'DashboardController::nonRegDashboard');
+    $routes->get('dashboard/nonreg/history/(:num)', 'DashboardController::getNonRegHistory/$1');
+    $routes->get('dashboard/nonRegList', 'DashboardController::nonRegList');
+    $routes->get('dashboard/getNonReg', 'DashboardController::getNonReg');
+    $routes->post('dashboard/saveNonReg', 'DashboardController::saveNonReg');
+    $routes->post('dashboard/deleteNonReg/(:num)', 'DashboardController::deleteNonReg/$1');
+    $routes->post('dashboard/uploadNonRegExcel', 'DashboardController::uploadNonRegExcel');
 });
 
 $routes->get('/', 'FormController::index');
 $routes->get('formmutasi', 'FormController::index');
 $routes->post('submit', 'FormController::submit');
-$routes->get('submit/pdf', 'FormController::generatePdf');
+$routes->get('submit/pdf', 'FormController::streamPdf');
 $routes->get('submit/pdf/clear', 'FormController::clearPdfSession');
 
 // Return Requests Routes (Public)

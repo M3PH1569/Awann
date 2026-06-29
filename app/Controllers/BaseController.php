@@ -51,5 +51,6 @@ abstract class BaseController extends Controller
         parent::initController($request, $response, $logger);
 
         helper('utf8');
+        $this->response->setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
     }
 }

@@ -33,18 +33,22 @@ class AdminController extends BaseController
 
     public function login()
     {
+        helper('logsecurity');
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
+        $safeUsername = sanitizeLog((string) $username);
 
-        $admin = $this->db->table('admin')->where('username', $username)->get()->getRowArray();
+        $admin = $this->db->table('admin')->where('username', $safeUsername)->get()->getRowArray();
         if ($admin && password_verify($password, $admin['password'])) {
             $this->session->set('admin', $admin);
+            log_message('info', 'Login berhasil username: ' . $safeUsername);
             // If password is blank, redirect to setup page before dashboard
             if (password_verify('', $admin['password'])) {
                 return redirect()->to('/setup-password');
             }
             return redirect()->to('/dashboard');
         } else {
+            log_message('warning', 'Login gagal username: ' . $safeUsername);
             return redirect()->back()->with('error', 'Username atau password salah');
         }
     }
@@ -59,7 +63,6 @@ class AdminController extends BaseController
     {
         $adminSession = session()->get('admin');
 
-        // Must be logged in
         if (!$adminSession || !isset($adminSession['id'])) {
             return redirect()->to('/login');
         }

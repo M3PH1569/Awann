@@ -18,6 +18,8 @@ class HistoryController extends BaseController
         $limit = 20;
         $offset = ($page - 1) * $limit;
 
+        $type = $this->request->getGet('type') ?? 'perangkat';
+
         $filters = [
             'search' => $this->request->getGet('search'),
             'status' => $this->request->getGet('status'),
@@ -25,6 +27,7 @@ class HistoryController extends BaseController
             'user' => $this->request->getGet('user'),
             'sort_by' => $this->request->getGet('sort_by'),
             'sort_dir' => $this->request->getGet('sort_dir'),
+            'type' => $type,
         ];
 
         $result = $mutasiModel->getAllHistory($filters, $limit, $offset);
@@ -34,7 +37,8 @@ class HistoryController extends BaseController
             'totalPage' => ceil($result['total'] / $limit),
             'currentPage' => $page,
             'limit' => $limit,
-            'users' => $userModel->orderBy('nama', 'ASC')->findAll()
+            'users' => $userModel->orderBy('nama', 'ASC')->findAll(),
+            'currentType' => $type
         ];
 
         return view('history', $data);

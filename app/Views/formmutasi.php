@@ -2,6 +2,7 @@
 
 <?= $this->section('content') ?>
 
+
 <?php $hideOverlay = session()->getFlashdata('success') || session()->getFlashdata('error') || session()->get('mutasi_pdf_ids'); ?>
 <div id="homepageOverlay"
   class="fixed inset-0 z-[100] flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat transition-all duration-[800ms] ease-in-out <?= $hideOverlay ? 'hidden' : '' ?>"
@@ -12,7 +13,7 @@
   </div>
 
   <div class="relative z-10 flex flex-grow flex-col items-center justify-center px-4 w-full">
-    <img src="<?= base_url('images/awan.png') ?>" alt="AWan Logo" class="w-64 mb-3 mt-64 drop-shadow-lg"
+    <img src="<?= base_url('images/awan.webp') ?>" alt="AWan Logo" class="w-64 mb-3 mt-64 drop-shadow-lg"
       onerror="this.style.display='none'">
 
     <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl mb-6 shadow-lg border border-white/20">
@@ -41,7 +42,7 @@
 </div>
 
 <div class="w-full max-w-[1450px] mx-auto rounded-lg overflow-hidden shadow-lg flex flex-col md:flex-row">
-  <div class="w-full md:w-1/5 bg-[#3E679E] p-6 md:p-8 text-white flex flex-col justify-between md:min-h-[510px]">
+  <div class="w-full md:w-1/5 bg-[#3E679E] p-6 md:p-8 text-white flex flex-col justify-between md:min-h-[600px]">
     <div>
       <p class="text-xs mb-6 leading-relaxed">
         Welcome, Laskar Lintasarta <br>
@@ -73,7 +74,7 @@
     </div>
   </div>
 
-  <div class="w-full md:w-4/5 bg-white p-6 md:p-10 min-h-[510px]">
+  <div class="w-full md:w-4/5 bg-white p-6 md:p-10 min-h-[600px]">
     <!-- TABS -->
     <div class="flex border-b border-gray-200 mb-8">
       <button type="button" onclick="switchTab('request')" id="tab_request" class="w-1/3 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
@@ -88,7 +89,7 @@
     </div>
 
     <!-- SLIDER CONTAINER -->
-    <div class="overflow-x-hidden overflow-y-visible w-full relative">
+    <div class="overflow-x-hidden overflow-y-auto w-full relative max-h-[470px] pr-2">
       <div id="slider_container" class="flex transition-transform duration-500 ease-in-out w-[300%]">
         
         <!-- TAB 1: PEMINJAMAN -->
@@ -98,7 +99,7 @@
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 mb-5">
 
         <div class="w-full flex flex-col relative">
-          <label class="font-semibold text-[#1C4D8D] text-sm mb-2">No Registrasi</label>
+          <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Material Registrasi</label>
           <input type="text" id="noreg_input" placeholder="Scan barcode atau ketik no registrasi"
             class="text-xs w-full rounded-md p-2 min-h-[42px] border border-gray-300 focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D]">
 
@@ -121,6 +122,28 @@
         </div>
       </div>
 
+      <!-- Non-Registration Input -->
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_100px_auto] gap-4 mb-5 border-t border-gray-200 pt-4">
+        <div class="w-full flex flex-col relative">
+          <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Material Non-Registrasi</label>
+          <select id="nonreg_select" class="">
+            <option value="">Pilih Material...</option>
+          </select>
+        </div>
+        <div class="w-full flex flex-col relative">
+          <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Quantity</label>
+          <input type="number" id="nonreg_qty" min="1" value="" placeholder="-"
+            class="text-xs w-full rounded-md p-2 min-h-[42px] border border-gray-300 focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D]">
+        </div>
+        <div class="w-full flex flex-col justify-end">
+          <label class="invisible text-sm mb-2">Hidden</label>
+          <button type="button" id="btn_tambah_nonreg" onclick="addNonRegToCart()"
+            class="bg-[#1C4D8D] h-[42px] px-4 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7AAACE] transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i> Tambah
+          </button>
+        </div>
+      </div>
+
       <div class="mt-4 mb-6">
         <h3 class="font-semibold text-sm mb-3 text-[#1C4D8D]">Daftar Perangkat</h3>
         <div class="overflow-y-auto rounded-lg border border-gray-200 shadow-sm max-h-[245px]">
@@ -128,15 +151,16 @@
             <thead class="bg-gray-50 border-b border-gray-200 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th class="px-2 py-2 font-semibold text-gray-600 text-center w-12">No</th>
-                <th class="px-2 py-2 font-semibold text-gray-600">Nomor Registrasi</th>
-                <th class="px-2 py-2 font-semibold text-gray-600">Nama Perangkat</th>
+                <th class="px-2 py-2 font-semibold text-gray-600">Registrasi / Kode Spec</th>
+                <th class="px-2 py-2 font-semibold text-gray-600">Nama Perangkat / Material</th>
+                <th class="px-2 py-2 font-semibold text-gray-600 text-center w-20">Qty</th>
                 <th class="px-2 py-2 font-semibold text-gray-600 text-center w-20">Action</th>
               </tr>
             </thead>
             <tbody id="list_perangkat" class="divide-y divide-gray-100 bg-white">
               <tr>
-                <td colspan="4" class="px-4 py-2 text-center text-gray-400 italic">
-                  Belum ada perangkat yang ditambahkan
+                <td colspan="5" class="px-4 py-2 text-center text-gray-400 italic">
+                  Belum ada perangkat atau material yang ditambahkan
                 </td>
               </tr>
             </tbody>
@@ -230,6 +254,7 @@
                     </th>
                     <th class="px-2 py-2 font-semibold text-gray-600">No Registrasi</th>
                     <th class="px-2 py-2 font-semibold text-gray-600">Nama Perangkat</th>
+                    <th class="px-2 py-2 font-semibold text-gray-600 text-center w-16">Qty</th>
                     <th class="px-2 py-2 font-semibold text-gray-600 text-center">Status</th>
                   </tr>
                 </thead>
@@ -274,6 +299,7 @@
           <div class="mt-2 mb-2 transition-all duration-500 ease-in-out">
             <div class="flex justify-between items-center mb-3">
               <h3 class="font-semibold text-sm text-[#1C4D8D]">Perangkat yang dibawa (<span id="total_install_count">0</span>)</h3>
+              <input type="text" id="search_install_devices" placeholder="Cari perangkat..." class="border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D] hidden">
             </div>
             <div class="overflow-auto rounded-lg border border-gray-200 shadow-sm max-h-[25vh]">
               <table class="w-full text-xs text-left">
@@ -284,6 +310,7 @@
                     </th>
                     <th class="px-2 py-2 font-semibold text-gray-600">No Registrasi</th>
                     <th class="px-2 py-2 font-semibold text-gray-600">Nama Perangkat</th>
+                    <th class="px-2 py-2 font-semibold text-gray-600 text-center w-16">Qty</th>
                     <th class="px-2 py-2 font-semibold text-gray-600 text-center">Status</th>
                   </tr>
                 </thead>
@@ -298,12 +325,18 @@
             </div>
           </div>
 
-          <!-- Arep & Node Sentral Dropdowns -->
-          <div class="grid grid-cols-2 gap-3 mt-3 mb-3 relative z-20">
+          <!-- Arep, Site & Node Sentral Dropdowns -->
+          <div class="grid grid-cols-3 gap-3 mt-3 mb-3 relative z-20">
             <div class="flex flex-col">
               <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Arep</label>
               <select id="install_arep" class="">
                 <option value="">Pilih Arep</option>
+              </select>
+            </div>
+            <div class="flex flex-col">
+              <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Site Sentral</label>
+              <select id="install_site" class="" disabled>
+                <option value="">Pilih Site</option>
               </select>
             </div>
             <div class="flex flex-col">
@@ -405,29 +438,122 @@
     <?php if (session()->getFlashData('success')): ?>
       showToast("<?= session()->getFlashdata('success') ?>", "success");
 
-      <?php if (session()->get('mutasi_pdf_ids')): ?>
-        Swal.fire({
-          title: "Data berhasil disimpan!",
-          text: "Download Bukti Request Perangkat",
-          icon: "success",
-          confirmButtonColor: "#1C4D8D",
-          confirmButtonText: '<i class="fa-solid fa-file-pdf"></i> Download PDF',
-          allowOutsideClick: false,
-          allowEscapeKey: false
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.open("<?= base_url('submit/pdf') ?>");
-          } else {
-            // Clear session data if user skips
-            fetch("<?= base_url('submit/pdf/clear') ?>");
-          }
-        });
+      <?php if (session()->getFlashData('brp_ready')): ?>
+        // Show BRP Modal
+        const brpModal = document.getElementById('brpDownloadModal');
+        if (brpModal) {
+            brpModal.classList.remove('hidden');
+            brpModal.classList.add('flex');
+            
+            // Auto download
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = "<?= base_url('submit/pdf') ?>";
+                link.setAttribute('download', '');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }, 500);
+        }
       <?php endif; ?>
     <?php endif; ?>
 
     const inputScan = document.getElementById('noreg_input');
+    const nonRegSelect = document.getElementById('nonreg_select');
 
     let cart = [];
+    let cartNonReg = [];
+    let allNonRegs = [];
+
+    let tsNonReg = null;
+
+    // Load Non-Registration Materials
+    fetch('<?= base_url('dashboard/nonRegList') ?>', {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+      .then(res => res.json())
+      .then(data => {
+        allNonRegs = data;
+        if(data && data.length) {
+          data.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.textContent = `${item.kode_spec || '-'} - ${item.nama_material} (Stock: ${item.quantity})`;
+            nonRegSelect.appendChild(opt);
+          });
+
+          tsNonReg = new TomSelect("#nonreg_select", {
+            create: false,
+          });
+
+          tsNonReg.on('change', function(value) {
+            if (value) {
+              const selectedItem = allNonRegs.find(item => item.id == value);
+              const stock = selectedItem ? parseInt(selectedItem.quantity) : 0;
+              if (stock === 0) {
+                document.getElementById('nonreg_qty').disabled = true;
+                document.getElementById('btn_tambah_nonreg').disabled = true;
+                document.getElementById('btn_tambah_nonreg').classList.add('opacity-50', 'cursor-not-allowed');
+              } else {
+                document.getElementById('nonreg_qty').disabled = false;
+                document.getElementById('btn_tambah_nonreg').disabled = false;
+                document.getElementById('btn_tambah_nonreg').classList.remove('opacity-50', 'cursor-not-allowed');
+              }
+            } else {
+              document.getElementById('nonreg_qty').disabled = false;
+              document.getElementById('btn_tambah_nonreg').disabled = false;
+              document.getElementById('btn_tambah_nonreg').classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+          });
+        }
+      });
+      
+    window.addNonRegToCart = function() {
+      const selectedId = tsNonReg ? tsNonReg.getValue() : nonRegSelect.value;
+      const qty = parseInt(document.getElementById('nonreg_qty').value);
+
+      if(!selectedId) {
+        showToast("Pilih material terlebih dahulu", "warning");
+        return;
+      }
+      if(!qty || qty < 1) {
+        showToast("Quantity minimal 1", "warning");
+        return;
+      }
+
+      const selectedItem = allNonRegs.find(item => item.id == selectedId);
+      const stock = selectedItem ? parseInt(selectedItem.quantity) : 0;
+
+      if(qty > stock) {
+        showToast(`Stock tidak cukup! Tersisa ${stock}`, "error");
+        return;
+      }
+
+      // Check if already in cart
+      const existing = cartNonReg.find(item => item.id == selectedId);
+      if(existing) {
+        if(existing.qty + qty > stock) {
+          showToast(`Total quantity melebihi stock! Tersisa ${stock}`, "error");
+          return;
+        }
+        existing.qty += qty;
+      } else {
+        cartNonReg.push({
+          id: selectedId,
+          kode_spec: selectedItem.kode_spec || '-',
+          nama: selectedItem.nama_material,
+          qty: qty
+        });
+      }
+
+      showToast("Material ditambahkan ke daftar!", "success");
+      if (tsNonReg) tsNonReg.clear();
+      document.getElementById('nonreg_qty').value = "";
+      document.getElementById('nonreg_qty').disabled = false;
+      document.getElementById('btn_tambah_nonreg').disabled = false;
+      document.getElementById('btn_tambah_nonreg').classList.remove('opacity-50', 'cursor-not-allowed');
+      renderTable();
+    };
 
     function multiAdd(noregInput) {
       const noreg = noregInput.trim();
@@ -437,7 +563,9 @@
         return;
       }
 
-      fetch(`<?= base_url('form/cek-noreg') ?>?noreg=${encodeURIComponent(noreg)}`)
+      fetch(`<?= base_url('form/cek-noreg') ?>?noreg=${encodeURIComponent(noreg)}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
         .then(res => res.json())
         .then(res => {
           if (!res.exists) {
@@ -647,25 +775,29 @@
       const tbody = document.getElementById('list_perangkat');
       tbody.innerHTML = "";
 
-      if (cart.length === 0) {
+      if (cart.length === 0 && cartNonReg.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="4" class="px-4 py-8 text-center text-gray-400 italic">
-              Belum ada perangkat yang ditambahkan
+            <td colspan="5" class="px-4 py-8 text-center text-gray-400 italic">
+              Belum ada perangkat atau material yang ditambahkan
             </td>
           </tr>
         `;
         return;
       }
 
+      let rowIdx = 1;
+
+      // Render Devices
       cart.forEach((item, index) => {
         tbody.innerHTML += `
         <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-4 py-3 text-center text-gray-700">${index + 1}</td>
+          <td class="px-4 py-3 text-center text-gray-700">${rowIdx++}</td>
           <td class="px-4 py-3 text-gray-700 font-medium">${item.noreg}</td>
           <td class="px-4 py-3 text-gray-700">${item.nama}</td>
+          <td class="px-4 py-3 text-center text-gray-700">1</td>
           <td class="px-4 py-3 text-center">
-            <button type="button" onclick="hapusItem(${index})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-md transition-colors" title="Hapus">
+            <button type="button" onclick="hapusItem(${index}, 'perangkat')" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-md transition-colors" title="Hapus">
               <i class="fa-solid fa-trash"></i>
             </button>
             <input type="hidden" name="perangkat[${index}][id]" value="${item.id}">
@@ -674,10 +806,33 @@
         </tr>
         `;
       });
+
+      // Render Non-Registration Materials
+      cartNonReg.forEach((item, index) => {
+        tbody.innerHTML += `
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-4 py-3 text-center text-gray-700">${rowIdx++}</td>
+          <td class="px-4 py-3 text-gray-700 font-medium">${item.kode_spec}</td>
+          <td class="px-4 py-3 text-gray-700">${item.nama} <span class="text-[10px] bg-blue-100 text-blue-800 px-1 py-0.5 rounded ml-1">Non-Reg</span></td>
+          <td class="px-4 py-3 text-center text-gray-700 font-bold">${item.qty}</td>
+          <td class="px-4 py-3 text-center">
+            <button type="button" onclick="hapusItem(${index}, 'non_reg')" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-md transition-colors" title="Hapus">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+            <input type="hidden" name="non_reg[${index}][id]" value="${item.id}">
+            <input type="hidden" name="non_reg[${index}][qty]" value="${item.qty}">
+          </td>
+        </tr>
+        `;
+      });
     }
 
-    window.hapusItem = function (index) {
-      cart.splice(index, 1);
+    window.hapusItem = function (index, type = 'perangkat') {
+      if(type === 'perangkat') {
+        cart.splice(index, 1);
+      } else {
+        cartNonReg.splice(index, 1);
+      }
       renderTable();
     }
 
@@ -685,9 +840,9 @@
     const btnSubmit = document.getElementById("btn_submit");
 
     form.addEventListener("submit", function (e) {
-      if (cart.length === 0) {
+      if (cart.length === 0 && cartNonReg.length === 0) {
         e.preventDefault();
-        showToast("Tambahkan minimal 1 perangkat!", "warning");
+        showToast("Tambahkan minimal 1 perangkat atau material!", "warning");
         return;
       }
 
@@ -728,7 +883,9 @@
         </tr>
       `;
 
-      fetch(`<?= base_url('form/devices') ?>/${userId}`)
+      fetch(`<?= base_url('form/devices') ?>/${userId}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
         .then(res => res.json())
         .then(data => {
           const tbody = document.getElementById('return_devices_list');
@@ -737,7 +894,7 @@
           if (data.length === 0) {
             tbody.innerHTML = `
               <tr>
-                <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+                <td colspan="5" class="px-4 py-4 text-center text-gray-400 italic">
                   Tidak ada perangkat yang dibawa oleh user ini.
                 </td>
               </tr>
@@ -755,13 +912,18 @@
           document.getElementById('search_return_devices').classList.remove('hidden');
 
           data.forEach(device => {
-            const isPending = device.is_pending == 1;
+            const pendingType = device.pending_type;
+            const isPending = pendingType !== '';
             const statusHtml = isPending 
-                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan</span>'
+                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan ' + (pendingType === 'return' ? 'Pengembalian' : 'Pemasangan') + '</span>'
                 : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span>';
             const cbHtml = isPending 
                 ? `<input type="checkbox" class="return-device-cb w-3 h-3 cursor-not-allowed opacity-50" disabled value="${device.mutasi_id}" title="Sedang dalam pengajuan">`
                 : `<input type="checkbox" class="return-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">`;
+
+            const qtyHtml = device.is_nonreg == 1
+                ? `<input type="number" min="1" max="${device.qty}" value="${device.qty}" class="return-device-qty w-12 border border-gray-300 rounded px-1 py-0.5 text-center text-xs focus:ring-[#1C4D8D]" ${isPending ? 'disabled' : ''}>`
+                : `<span class="text-gray-500">1</span>`;
 
             tbody.innerHTML += `
               <tr class="device-row hover:bg-gray-50 transition-colors ${isPending ? 'opacity-75' : ''}">
@@ -770,6 +932,7 @@
                 </td>
                 <td class="px-2 py-2 border-b text-gray-700">${device.noreg}</td>
                 <td class="px-2 py-2 border-b text-gray-700 max-w-[200px] truncate" title="${device.nama}">${device.nama}</td>
+                <td class="px-2 py-2 border-b text-center">${qtyHtml}</td>
                 <td class="px-2 py-2 border-b text-center">${statusHtml}</td>
               </tr>
             `;
@@ -793,6 +956,18 @@
       searchReturnInput.addEventListener('input', function() {
         const keyword = this.value.toLowerCase();
         const rows = document.querySelectorAll('#return_devices_list tr.device-row');
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(keyword) ? '' : 'none';
+        });
+      });
+    }
+
+    const searchInstallInput = document.getElementById('search_install_devices');
+    if (searchInstallInput) {
+      searchInstallInput.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#install_devices_list tr.install-device-row');
         rows.forEach(row => {
           const text = row.textContent.toLowerCase();
           row.style.display = text.includes(keyword) ? '' : 'none';
@@ -866,14 +1041,23 @@
         return;
       }
 
-      const mutasiIds = Array.from(checkboxes).map(cb => cb.value);
+      const selectedData = Array.from(checkboxes).map(cb => {
+        const row = cb.closest('tr');
+        const qtyInput = row.querySelector('.return-device-qty');
+        return {
+          id: cb.value,
+          qty: qtyInput ? qtyInput.value : 1
+        };
+      });
+
       const btn = document.getElementById('btn_submit_return');
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
 
       var params = new URLSearchParams();
-      mutasiIds.forEach(function(id) {
-        params.append('mutasi_ids[]', id);
+      selectedData.forEach(function(item) {
+        params.append('mutasi_ids[]', item.id);
+        params.append('qtys[]', item.qty);
       });
 
       const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
@@ -886,6 +1070,7 @@
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken
         },
+        credentials: 'same-origin',
         body: params
       })
       .then(res => res.json())
@@ -914,11 +1099,14 @@
 
     let nodeData = {};
 
-    // Fetch Arep and Node Data
+    // Fetch Arep, Site, and Node Data
     let tsInstallArep;
+    let tsInstallSite;
     let tsInstallNode;
 
-    fetch(`<?= base_url('form/nodes') ?>`)
+    fetch(`<?= base_url('form/nodes') ?>`, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
       .then(res => res.json())
       .then(data => {
         nodeData = data;
@@ -934,18 +1122,43 @@
           create: false,
         });
 
+        tsInstallSite = new TomSelect("#install_site", {
+          create: false,
+        });
+
         tsInstallNode = new TomSelect("#install_node", {
           create: false,
         });
 
         tsInstallArep.on('change', function(selectedArep) {
+          tsInstallSite.clearOptions();
+          tsInstallSite.clear();
           tsInstallNode.clearOptions();
           tsInstallNode.clear();
           
           if (selectedArep && nodeData[selectedArep]) {
+            tsInstallSite.enable();
+            const sites = Object.keys(nodeData[selectedArep]).sort((a, b) => a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'}));
+            sites.forEach(site => {
+              tsInstallSite.addOption({value: site, text: site});
+            });
+          } else {
+            tsInstallSite.disable();
+            tsInstallSite.addOption({value: "", text: "Pilih Site"});
+            tsInstallNode.disable();
+            tsInstallNode.addOption({value: "", text: "Pilih Node"});
+          }
+        });
+
+        tsInstallSite.on('change', function(selectedSite) {
+          tsInstallNode.clearOptions();
+          tsInstallNode.clear();
+          
+          const selectedArep = tsInstallArep.getValue();
+          if (selectedArep && selectedSite && nodeData[selectedArep] && nodeData[selectedArep][selectedSite]) {
             tsInstallNode.enable();
-            const sortedNodes = [...nodeData[selectedArep]].sort((a, b) => a.toString().localeCompare(b.toString(), undefined, {numeric: true, sensitivity: 'base'}));
-            sortedNodes.forEach(node => {
+            const nodes = [...nodeData[selectedArep][selectedSite]].sort((a, b) => a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'}));
+            nodes.forEach(node => {
               tsInstallNode.addOption({value: node, text: node});
             });
           } else {
@@ -956,13 +1169,14 @@
       });
 
     const installArepSelect = document.getElementById('install_arep');
+    const installSiteSelect = document.getElementById('install_site');
     const installNodeSelect = document.getElementById('install_node');
 
     tsInstallUser.on('change', function(userId) {
       if (!userId) {
         document.getElementById('install_devices_list').innerHTML = `
           <tr>
-            <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+            <td colspan="5" class="px-4 py-4 text-center text-gray-400 italic">
               Pilih user untuk melihat perangkat.
             </td>
           </tr>
@@ -970,12 +1184,14 @@
         document.getElementById('btn_submit_install').disabled = true;
         document.getElementById('total_install_count').innerText = '0';
         document.getElementById('selected_install_count').innerText = '0';
+        document.getElementById('search_install_devices').classList.add('hidden');
+        document.getElementById('search_install_devices').value = '';
         return;
       }
 
       document.getElementById('install_devices_list').innerHTML = `
         <tr>
-          <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+          <td colspan="5" class="px-4 py-4 text-center text-gray-400 italic">
             <i class="fa-solid fa-spinner fa-spin"></i> Memuat perangkat...
           </td>
         </tr>
@@ -983,7 +1199,9 @@
 
       // Reusing the same endpoint, but we should ideally filter out already pending installations. 
       // For now we use the same endpoint as return requests.
-      fetch(`<?= base_url('form/devices') ?>/${userId}`)
+      fetch(`<?= base_url('form/devices') ?>/${userId}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
         .then(res => res.json())
         .then(data => {
           const tbody = document.getElementById('install_devices_list');
@@ -992,7 +1210,7 @@
           if (data.length === 0) {
             tbody.innerHTML = `
               <tr>
-                <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+                <td colspan="5" class="px-4 py-4 text-center text-gray-400 italic">
                   Tidak ada perangkat yang dibawa oleh user ini.
                 </td>
               </tr>
@@ -1000,20 +1218,28 @@
             document.getElementById('btn_submit_install').disabled = true;
             document.getElementById('total_install_count').innerText = '0';
             document.getElementById('selected_install_count').innerText = '0';
+            document.getElementById('search_install_devices').classList.add('hidden');
+            document.getElementById('search_install_devices').value = '';
             return;
           }
 
           document.getElementById('total_install_count').innerText = data.length;
           document.getElementById('selected_install_count').innerText = '0';
+          document.getElementById('search_install_devices').classList.remove('hidden');
 
           data.forEach(device => {
-            const isPending = device.is_pending == 1; // From return_requests check (could be expanded)
+            const pendingType = device.pending_type;
+            const isPending = pendingType !== '';
             const statusHtml = isPending 
-                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan</span>'
+                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan ' + (pendingType === 'return' ? 'Pengembalian' : 'Pemasangan') + '</span>'
                 : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span>';
             const cbHtml = isPending 
                 ? `<input type="checkbox" class="install-device-cb w-3 h-3 cursor-not-allowed opacity-50" disabled value="${device.mutasi_id}" title="Sedang dalam pengajuan">`
                 : `<input type="checkbox" class="install-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">`;
+
+            const qtyHtml = device.is_nonreg == 1
+                ? `<input type="number" min="1" max="${device.qty}" value="${device.qty}" class="install-device-qty w-12 border border-gray-300 rounded px-1 py-0.5 text-center text-xs focus:ring-[#1C4D8D]" ${isPending ? 'disabled' : ''}>`
+                : `<span class="text-gray-500">1</span>`;
 
             tbody.innerHTML += `
               <tr class="install-device-row hover:bg-gray-50 transition-colors ${isPending ? 'opacity-75' : ''}">
@@ -1022,6 +1248,7 @@
                 </td>
                 <td class="px-2 py-2 border-b text-gray-700">${device.noreg}</td>
                 <td class="px-2 py-2 border-b text-gray-700 max-w-[200px] truncate" title="${device.nama}">${device.nama}</td>
+                <td class="px-2 py-2 border-b text-center">${qtyHtml}</td>
                 <td class="px-2 py-2 border-b text-center">${statusHtml}</td>
               </tr>
             `;
@@ -1082,23 +1309,33 @@
       }
       
       const arep = installArepSelect.value;
+      const siteSentral = installSiteSelect.value;
       const nodeSentral = installNodeSelect.value;
-      
-      if (!arep || !nodeSentral) {
-        showToast('Pilih Arep dan Node Sentral', 'warning');
+      if (!arep || !siteSentral) {
+        showToast('Pilih Arep dan Site Sentral', 'warning');
         return;
       }
 
-      const mutasiIds = Array.from(checkboxes).map(cb => cb.value);
+      const selectedData = Array.from(checkboxes).map(cb => {
+        const row = cb.closest('tr');
+        const qtyInput = row.querySelector('.install-device-qty');
+        return {
+          id: cb.value,
+          qty: qtyInput ? qtyInput.value : 1
+        };
+      });
+
       const btn = document.getElementById('btn_submit_install');
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
 
       var params = new URLSearchParams();
-      mutasiIds.forEach(function(id) {
-        params.append('mutasi_ids[]', id);
+      selectedData.forEach(function(item) {
+        params.append('mutasi_ids[]', item.id);
+        params.append('qtys[]', item.qty);
       });
       params.append('arep', arep);
+      params.append('site_sentral', siteSentral);
       params.append('node_sentral', nodeSentral);
 
       const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
@@ -1111,6 +1348,7 @@
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken
         },
+        credentials: 'same-origin',
         body: params
       })
       .then(res => res.json())
@@ -1133,4 +1371,23 @@
     }
   });
 </script>
+
+<!-- BRP Download Modal -->
+<div id="brpDownloadModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-xl w-[90%] max-w-sm p-6 text-center transform transition-all">
+        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+            <i class="fa-solid fa-check-circle text-3xl text-green-500"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Peminjaman Berhasil!</h3>
+        <p class="text-sm text-gray-500 mb-6">Silakan download Bukti Request Perangkat (BRP) Anda di bawah ini</p>
+        
+        <div class="flex flex-col gap-3">
+            <a href="<?= base_url('submit/pdf') ?>" target="_blank" onclick="document.getElementById('brpDownloadModal').classList.add('hidden'); document.getElementById('brpDownloadModal').classList.remove('flex');"
+                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#1C4D8D] text-base font-medium text-white hover:bg-[#2A62AA] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1C4D8D] sm:text-sm">
+                <i class="fa-solid fa-download mr-2 mt-1"></i> Download PDF
+            </a>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>

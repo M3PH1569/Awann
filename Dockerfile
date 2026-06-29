@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.5-apache
 
 # Install required system packages and PHP extensions
 RUN apt-get update && apt-get install -y \
@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache mod_rewrite for CodeIgniter 4
-RUN a2enmod rewrite
+RUN a2enmod rewrite headers
 
 # Update Apache DocumentRoot to the public directory
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public

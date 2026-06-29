@@ -13,10 +13,11 @@
     <h2 class="text-base font-semibold mb-3">
       Selamat Datang, <?= session('admin')['nama'] ?? '' ?>!
     </h2>
-
   </div>
 
-  <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center sticky top-[70px] z-[20]">
+
+
+  <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center">
     <?php $isBulk = strpos($_GET['keyword'] ?? '', ';') !== false; ?>
     <div class="relative flex items-center transition-all duration-500 ease-in-out" id="searchContainer" style="width: <?= $isBulk ? '350px' : '200px' ?>;">
       <input type="text" id="searchInput" name="keyword" value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" placeholder="<?= $isBulk ? 'Bulk search (pisahkan dengan ;)' : 'Search...' ?>"
@@ -89,8 +90,13 @@
 
   </form>
 
-  <div class="flex-1 bg-white rounded-md shadow flex flex-col overflow-hidden">
-    <div class="flex-1 overflow-auto max-h-[calc(100vh-280px)]">
+  <div class="flex border-b border-gray-300 gap-4 mb-3">
+    <a href="<?= base_url('dashboard') ?>" class="py-2 px-4 text-sm font-semibold transition-colors duration-200 border-b-2 border-[#1C4D8D] text-[#1C4D8D]">Registrasi</a>
+    <a href="<?= base_url('dashboard/nonreg') ?>" class="py-2 px-4 text-sm font-semibold transition-colors duration-200 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Non-Registrasi</a>
+  </div>
+
+  <div class="flex flex-col overflow-hidden min-h-0 mb-4">
+    <div class="overflow-y-auto max-h-[420px] custom-scrollbar">
       <?php
       $currentSort = $_GET['sort_by'] ?? '';
       $currentDir = $_GET['sort_dir'] ?? '';
@@ -284,7 +290,7 @@
 
   </div>
 
-  <div class="py-1 sticky bottom-0 mt-2">
+  <div class="py-2 sticky bottom-0 mt-auto bg-[#F1F1F1] z-20 shadow-sm border-t border-gray-200/50">
     <div class="flex justify-center items-center gap-1 w-full">
 
       <?php $query = $_GET; ?>

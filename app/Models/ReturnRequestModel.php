@@ -12,7 +12,7 @@ class ReturnRequestModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
     protected $protectFields = true;
-    protected $allowedFields = ['id_mutasi', 'status', 'is_read'];
+    protected $allowedFields = ['id_mutasi', 'status', 'is_read', 'qty'];
 
     protected $useTimestamps = true;
     protected $dateFormat = 'datetime';
@@ -22,10 +22,11 @@ class ReturnRequestModel extends Model
     public function getPendingRequests()
     {
         $builder = $this->db->table($this->table . ' rr');
-        $builder->select('rr.id as request_id, m.id as mutasi_id, u.nama as nama_user, p.noreg, p.nama as nama_perangkat, rr.created_at, rr.is_read');
+        $builder->select('rr.id as request_id, m.id as mutasi_id, u.nama as nama_user, p.noreg, p.nama as nama_perangkat, nr.kode_spec as nr_noreg, nr.nama_material as nr_nama, rr.created_at, rr.is_read, rr.qty');
         $builder->join('mutasi m', 'm.id = rr.id_mutasi');
         $builder->join('users u', 'u.id = m.id_users', 'left');
         $builder->join('perangkat p', 'p.id = m.id_perangkat', 'left');
+        $builder->join('non_registration nr', 'nr.id = m.id_non_reg', 'left');
         $builder->where('rr.status', 'Pending');
         $builder->orderBy('rr.created_at', 'DESC');
         
@@ -38,8 +39,9 @@ class ReturnRequestModel extends Model
         $grouped = [];
         
         foreach ($raw as $r) {
-            // Group by user and exact timestamp
-            $key = md5($r['nama_user'] . '_' . $r['created_at']);
+            // Group by user and minute (to avoid separation if insert crosses a second)
+            $minuteTimestamp = substr($r['created_at'], 0, 16);
+            $key = md5($r['nama_user'] . '_' . $minuteTimestamp);
             
             if (!isset($grouped[$key])) {
                 $grouped[$key] = [
@@ -52,14 +54,16 @@ class ReturnRequestModel extends Model
             }
             
             // If any device in the group is unread, the whole group is unread
-            if ($r['is_read'] === 'f' || $r['is_read'] === false || $r['is_read'] === '0') {
+            if ($r['is_read'] == 0 || $r['is_read'] === 'f' || $r['is_read'] === false) {
                 $grouped[$key]['is_read'] = false;
             }
 
             $grouped[$key]['devices'][] = [
                 'request_id' => $r['request_id'],
-                'noreg' => $r['noreg'],
-                'nama_perangkat' => $r['nama_perangkat']
+                'mutasi_id' => $r['mutasi_id'],
+                'noreg' => !empty($r['noreg']) ? $r['noreg'] : $r['nr_noreg'],
+                'nama_perangkat' => !empty($r['nama_perangkat']) ? $r['nama_perangkat'] : $r['nr_nama'],
+                'qty' => $r['qty']
             ];
         }
         

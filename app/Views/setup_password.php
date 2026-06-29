@@ -31,7 +31,7 @@
     <?php $uri = service('uri'); ?>
 
     <nav id="mainNav" class="fixed w-full bg-[#1C4D8D] text-white px-4 md:px-6 py-2 flex justify-between items-center shadow-md z-50">
-        <img src="<?= base_url('images/awan.png') ?>" class="w-[140px] md:w-[200px]">
+        <img src="<?= base_url('images/awan.webp') ?>" class="w-[140px] md:w-[200px]">
 
         <!-- Hamburger button (mobile only) -->
         <button id="hamburgerBtn" onclick="toggleMobileMenu()" class="md:hidden text-white focus:outline-none p-2">

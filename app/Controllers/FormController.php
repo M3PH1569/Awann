@@ -88,57 +88,90 @@ class FormController extends BaseController
     {
         $perangkatModel = new PerangkatModel();
         $mutasiModel = new MutasiModel();
+        $nonRegModel = new \App\Models\NonRegistrationModel();
 
         $perangkatList = $this->request->getPost('perangkat');
+        $nonRegList = $this->request->getPost('non_reg');
 
-        if (empty($perangkatList)) {
-            return redirect()->back()->with('error', 'Belum ada perangkat yang ditambahkan!');
+        if (empty($perangkatList) && empty($nonRegList)) {
+            return redirect()->back()->with('error', 'Belum ada perangkat atau material yang ditambahkan!');
         }
 
         $mutasiIds = [];
 
         $adminSession = session()->get('admin');
         $updatedBy = $adminSession ? $adminSession['username'] : 'admin';
+        $userId = $this->request->getPost('user');
+        $keterangan = sanitize_utf8($this->request->getPost('keterangan'));
 
-        foreach ($perangkatList as $pl) {
-            $mutasiModel->insert([
-                'id_perangkat' => $pl['id'],
-                'noreg' => $pl['noreg'],
-                'id_users' => $this->request->getPost('user'),
-                'keterangan' => sanitize_utf8($this->request->getPost('keterangan')),
-                'status' => 'Dibawa',
-                'updated_by' => $updatedBy
-            ]);
+        // Handle regular perangkat
+        if (!empty($perangkatList)) {
+            foreach ($perangkatList as $pl) {
+                $mutasiModel->insert([
+                    'id_perangkat' => $pl['id'],
+                    'noreg' => $pl['noreg'],
+                    'id_users' => $userId,
+                    'keterangan' => $keterangan,
+                    'status' => 'Dibawa',
+                    'updated_by' => $updatedBy
+                ]);
 
-            $mutasiIds[] = $mutasiModel->getInsertID();
+                $mutasiIds[] = $mutasiModel->getInsertID();
 
-            $perangkatModel->update($pl['id'], [
-                'status' => $this->mapStatusPerangkat('Dibawa')
-            ]);
+                $perangkatModel->update($pl['id'], [
+                    'status' => $this->mapStatusPerangkat('Dibawa')
+                ]);
+            }
         }
 
-        session()->set('mutasi_pdf_ids', $mutasiIds);
+        // Handle non_reg materials
+        if (!empty($nonRegList)) {
+            foreach ($nonRegList as $nr) {
+                $mutasiModel->insert([
+                    'id_perangkat' => null,
+                    'noreg' => null,
+                    'id_non_reg' => $nr['id'],
+                    'qty' => $nr['qty'],
+                    'id_users' => $userId,
+                    'keterangan' => $keterangan,
+                    'status' => 'Dibawa',
+                    'updated_by' => $updatedBy
+                ]);
 
-        return redirect()->to('/')->with('success', 'Data berhasil disimpan, Silakan konfirmasi ke Admin');
-    }
+                $mutasiIds[] = $mutasiModel->getInsertID();
 
-    public function generatePdf()
-    {
-        $mutasiIds = session()->get('mutasi_pdf_ids');
+                // Decrease stock
+                $item = $nonRegModel->find($nr['id']);
+                if ($item) {
+                    $newQty = max(0, $item['quantity'] - $nr['qty']);
+                    $nonRegModel->update($nr['id'], ['quantity' => $newQty]);
+                }
+            }
+        }
 
         if (empty($mutasiIds)) {
-            return redirect()->to('/')->with('error', 'Data PDF tidak tersedia, silakan submit ulang.');
+            return redirect()->to('/')->with('error', 'Data mutasi kosong, tidak dapat membuat BRP.');
         }
 
-        // Remove from session after consuming
-        session()->remove('mutasi_pdf_ids');
+        $filename = $this->generateAndSavePdf($mutasiIds);
+
+        session()->set('brp_download_filename', $filename);
+
+        return redirect()->to('/')->with('success', 'Data berhasil disimpan, Silakan konfirmasi ke Admin')->with('brp_ready', true);
+    }
+
+    private function generateAndSavePdf($mutasiIds)
+    {
 
         $mutasiModel = new MutasiModel();
         $perangkatModel = new PerangkatModel();
+        $specModel = new \App\Models\SpecPerangkatModel();
+        $nonRegModel = new \App\Models\NonRegistrationModel();
         $userModel = new UserModel();
 
         // Fetch all mutasi records with related data
         $mutasiData = [];
+        $mutasiDataNonReg = [];
         $userName = '';
         $keterangan = '';
         $tanggal = '';
@@ -146,15 +179,27 @@ class FormController extends BaseController
         foreach ($mutasiIds as $id) {
             $mutasi = $mutasiModel->find($id);
             if ($mutasi) {
-                $perangkat = $perangkatModel->find($mutasi['id_perangkat']);
                 $user = $userModel->find($mutasi['id_users']);
-
-                $mutasiData[] = [
-                    'noreg' => $perangkat['noreg'] ?? '-',
-                    'nama' => $perangkat['nama'] ?? '-',
-                    'status' => $mutasi['status'] ?? '-',
-                    'keterangan' => $mutasi['keterangan'] ?? '-',
-                ];
+                
+                if (!empty($mutasi['id_perangkat'])) {
+                    $perangkat = $perangkatModel->find($mutasi['id_perangkat']);
+                    $spec = $perangkat ? $specModel->find($perangkat['id_spec']) : null;
+                    $mutasiData[] = [
+                        'noreg' => $perangkat['noreg'] ?? '-',
+                        'nama' => $perangkat['nama'] ?? ($spec['nama_perangkat'] ?? '-'),
+                        'status' => $mutasi['status'] ?? '-',
+                        'keterangan' => $mutasi['keterangan'] ?? '-',
+                    ];
+                } elseif (!empty($mutasi['id_non_reg'])) {
+                    $nr = $nonRegModel->find($mutasi['id_non_reg']);
+                    $mutasiDataNonReg[] = [
+                        'noreg' => $nr['kode_spec'] ?? '-',
+                        'nama' => $nr['nama_material'] ?? '-',
+                        'qty' => $mutasi['qty'] ?? 1,
+                        'status' => $mutasi['status'] ?? '-',
+                        'keterangan' => $mutasi['keterangan'] ?? '-',
+                    ];
+                }
 
                 if (empty($userName) && $user) {
                     $userName = $user['nama'];
@@ -168,7 +213,16 @@ class FormController extends BaseController
             }
         }
 
-        if (empty($mutasiData)) {
+        // Sort data by NOMOR REGISTRASI ascending
+        usort($mutasiData, function ($a, $b) {
+            return strnatcasecmp($a['noreg'], $b['noreg']);
+        });
+
+        usort($mutasiDataNonReg, function ($a, $b) {
+            return strnatcasecmp($a['noreg'], $b['noreg']);
+        });
+
+        if (empty($mutasiData) && empty($mutasiDataNonReg)) {
             return redirect()->to('/')->with('error', 'Data mutasi tidak ditemukan.');
         }
 
@@ -380,13 +434,15 @@ class FormController extends BaseController
                             <td class="info-value">: ' . esc($keterangan) . '</td>
                         </tr>
                         <tr>
-                            <td class="info-label">Jumlah Perangkat</td>
-                            <td class="info-value">: ' . count($mutasiData) . ' unit</td>
+                            <td class="info-label">Jumlah Item</td>
+                            <td class="info-value">: ' . (count($mutasiData) + count($mutasiDataNonReg)) . ' item</td>
                         </tr>
                     </table>
-                </div>
+                </div>';
 
-                <div class="section-title">Daftar Perangkat</div>
+        if (!empty($mutasiData)) {
+            $html .= '
+                <div class="section-title">Daftar Perangkat Registrasi</div>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -397,19 +453,50 @@ class FormController extends BaseController
                     </thead>
                     <tbody>';
 
-        foreach ($mutasiData as $i => $item) {
+            foreach ($mutasiData as $i => $item) {
+                $html .= '
+                        <tr>
+                            <td class="text-center">' . ($i + 1) . '</td>
+                            <td>' . esc($item['noreg']) . '</td>
+                            <td>' . esc($item['nama']) . '</td>
+                        </tr>';
+            }
+
             $html .= '
-                            <tr>
-                                <td class="text-center">' . ($i + 1) . '</td>
-                                <td>' . esc($item['noreg']) . '</td>
-                                <td>' . esc($item['nama']) . '</td>
-                            </tr>';
+                    </tbody>
+                </table>';
+        }
+
+        if (!empty($mutasiDataNonReg)) {
+            $html .= '
+                <div class="section-title">Daftar Material Non-Registrasi</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 40px;">No</th>
+                            <th>Kode Spec</th>
+                            <th>Nama Material</th>
+                            <th class="text-center" style="width: 60px;">Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+
+            foreach ($mutasiDataNonReg as $i => $item) {
+                $html .= '
+                        <tr>
+                            <td class="text-center">' . ($i + 1) . '</td>
+                            <td>' . esc($item['noreg']) . '</td>
+                            <td>' . esc($item['nama']) . '</td>
+                            <td class="text-center">' . esc($item['qty']) . '</td>
+                        </tr>';
+            }
+
+            $html .= '
+                    </tbody>
+                </table>';
         }
 
         $html .= '
-                </tbody>
-        </table>
-
                 <table class="signature-section">
                 <tr>
                     <td class="text-center">
@@ -464,13 +551,32 @@ class FormController extends BaseController
             'created_at'       => date('Y-m-d H:i:s'),
         ]);
 
-        $dompdf->stream($filename, ['Attachment' => true]);
-        exit;
+        return $filename;
+    }
+
+    public function streamPdf()
+    {
+        $filename = session()->get('brp_download_filename');
+        if (empty($filename)) {
+            return redirect()->to('/')->with('error', 'File PDF tidak ditemukan.');
+        }
+
+        $filePath = WRITEPATH . 'brp' . DIRECTORY_SEPARATOR . $filename;
+        if (!file_exists($filePath)) {
+            return redirect()->to('/')->with('error', 'File PDF hilang di server.');
+        }
+
+        session()->remove('brp_download_filename');
+
+        return $this->response->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody(file_get_contents($filePath));
     }
 
     public function clearPdfSession()
     {
         session()->remove('mutasi_pdf_ids');
+        session()->remove('brp_download_filename');
         return $this->response->setJSON(['status' => 'ok']);
     }
 
@@ -496,25 +602,39 @@ class FormController extends BaseController
         // Subquery to get the latest mutasi ID for each perangkat
         $subQuery = $db->table('mutasi')
             ->select('MAX(id) as max_id')
+            ->where('id_perangkat IS NOT NULL')
             ->groupBy('id_perangkat')
             ->getCompiledSelect();
 
+        // 1. Get Perangkat devices
         $builder = $db->table('mutasi m');
-        $builder->select('m.id as mutasi_id, p.noreg, p.nama');
+        $builder->select('m.id as mutasi_id, p.noreg, COALESCE(sp.nama_perangkat, p.nama) as nama, 1 as qty, 0 as is_nonreg');
         $builder->select('CASE 
-            WHEN EXISTS (SELECT 1 FROM return_requests rr WHERE rr.id_mutasi = m.id AND rr.status = \'Pending\') THEN 1 
-            WHEN EXISTS (SELECT 1 FROM installation_requests ir WHERE ir.id_mutasi = m.id AND ir.status = \'Pending\') THEN 1 
-            ELSE 0 END as is_pending', false);
+            WHEN EXISTS (SELECT 1 FROM return_requests rr WHERE rr.id_mutasi = m.id AND rr.status = \'Pending\') THEN \'return\' 
+            WHEN EXISTS (SELECT 1 FROM installation_requests ir WHERE ir.id_mutasi = m.id AND ir.status = \'Pending\') THEN \'install\' 
+            ELSE \'\' END as pending_type', false);
         // Join to ensure we are only looking at the LATEST mutasi for the device
         $builder->join("($subQuery) latest", 'latest.max_id = m.id', 'inner');
-        $builder->join('perangkat p', 'p.id = m.id_perangkat');
-
+        $builder->join('perangkat p', 'p.id = m.id_perangkat', 'inner');
+        $builder->join('spec_perangkat sp', 'sp.id = p.id_spec', 'left');
         $builder->where('m.id_users', $userId);
         $builder->where('m.status', 'Dibawa');
+        $perangkatDevices = $builder->get()->getResultArray();
 
-        // Return all Dibawa devices regardless of pending status, frontend will handle UI
+        // 2. Get Non-Registration devices
+        $builderNr = $db->table('mutasi m');
+        $builderNr->select('m.id as mutasi_id, nr.kode_spec as noreg, nr.nama_material as nama, m.qty, 1 as is_nonreg');
+        $builderNr->select('CASE 
+            WHEN EXISTS (SELECT 1 FROM return_requests rr WHERE rr.id_mutasi = m.id AND rr.status = \'Pending\') THEN \'return\' 
+            WHEN EXISTS (SELECT 1 FROM installation_requests ir WHERE ir.id_mutasi = m.id AND ir.status = \'Pending\') THEN \'install\' 
+            ELSE \'\' END as pending_type', false);
+        $builderNr->join('non_registration nr', 'nr.id = m.id_non_reg', 'inner');
+        $builderNr->where('m.id_users', $userId);
+        $builderNr->where('m.status', 'Dibawa');
+        $nonRegDevices = $builderNr->get()->getResultArray();
 
-        $devices = $builder->get()->getResultArray();
+        // Combine results
+        $devices = array_merge($perangkatDevices, $nonRegDevices);
 
         return $this->response->setJSON($devices);
     }
@@ -522,6 +642,7 @@ class FormController extends BaseController
     public function submitReturnRequest()
     {
         $mutasiIds = $this->request->getPost('mutasi_ids');
+        $qtys = $this->request->getPost('qtys');
 
         if (empty($mutasiIds)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Belum ada perangkat yang dipilih.']);
@@ -532,10 +653,12 @@ class FormController extends BaseController
         $db = \Config\Database::connect();
         $db->transStart();
 
-        foreach ($mutasiIds as $mutasiId) {
+        foreach ($mutasiIds as $index => $mutasiId) {
+            $qty = isset($qtys[$index]) ? (int)$qtys[$index] : 1;
             $returnRequestModel->insert([
                 'id_mutasi' => $mutasiId,
-                'status' => 'Pending'
+                'status' => 'Pending',
+                'qty' => $qty
             ]);
         }
 
@@ -551,12 +674,22 @@ class FormController extends BaseController
     public function getNodes()
     {
         $nodeModel = new \App\Models\NodeModel();
-        $nodes = $nodeModel->orderBy('arep', 'ASC')->orderBy('node_sentral', 'ASC')->findAll();
+        $nodes = $nodeModel->orderBy('arep', 'ASC')->orderBy('site_sentral', 'ASC')->orderBy('node_sentral', 'ASC')->findAll();
 
-        // Group by arep
+        // Group by arep -> site_sentral -> node_sentral
         $grouped = [];
         foreach ($nodes as $n) {
-            $grouped[$n['arep']][] = $n['node_sentral'];
+            $arep = $n['arep'];
+            $site = $n['site_sentral'] ?: '-';
+            if (!isset($grouped[$arep])) {
+                $grouped[$arep] = [];
+            }
+            if (!isset($grouped[$arep][$site])) {
+                $grouped[$arep][$site] = [];
+            }
+            if ($n['node_sentral'] && !in_array($n['node_sentral'], $grouped[$arep][$site])) {
+                $grouped[$arep][$site][] = $n['node_sentral'];
+            }
         }
 
         return $this->response->setJSON($grouped);
@@ -565,15 +698,17 @@ class FormController extends BaseController
     public function submitInstallationRequest()
     {
         $mutasiIds = $this->request->getPost('mutasi_ids');
+        $qtys = $this->request->getPost('qtys');
         $arep = $this->request->getPost('arep');
+        $siteSentral = $this->request->getPost('site_sentral');
         $nodeSentral = $this->request->getPost('node_sentral');
 
         if (empty($mutasiIds)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Belum ada perangkat yang dipilih.']);
         }
 
-        if (empty($arep) || empty($nodeSentral)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Arep dan Node Sentral wajib dipilih.']);
+        if (empty($arep) || empty($siteSentral)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Arep dan Site Sentral wajib dipilih.']);
         }
 
         $installationModel = new \App\Models\InstallationRequestModel();
@@ -581,12 +716,15 @@ class FormController extends BaseController
         $db = \Config\Database::connect();
         $db->transStart();
 
-        foreach ($mutasiIds as $mutasiId) {
+        foreach ($mutasiIds as $index => $mutasiId) {
+            $qty = isset($qtys[$index]) ? (int)$qtys[$index] : 1;
             $installationModel->insert([
                 'id_mutasi' => $mutasiId,
                 'arep' => $arep,
-                'node_sentral' => $nodeSentral,
-                'status' => 'Pending'
+                'site_sentral' => $siteSentral,
+                'node_sentral' => $nodeSentral ?: '-',
+                'status' => 'Pending',
+                'qty' => $qty
             ]);
         }
 

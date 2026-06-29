@@ -45,12 +45,12 @@
     </style>
 </head>
 
-<body class="bg-[#F1F1F1] h-screen flex flex-col overflow-hidden">
+<body class="bg-[#F1F1F1] min-h-screen flex flex-col">
     <?php $uri = service('uri'); ?>
 
     <nav
         class="fixed top-0 left-0 w-full bg-[#1C4D8D] text-white px-6 py-3 flex justify-between items-center shadow-md z-[49]">
-        <img src="<?= base_url('images/awan.png') ?>" class="w-[160px] md:w-[200px] -my-3">
+        <img src="<?= base_url('images/awan.webp') ?>" class="w-[160px] md:w-[200px] -my-3">
         <div class="flex items-center gap-6">
             <!-- Notification Bell -->
             <div x-data="notificationComponent()" x-init="init()" class="relative mt-1">
@@ -138,7 +138,7 @@
                                         <div class="text-[10px] text-gray-500 font-medium mb-1" x-text="req.created_at">
                                         </div>
                                         <div class="text-[10px] text-[#1C4D8D] font-semibold bg-blue-50 inline-block px-1.5 py-0.5 rounded"
-                                            x-text="req.devices[0]?.node_sentral || '-'"></div>
+                                            x-text="(req.devices[0]?.node_sentral && req.devices[0]?.node_sentral.trim() !== '' && req.devices[0]?.node_sentral.trim() !== '-') ? req.devices[0]?.node_sentral : (req.devices[0]?.site_sentral || '-')"></div>
                                     </div>
                                 </template>
                             </div>
@@ -150,7 +150,7 @@
                 <div x-show="reviewOpen" x-cloak
                     class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
                     <div @click.outside="closeReviewModal()"
-                        class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden flex flex-col">
+                        class="bg-white rounded-lg shadow-xl w-[90%] md:w-[700px] overflow-hidden flex flex-col">
                         <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
                             <h3 class="font-bold text-sm"
                                 x-text="selectedType === 'return' ? 'Request Pengembalian' : 'Request Pemasangan'"></h3>
@@ -159,64 +159,84 @@
                             </button>
                         </div>
                         <div class="p-6" x-show="selectedReq">
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label
-                                        class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">User</label>
-                                    <div class="font-semibold text-gray-800" x-text="selectedReq?.nama_user || '-'">
+                            <div class="bg-gray-50 border border-gray-200 rounded-md p-4 mb-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">User</label>
+                                        <div class="font-semibold text-gray-800" x-text="selectedReq?.nama_user || '-'">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Tanggal
+                                            Request</label>
+                                        <div class="font-semibold text-gray-700" x-text="selectedReq?.created_at"></div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Tanggal
-                                        Request</label>
-                                    <div class="font-semibold text-gray-700" x-text="selectedReq?.created_at"></div>
-                                </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-4 mb-6" x-show="selectedType === 'install'">
-                                <div>
-                                    <label
-                                        class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Arep</label>
-                                    <div class="font-semibold text-gray-800"
-                                        x-text="selectedReq?.devices[0]?.arep || '-'">
+
+                            <div class="bg-blue-50 border border-blue-100 rounded-md p-4 mb-6" x-show="selectedType === 'install'">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label
+                                            class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Arep</label>
+                                        <div class="font-semibold text-gray-800"
+                                            x-text="selectedReq?.devices[0]?.arep || '-'">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Site
+                                            Sentral</label>
+                                        <div class="font-semibold text-gray-800"
+                                            x-text="selectedReq?.devices[0]?.site_sentral || '-'"></div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Node
+                                            Sentral</label>
+                                        <div class="font-semibold text-gray-800"
+                                            x-text="selectedReq?.devices[0]?.node_sentral || '-'"></div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Node
-                                        Sentral</label>
-                                    <div class="font-semibold text-gray-800"
-                                        x-text="selectedReq?.devices[0]?.node_sentral || '-'"></div>
-                                </div>
                             </div>
-                            <table class="w-full text-left text-sm mb-6 border-collapse">
-                                <thead>
-                                    <tr>
-                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2">
-                                            Action</th>
-                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2">No
-                                            Registrasi</th>
-                                        <th
-                                            class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2 pl-4">
-                                            Nama Perangkat</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <template x-for="(dev, index) in selectedReq?.devices" :key="index">
-                                        <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-                                            <td class="align-top py-2 px-2 border-b text-center">
-                                                <input type="checkbox" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]"
-                                                    :value="dev.request_id" x-model="checkedDevices">
-                                            </td>
-                                            <td class="align-top py-2 px-2 border-b">
-                                                <div class="font-medium text-gray-700" x-text="dev.noreg"></div>
-                                            </td>
-                                            <td class="align-top py-2 px-2 border-b pl-4">
-                                                <div class="font-medium text-gray-700 leading-tight"
-                                                    x-text="dev.nama_perangkat"></div>
-                                            </td>
+                            <div class="max-h-64 overflow-y-auto mb-6 border border-gray-100 rounded shadow-inner">
+                                <table class="w-full text-left text-sm border-collapse">
+                                    <thead class="sticky top-0 bg-white shadow-sm z-10">
+                                        <tr>
+                                            <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2 pt-2 bg-white">
+                                                Action</th>
+                                            <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2 pt-2 bg-white">No
+                                                Registrasi</th>
+                                            <th
+                                                class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2 pt-2 pl-4 bg-white">
+                                                Nama Perangkat</th>
+                                            <th
+                                                class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2 pt-2 text-center w-12 bg-white">
+                                                Qty</th>
                                         </tr>
-                                    </template>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="(dev, index) in selectedReq?.devices" :key="index">
+                                            <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                                <td class="align-top py-2 px-2 border-b text-center">
+                                                    <input type="checkbox" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]"
+                                                        :value="dev.request_id" x-model="checkedDevices">
+                                                </td>
+                                                <td class="align-top py-2 px-2 border-b">
+                                                    <div class="font-medium text-gray-700" x-text="dev.noreg"></div>
+                                                </td>
+                                                <td class="align-top py-2 px-2 border-b pl-4">
+                                                    <div class="font-medium text-gray-700 leading-tight"
+                                                        x-text="dev.nama_perangkat"></div>
+                                                </td>
+                                                <td class="align-top py-2 px-2 border-b text-center">
+                                                    <div class="font-medium text-gray-700 leading-tight"
+                                                        x-text="dev.qty || 1"></div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
 
                             <div class="border-t border-gray-200 pt-4 flex justify-end gap-2 mt-2">
                                 <button @click="refuseAll()"
@@ -408,7 +428,8 @@
                             </template>
                             <template x-if="items.length > 0">
                                 <div>
-                                    <div class="mb-3 flex gap-2">
+                                    <!-- Header Actions (Search & Filter) -->
+                                    <div class="mb-4 flex gap-2">
                                         <input type="text" x-model="searchQuery"
                                             placeholder="Cari Nama Perangkat, User, Status, No Registrasi..."
                                             class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-xs text-[#1C4D8D] focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
@@ -419,68 +440,95 @@
                                             <option value=">10">&gt; 10 Days ago</option>
                                         </select>
                                     </div>
-                                    <table
-                                        class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
-                                        <thead class="bg-gray-100 border-b border-gray-200">
-                                            <tr>
-                                                <th class="p-2 font-semibold text-gray-700">No Registrasi</th>
-                                                <th class="p-2 font-semibold text-gray-700">Nama Perangkat</th>
-                                                <th class="p-2 font-semibold text-gray-700">User</th>
-                                                <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Status
-                                                </th>
-                                                <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Durasi
-                                                </th>
-                                                <th
-                                                    class="p-2 font-semibold text-gray-700 text-center whitespace-nowrap">
-                                                    Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-gray-100">
-                                            <template x-for="item in filteredItems" :key="item.noreg">
-                                                <tr class="hover:bg-gray-50">
-                                                    <td class="p-2 text-gray-800 font-medium" x-text="item.noreg"></td>
-                                                    <td class="p-2 text-gray-800 font-medium"
-                                                        x-text="item.nama_perangkat">
-                                                    </td>
-                                                    <td class="p-2 text-gray-600" x-text="item.user"></td>
-                                                    <td class="p-2 whitespace-nowrap">
-                                                        <span
-                                                            class="px-2 py-1 rounded-full text-[10px] font-semibold select-none"
-                                                            :class="{
-                                                            'bg-yellow-100 text-yellow-800': item.status === 'Dibawa',
-                                                            'bg-orange-100 text-orange-800': item.status === 'Crosscheck Intan'
-                                                        }" x-text="item.status"></span>
-                                                    </td>
-                                                    <td class="p-2 whitespace-nowrap">
-                                                        <div class="flex items-center gap-1.5">
-                                                            <span class="font-semibold flex items-center gap-1" :class="{
-                                                                'text-yellow-600': item.days_ago >= 2 && item.days_ago <= 3,
-                                                                'text-red-600': item.days_ago > 3,
-                                                                'text-gray-600': item.days_ago < 2
-                                                            }">
-                                                                <i class="fa-regular fa-clock"></i> <span
-                                                                    x-text="item.days_ago + ' days ago'"></span>
-                                                            </span>
-                                                            <span x-show="item.days_ago >= 2"
-                                                                class="relative flex h-2 w-2">
-                                                                <span
-                                                                    class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                                                                    :class="item.days_ago > 3 ? 'bg-red-500' : 'bg-yellow-500'"></span>
-                                                                <span class="relative inline-flex rounded-full h-2 w-2"
-                                                                    :class="item.days_ago > 3 ? 'bg-red-500' : 'bg-yellow-500'"></span>
-                                                            </span>
+
+                                    <!-- View: User Cards -->
+                                    <div x-show="!selectedUserView" x-transition>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <template x-for="user in userGroups" :key="user.name">
+                                                <div @click="openUserDetail(user.name)" class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md cursor-pointer transition flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="bg-blue-100 text-blue-700 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0">
+                                                            <span x-text="user.name.charAt(0).toUpperCase()"></span>
                                                         </div>
-                                                    </td>
-                                                    <td class="p-2 text-center whitespace-nowrap">
-                                                        <button @click="showFollowUpAlert(item)"
-                                                            class="bg-[#1C4D8D] text-white hover:bg-[#2A62AA] transition px-2.5 py-1 rounded text-[10px] font-semibold flex items-center gap-1 mx-auto shadow-sm">
-                                                            <i class="fa-solid fa-paper-plane"></i> Follow Up
-                                                        </button>
-                                                    </td>
-                                                </tr>
+                                                        <div>
+                                                            <h4 class="font-bold text-gray-800 text-sm truncate max-w-[140px]" x-text="user.name" :title="user.name"></h4>
+                                                            <p class="text-xs text-gray-500"><span x-text="user.devices.length"></span> Perangkat</p>
+                                                        </div>
+                                                    </div>
+                                                    <button @click.stop="showFollowUpAlert({user: user.name})" title="Follow Up User" class="bg-[#1C4D8D] text-white hover:bg-[#2A62AA] transition w-8 h-8 flex items-center justify-center rounded-full text-xs shadow-sm flex-shrink-0">
+                                                         <i class="fa-brands fa-whatsapp"></i>
+                                                    </button>
+                                                </div>
                                             </template>
-                                        </tbody>
-                                    </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- View: Selected User Devices -->
+                                    <div x-show="selectedUserView" x-cloak x-transition>
+                                        <div class="mb-4 flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                            <button @click="closeUserDetail()" class="text-gray-500 hover:text-gray-800 transition flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200">
+                                                <i class="fa-solid fa-arrow-left"></i> Kembali
+                                            </button>
+                                            <div class="flex-1">
+                                                <h4 class="font-bold text-gray-800 text-sm">
+                                                    Detail: <span x-text="selectedUser" class="text-[#1C4D8D]"></span>
+                                                </h4>
+                                            </div>
+                                            <button @click="showFollowUpAlert({user: selectedUser})" class="bg-[#1C4D8D] text-white hover:bg-[#2A62AA] transition px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-2 shadow-sm">
+                                                 <i class="fa-brands fa-whatsapp"></i> Follow Up Semua
+                                            </button>
+                                        </div>
+
+                                        <table class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
+                                            <thead class="bg-gray-100 border-b border-gray-200">
+                                                <tr>
+                                                    <th class="p-2 font-semibold text-gray-700">No Registrasi</th>
+                                                    <th class="p-2 font-semibold text-gray-700">Nama Perangkat</th>
+                                                    <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Status</th>
+                                                    <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Durasi</th>
+                                                    <th class="p-2 font-semibold text-gray-700 text-center whitespace-nowrap">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-100">
+                                                <template x-for="item in selectedUserDevices" :key="item.noreg">
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="p-2 text-gray-800 font-medium" x-text="item.noreg"></td>
+                                                        <td class="p-2 text-gray-800 font-medium" x-text="item.nama_perangkat"></td>
+                                                        <td class="p-2 whitespace-nowrap">
+                                                            <span class="px-2 py-1 rounded-full text-[10px] font-semibold select-none"
+                                                                :class="{
+                                                                'bg-yellow-100 text-yellow-800': item.status === 'Dibawa',
+                                                                'bg-orange-100 text-orange-800': item.status === 'Crosscheck Intan'
+                                                            }" x-text="item.status"></span>
+                                                        </td>
+                                                        <td class="p-2 whitespace-nowrap">
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="font-semibold flex items-center gap-1" :class="{
+                                                                    'text-yellow-600': item.days_ago >= 2 && item.days_ago <= 3,
+                                                                    'text-red-600': item.days_ago > 3,
+                                                                    'text-gray-600': item.days_ago < 2
+                                                                }">
+                                                                    <i class="fa-regular fa-clock"></i> <span x-text="item.days_ago + ' days ago'"></span>
+                                                                </span>
+                                                                <span x-show="item.days_ago >= 2" class="relative flex h-2 w-2">
+                                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                                                                        :class="item.days_ago > 3 ? 'bg-red-500' : 'bg-yellow-500'"></span>
+                                                                    <span class="relative inline-flex rounded-full h-2 w-2"
+                                                                        :class="item.days_ago > 3 ? 'bg-red-500' : 'bg-yellow-500'"></span>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="p-2 text-center whitespace-nowrap">
+                                                            <button @click="showFollowUpAlert(item)"
+                                                                class="bg-[#1C4D8D] text-white hover:bg-[#2A62AA] transition px-2.5 py-1 rounded text-[10px] font-semibold flex items-center gap-1 mx-auto shadow-sm">
+                                                                <i class="fa-solid fa-paper-plane"></i> Follow Up
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -495,6 +543,8 @@
                             items: [],
                             searchQuery: '',
                             durationFilter: 'all',
+                            selectedUserView: false,
+                            selectedUser: '',
                             get filteredItems() {
                                 let result = this.items;
 
@@ -520,6 +570,32 @@
 
                                 return result;
                             },
+                            get userGroups() {
+                                const groups = {};
+                                this.filteredItems.forEach(item => {
+                                    const userName = item.user && item.user !== '-' ? item.user : 'Unknown User';
+                                    if (!groups[userName]) {
+                                        groups[userName] = {
+                                            name: userName,
+                                            devices: []
+                                        };
+                                    }
+                                    groups[userName].devices.push(item);
+                                });
+                                return Object.values(groups);
+                            },
+                            get selectedUserDevices() {
+                                const group = this.userGroups.find(g => g.name === this.selectedUser);
+                                return group ? group.devices : [];
+                            },
+                            openUserDetail(userName) {
+                                this.selectedUser = userName;
+                                this.selectedUserView = true;
+                            },
+                            closeUserDetail() {
+                                this.selectedUserView = false;
+                                this.selectedUser = '';
+                            },
                             init() {
                                 this.fetchItems();
                                 setInterval(() => {
@@ -538,15 +614,23 @@
                             openModal() {
                                 this.fetchItems();
                                 this.modalOpen = true;
+                                this.closeUserDetail();
                             },
                             closeModal() {
                                 this.modalOpen = false;
+                                setTimeout(() => this.closeUserDetail(), 300);
                             },
                             showFollowUpAlert(item) {
-                                // Find all pending items belonging to the same user
-                                const userItems = (item.user && item.user !== '-')
-                                    ? this.items.filter(i => i.user === item.user)
-                                    : [item];
+                                let userItems = [];
+                                if (item.noreg) {
+                                    // Single device follow-up
+                                    userItems = [item];
+                                } else if (item.user && item.user !== '-') {
+                                    // Follow Up Semua (only {user: ...} was passed)
+                                    userItems = this.items.filter(i => i.user === item.user);
+                                } else {
+                                    userItems = [item];
+                                }
 
                                 // Generate HTML with checkboxes
                                 let checkboxHtml = '';
@@ -554,7 +638,7 @@
                                     checkboxHtml = `
                                         <div class="mb-3">
                                             <p class="text-xs font-semibold text-gray-500 mb-1">Pilih Perangkat untuk di-follow up:</p>
-                                            <div class="space-y-1.5 max-h-36 overflow-y-auto border border-gray-200 rounded p-2 bg-white text-left">
+                                            <div class="space-y-1.5 max-h-36 overflow-y-auto border border-gray-200 rounded p-2 bg-white text-left custom-scrollbar">
                                                 ${userItems.map(ui => `
                                                     <label class="flex items-start gap-2 cursor-pointer p-1 text-xs hover:bg-gray-50 rounded">
                                                         <input type="checkbox" class="mt-0.5 swal-device-checkbox accent-[#1C4D8D]" data-noreg="${ui.noreg}" data-nama="${ui.nama_perangkat}" value="${ui.noreg}" checked>
@@ -567,9 +651,9 @@
                                 }
 
                                 Swal.fire({
-                                    title: 'Kirim Pengingat Follow Up',
+                                    title: 'Follow Up Perangkat',
                                     html: `
-                                        <div class="text-left text-xs space-y-3">
+                                        <div class="text-left text-xs space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
                                             ${checkboxHtml}
                                             
                                             <div id="swal-message-preview" class="bg-gray-50 border border-gray-200 rounded p-3 font-mono text-gray-700 select-all relative group break-words leading-relaxed whitespace-pre-wrap"></div>
@@ -592,7 +676,7 @@
                                                     nama: cb.getAttribute('data-nama')
                                                 }));
                                             } else {
-                                                selectedDevices = [{ noreg: item.noreg, nama: item.nama_perangkat }];
+                                                selectedDevices = [{ noreg: (item.noreg || userItems[0].noreg), nama: (item.nama_perangkat || userItems[0].nama_perangkat) }];
                                             }
 
                                             let message = '';
@@ -628,7 +712,7 @@
                                                 nama: cb.getAttribute('data-nama')
                                             }));
                                         } else {
-                                            selectedDevices = [{ noreg: item.noreg, nama: item.nama_perangkat }];
+                                            selectedDevices = [{ noreg: (item.noreg || userItems[0].noreg), nama: (item.nama_perangkat || userItems[0].nama_perangkat) }];
                                         }
 
                                         let message = '';
@@ -654,7 +738,7 @@
                                                 nama: cb.getAttribute('data-nama')
                                             }));
                                         } else {
-                                            selectedDevices = [{ noreg: item.noreg, nama: item.nama_perangkat }];
+                                            selectedDevices = [{ noreg: (item.noreg || userItems[0].noreg), nama: (item.nama_perangkat || userItems[0].nama_perangkat) }];
                                         }
 
                                         let finalMsg = '';
@@ -678,6 +762,168 @@
                                         });
                                     }
                                 });
+                            }
+                        }
+                    }
+                </script>
+            </div>
+
+            <!-- Users with Dibawa Component -->
+            <div x-data="dibawaComponent()" class="relative mt-1">
+                <button @click="openModal()"
+                    class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center mr-1"
+                    title="User dengan Perangkat Dibawa">
+                    <i class="fa-solid fa-users text-xl"></i>
+                    <template x-if="users.length > 0">
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow"
+                            x-text="users.length">
+                        </span>
+                    </template>
+                </button>
+
+                <!-- Users Dibawa Modal -->
+                <div x-show="modalOpen" x-cloak
+                    class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+                    <div @click.outside="closeModal()"
+                        class="bg-white rounded-lg shadow-xl w-[95%] md:w-[700px] overflow-hidden flex flex-col max-h-[80vh]">
+                        <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+                            <h3 class="font-bold text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-users"></i> Peminjaman Perangkat
+                            </h3>
+                            <button @click="closeModal()" class="text-white hover:text-gray-100 transition">
+                                <i class="fa-solid fa-xmark fa-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-4 flex-1 overflow-y-auto bg-[#F9FBFF]">
+                            <template x-if="loading">
+                                <div class="p-6 text-center text-gray-500 text-sm">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-3 text-[#1C4D8D]"></i>
+                                    <p>Memuat data user...</p>
+                                </div>
+                            </template>
+                            <template x-if="!loading && users.length === 0">
+                                <div class="p-6 text-center text-gray-500 text-sm">
+                                    <i class="fa-solid fa-check-circle text-3xl mb-3 text-green-500"></i>
+                                    <p>Saat ini tidak ada perangkat yang dibawa user.</p>
+                                </div>
+                            </template>
+                            <template x-if="!loading && users.length > 0">
+                                <div>
+                                    <!-- View: User Cards -->
+                                    <div x-show="!selectedUserView" x-transition>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <template x-for="(user, index) in users" :key="index">
+                                                <div @click="openUserDetail(user)" class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md cursor-pointer transition flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="bg-blue-100 text-blue-700 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0">
+                                                            <span x-text="user.nama.charAt(0).toUpperCase()"></span>
+                                                        </div>
+                                                        <div>
+                                                            <h4 class="font-bold text-gray-800 text-sm truncate max-w-[140px]" x-text="user.nama" :title="user.nama"></h4>
+                                                            <p class="text-xs text-gray-500"><span x-text="user.total_dibawa"></span> Perangkat</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <!-- View: Selected User Devices -->
+                                    <div x-show="selectedUserView" x-cloak x-transition>
+                                        <div class="mb-4 flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                            <button @click="closeUserDetail()" class="text-gray-500 hover:text-gray-800 transition flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200">
+                                                <i class="fa-solid fa-arrow-left"></i> Kembali
+                                            </button>
+                                            <div class="flex-1">
+                                                <h4 class="font-bold text-gray-800 text-sm">
+                                                    Detail: <span x-text="selectedUser.nama" class="text-[#1C4D8D]"></span>
+                                                </h4>
+                                            </div>
+                                        </div>
+
+                                        <table class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
+                                            <thead class="bg-gray-100 border-b border-gray-200">
+                                                <tr>
+                                                    <th class="p-2 font-semibold text-gray-700">No Registrasi</th>
+                                                    <th class="p-2 font-semibold text-gray-700">Nama Perangkat</th>
+                                                    <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Status</th>
+                                                    <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Tanggal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-100">
+                                                <template x-for="dev in selectedUserDevices" :key="dev.noreg">
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="p-2 text-gray-800 font-medium" x-text="dev.noreg"></td>
+                                                        <td class="p-2 text-gray-800 font-medium" x-text="dev.nama"></td>
+                                                        <td class="p-2 whitespace-nowrap">
+                                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold select-none">Dibawa</span>
+                                                        </td>
+                                                        <td class="p-2 whitespace-nowrap">
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="font-semibold flex items-center gap-1 text-gray-600">
+                                                                    <i class="fa-regular fa-clock"></i> <span x-text="dev.created_at"></span>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function dibawaComponent() {
+                        return {
+                            modalOpen: false,
+                            users: [],
+                            loading: false,
+                            selectedUserView: false,
+                            selectedUser: {},
+                            selectedUserDevices: [],
+                            openUserDetail(user) {
+                                this.selectedUser = user;
+                                this.selectedUserDevices = user.devices;
+                                this.selectedUserView = true;
+                            },
+                            closeUserDetail() {
+                                this.selectedUserView = false;
+                                this.selectedUser = {};
+                                this.selectedUserDevices = [];
+                            },
+                            init() {
+                                this.fetchUsers();
+                                // Poll every 3 minutes
+                                setInterval(() => {
+                                    if(!this.modalOpen) this.fetchUsers();
+                                }, 180000);
+                            },
+                            openModal() {
+                                this.modalOpen = true;
+                                this.fetchUsers();
+                            },
+                            closeModal() {
+                                this.modalOpen = false;
+                            },
+                            fetchUsers() {
+                                this.loading = true;
+                                fetch('<?= base_url('dashboard/usersDibawa') ?>')
+                                    .then(res => res.json())
+                                    .then(res => {
+                                        if (res.success) {
+                                            this.users = res.data.map(u => ({ ...u, expanded: false }));
+                                        }
+                                        this.loading = false;
+                                    })
+                                    .catch(err => {
+                                        console.error('Error fetching users:', err);
+                                        this.loading = false;
+                                    });
                             }
                         }
                     }
@@ -912,6 +1158,11 @@
                             <i class="fa-solid fa-network-wired mr-2" style="color: #1C4D8D;"></i>
                             Input Node
                         </button>
+                        <button onclick="openNonRegManage()" @click="open = false"
+                            class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                            <i class="fa-solid fa-boxes-stacked mr-2" style="color: #1C4D8D;"></i>
+                            Material Non-Reg
+                        </button>
                     <?php endif; ?>
                     <a href="<?= base_url('logout') ?>"
                         class="rounded-b-md block px-4 py-3 text-[#1C4D8D] hover:bg-gray-200">
@@ -926,7 +1177,7 @@
         </div>
     </nav>
 
-    <main class="flex-1 pt-28 pl-6 pr-6">
+    <main class="flex-1 flex flex-col pt-28 pl-6 pr-6">
         <?= $this->renderSection('content') ?>
     </main>
 
@@ -1010,8 +1261,10 @@
     $isSuperAdmin = $adminSess && ((isset($adminSess['is_super']) && $adminSess['is_super'] == 1) || $adminSess['username'] === 'admin');
     if ($isSuperAdmin):
         ?>
+        <?= view('components/usermanage') ?>
         <?= view('components/adminmanage') ?>
         <?= view('components/nodemanage') ?>
+        <?= view('components/non_registration_manage') ?>
     <?php endif; ?>
 
     <script>

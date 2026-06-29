@@ -6,6 +6,7 @@
     <?php $isBulk = strpos($_GET['search'] ?? '', ';') !== false; ?>
     <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center relative z-[20]">
         <div class="relative flex items-center transition-all duration-500 ease-in-out" id="searchContainer" style="width: <?= $isBulk ? '350px' : '200px' ?>;">
+            <input type="hidden" name="type" value="<?= esc($currentType ?? 'perangkat') ?>">
             <input type="text" id="searchInput" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" placeholder="<?= $isBulk ? 'Bulk search (pisahkan dengan ;)' : 'Search...' ?>"
                 class="border text-xs rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#1C4D8D] pr-8 transition-all duration-500 ease-in-out">
             <button type="button" onclick="toggleBulkSearch()" class="absolute right-2 text-[#1C4D8D] hover:text-[#3E679E] transition" title="Toggle Bulk Search">
@@ -55,8 +56,10 @@
         </a>
     </form>
 
+
+
     <div class="flex-1 bg-white rounded-md shadow flex flex-col overflow-hidden">
-        <div class="flex-1 overflow-auto max-h-[calc(100vh-250px)]">
+        <div class="flex-1 overflow-auto max-h-[calc(100vh-290px)]">
 
             <?php
             $currentSort = $_GET['sort_by'] ?? '';
@@ -104,10 +107,17 @@
                         <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
                             <td class="px-4 py-3 text-center text-sm
                              text-blue-700 border border-gray-300">
-                                <button type="button" onclick="openHistory(<?= $h['id_perangkat'] ?>)"
-                                    class="hover:text-blue-400 mr-1 transition">
-                                    <i class="fa-solid fa-clock-rotate-left"></i>
-                                </button>
+                                <?php if (!empty($h['id_perangkat'])): ?>
+                                    <button type="button" onclick="openHistory(<?= $h['id_perangkat'] ?>)"
+                                        class="hover:text-blue-400 mr-1 transition">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                    </button>
+                                <?php elseif (!empty($h['id_non_reg'])): ?>
+                                    <button type="button" onclick="openNonRegHistory(<?= $h['id_non_reg'] ?>, '<?= esc(addslashes($h['nm_perangkat'])) ?>')"
+                                        class="hover:text-blue-400 mr-1 transition" title="View History">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                    </button>
+                                <?php endif; ?>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $no++ ?></td>
                             <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['noreg']) ?></td>
                             <td
@@ -172,7 +182,7 @@
         <?= view('components/historyperangkat') ?>
     </div>
 
-    <div class="py-1 sticky bottom-0 mt-2">
+    <div class="py-1 mt-2">
         <div class="flex justify-center items-center gap-1 w-full">
 
             <?php $query = $_GET; ?>
@@ -267,15 +277,28 @@
 
         const input = document.getElementById("searchHistory");
         input.dataset.id = id;
+        input.dataset.type = 'perangkat';
 
         loadHistory(id, 1);
     }
+    
+    window.openNonRegHistory = function (id, name) {
+        openModal("historyModal");
 
-    function loadHistory(id, page = 1, search = '') {
+        const input = document.getElementById("searchHistory");
+        input.dataset.id = id;
+        input.dataset.type = 'nonreg';
+
+        loadHistory(id, 1, '', 'nonreg');
+    }
+
+    function loadHistory(id, page = 1, search = '', type = 'perangkat') {
         const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
         const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
 
-        fetch(`<?= base_url('history/log') ?>/${id}`, {
+        const url = type === 'nonreg' ? `<?= base_url('dashboard/nonreg_history') ?>/${id}` : `<?= base_url('history/log') ?>/${id}`;
+
+        fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -313,18 +336,18 @@
           </tr>`;
                 });
 
-                renderPagination(id, res.currentPage, res.totalPage, search);
+                renderPagination(id, res.currentPage, res.totalPage, search, type);
             });
     }
 
-    function renderPagination(id, currentPage, totalPage, search) {
+    function renderPagination(id, currentPage, totalPage, search, type = 'perangkat') {
         let container = document.getElementById("paginationHistory");
 
         container.innerHTML = "";
 
         for (let i = 1; i <= totalPage; i++) {
             container.innerHTML += `
-      <button onclick="loadHistory(${id}, ${i}, '${search}')" class="px-3 py-1 text-xs rounded ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200'}">${i}</button>`;
+      <button onclick="loadHistory(${id}, ${i}, '${search}', '${type}')" class="px-3 py-1 text-xs rounded ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200'}">${i}</button>`;
         }
     }
 
@@ -342,7 +365,8 @@
     if (searchInput) {
         searchInput.addEventListener("keyup", function () {
             let id = this.dataset.id;
-            loadHistory(id, 1, this.value);
+            let type = this.dataset.type || 'perangkat';
+            loadHistory(id, 1, this.value, type);
         });
     }
 </script>

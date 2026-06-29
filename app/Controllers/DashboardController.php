@@ -394,17 +394,47 @@ class DashboardController extends BaseController
             $mutasi = $mutasiModel->find($mutasiId);
             
             if ($mutasi) {
-                $this->mutasiModel->insert([
+                $returnedQty = $request['qty'] ?? 1;
+
+                // Insert the new "Kembali" mutasi record for history
+                $mutasiModel->insert([
                     'id_perangkat' => $mutasi['id_perangkat'],
+                    'id_non_reg'   => $mutasi['id_non_reg'] ?? null,
+                    'qty'          => $returnedQty,
                     'id_users'     => $mutasi['id_users'],
                     'status'       => 'Kembali',
                     'keterangan'   => '-',
                     'updated_by'   => $adminSession['username']
                 ]);
                 
-                // Update perangkat status to Tersedia
-                $perangkatId = $mutasi['id_perangkat'];
-                $perangkatModel->update($perangkatId, ['status' => 'Tersedia']);
+                if (!empty($mutasi['id_perangkat'])) {
+                    // Update perangkat status to Tersedia
+                    $perangkatId = $mutasi['id_perangkat'];
+                    $perangkatModel->update($perangkatId, ['status' => 'Tersedia']);
+                } elseif (!empty($mutasi['id_non_reg'])) {
+                    // Non registration item partial logic
+                    $originalQty = $mutasi['qty'];
+                    $remainingQty = $originalQty - $returnedQty;
+                    
+                    if ($remainingQty > 0) {
+                        $mutasiModel->update($mutasiId, ['qty' => $remainingQty]);
+                    } else {
+                        // We do not delete the original Dibawa record because it represents the checkout event.
+                        // However, to stop it from showing up in getDevicesDibawa, getDevicesDibawa currently queries by status='Dibawa'.
+                        // Wait! The user should NO LONGER see this item as "Dibawa" if qty reaches 0. 
+                        // But changing its status to something else would rewrite history!
+                        // Actually, if we change the original status to 'Selesai', it hides it from Dibawa, but keeps it in DB.
+                        $mutasiModel->update($mutasiId, ['status' => 'Selesai']);
+                    }
+
+                    // Increase quantity in non_registration
+                    $nonRegModel = new \App\Models\NonRegistrationModel();
+                    $nr = $nonRegModel->find($mutasi['id_non_reg']);
+                    if ($nr) {
+                        $newQty = $nr['quantity'] + $returnedQty;
+                        $nonRegModel->update($nr['id'], ['quantity' => $newQty]);
+                    }
+                }
             }
         }
 
@@ -554,21 +584,43 @@ class DashboardController extends BaseController
             // Update installation_requests status
             $installationModel->update($requestId, ['status' => 'Approved']);
 
-            // Update the mutasi record
+            // Create a new mutasi record for Terpasang
             $mutasiId = $request['id_mutasi'];
             $mutasi = $mutasiModel->find($mutasiId);
 
             if ($mutasi) {
-                // Update existing mutasi with Terpasang status and keterangan
-                $mutasiModel->update($mutasiId, [
-                    'status'     => 'Terpasang',
-                    'keterangan' => 'Terpasang di ' . $request['node_sentral'],
-                    'updated_by' => $adminSession['username']
+                $installedQty = $request['qty'] ?? 1;
+
+                // Insert new "Terpasang" record
+                $mutasiModel->insert([
+                    'id_perangkat' => $mutasi['id_perangkat'],
+                    'id_non_reg'   => $mutasi['id_non_reg'] ?? null,
+                    'qty'          => $installedQty,
+                    'id_users'     => $mutasi['id_users'],
+                    'status'       => 'Terpasang',
+                    'keterangan'   => 'Terpasang di Site ' . (trim($request['node_sentral']) !== '-' && trim($request['node_sentral']) !== '' ? trim($request['node_sentral']) : trim($request['site_sentral'])),
+                    'updated_by'   => $adminSession['username']
                 ]);
 
-                // Update perangkat status
-                $perangkatId = $mutasi['id_perangkat'];
-                $perangkatModel->update($perangkatId, ['status' => 'Tidak Tersedia']);
+                if (!empty($mutasi['id_perangkat'])) {
+                    // Update perangkat status
+                    $perangkatId = $mutasi['id_perangkat'];
+                    $perangkatModel->update($perangkatId, ['status' => 'Tidak Tersedia']);
+                    
+                    // The old mutasi should probably just be left alone or marked 'Selesai' 
+                    // But in original code, it updated the existing mutasi directly!
+                    // To keep history, we should leave the "Dibawa" record and maybe mark it "Selesai".
+                    $mutasiModel->update($mutasiId, ['status' => 'Selesai']);
+                } elseif (!empty($mutasi['id_non_reg'])) {
+                    $originalQty = $mutasi['qty'];
+                    $remainingQty = $originalQty - $installedQty;
+                    
+                    if ($remainingQty > 0) {
+                        $mutasiModel->update($mutasiId, ['qty' => $remainingQty]);
+                    } else {
+                        $mutasiModel->update($mutasiId, ['status' => 'Selesai']);
+                    }
+                }
             }
         }
 
@@ -611,6 +663,20 @@ class DashboardController extends BaseController
         return $this->response->setJSON(['success' => true]);
     }
 
+    public function runMigration()
+    {
+        $db = \Config\Database::connect();
+        try {
+            $db->query("ALTER TABLE nodes ADD COLUMN site_sentral VARCHAR(100) NULL");
+            echo "Added site_sentral to nodes table.<br>";
+        } catch (\Exception $e) { echo $e->getMessage() . "<br>"; }
+        try {
+            $db->query("ALTER TABLE installation_requests ADD COLUMN site_sentral VARCHAR(100) NULL");
+            echo "Added site_sentral to installation_requests table.<br>";
+        } catch (\Exception $e) { echo $e->getMessage() . "<br>"; }
+        return "Migration complete.";
+    }
+
     // ── Node Management (Admin) ──────────────────────────────────────────────
 
     public function nodeList()
@@ -634,21 +700,31 @@ class DashboardController extends BaseController
 
         $arep = trim($this->request->getPost('arep'));
         $nodeSentral = trim($this->request->getPost('node_sentral'));
+        $siteSentral = trim($this->request->getPost('site_sentral'));
 
-        if (!$arep || !$nodeSentral) {
-            return $this->response->setJSON(['success' => false, 'msg' => 'Arep dan Node Sentral wajib diisi.']);
+        if (!$nodeSentral) {
+            $nodeSentral = '-';
+        }
+
+        if ($nodeSentral !== '-' && strlen($nodeSentral) >= 6) {
+            $siteSentral = substr($nodeSentral, 0, 6);
+        }
+
+        if (!$arep || !$siteSentral) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Arep dan Site Sentral wajib diisi.']);
         }
 
         $nodeModel = new \App\Models\NodeModel();
 
         // Check for duplicates
-        $existing = $nodeModel->where('arep', $arep)->where('node_sentral', $nodeSentral)->first();
+        $existing = $nodeModel->where('arep', $arep)->where('site_sentral', $siteSentral)->where('node_sentral', $nodeSentral)->first();
         if ($existing) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Node sudah terdaftar.']);
         }
 
         $nodeModel->insert([
             'arep'         => $arep,
+            'site_sentral' => $siteSentral,
             'node_sentral' => $nodeSentral
         ]);
 
@@ -674,16 +750,26 @@ class DashboardController extends BaseController
         $skipped = 0;
 
         foreach ($rows as $row) {
-            $arep = trim($row->arep ?? '');
-            $nodeSentral = trim($row->node_sentral ?? '');
+            $row = (array)$row;
+            $arep = trim($row['arep'] ?? '');
+            $nodeSentral = trim($row['node_sentral'] ?? '');
 
-            if (empty($arep) || empty($nodeSentral)) {
+            if (!$nodeSentral) {
+                $nodeSentral = '-';
+            }
+
+            if (!$arep) {
                 $skipped++;
                 continue;
             }
 
+            $siteSentral = ($nodeSentral !== '-' && strlen($nodeSentral) >= 6) ? substr($nodeSentral, 0, 6) : '-';
+
             // Check duplicate
-            $exist = $nodeModel->where('arep', $arep)->where('node_sentral', $nodeSentral)->first();
+            $exist = $nodeModel->where('arep', $arep)
+                               ->where('site_sentral', $siteSentral)
+                               ->where('node_sentral', $nodeSentral)
+                               ->first();
             if ($exist) {
                 $skipped++;
                 continue;
@@ -731,21 +817,35 @@ class DashboardController extends BaseController
 
         $arep = trim($this->request->getPost('arep'));
         $nodeSentral = trim($this->request->getPost('node_sentral'));
+        $siteSentral = trim($this->request->getPost('site_sentral'));
 
-        if (!$arep || !$nodeSentral) {
-            return $this->response->setJSON(['success' => false, 'msg' => 'Arep dan Node Sentral wajib diisi.']);
+        if (!$nodeSentral) {
+            $nodeSentral = '-';
+        }
+
+        if ($nodeSentral !== '-' && strlen($nodeSentral) >= 6) {
+            $siteSentral = substr($nodeSentral, 0, 6);
+        }
+
+        if (!$arep || !$siteSentral) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Arep dan Site Sentral wajib diisi.']);
         }
 
         $nodeModel = new \App\Models\NodeModel();
 
         // Check duplicate
-        $existing = $nodeModel->where('arep', $arep)->where('node_sentral', $nodeSentral)->where('id !=', $id)->first();
+        $existing = $nodeModel->where('arep', $arep)
+                              ->where('site_sentral', $siteSentral)
+                              ->where('node_sentral', $nodeSentral)
+                              ->where('id !=', $id)
+                              ->first();
         if ($existing) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Node sudah terdaftar.']);
         }
 
         $nodeModel->update($id, [
             'arep' => $arep,
+            'site_sentral' => $siteSentral,
             'node_sentral' => $nodeSentral
         ]);
 
@@ -873,10 +973,286 @@ class DashboardController extends BaseController
             return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'File PDF tidak ditemukan di server.']);
         }
 
-        return $this->response
-            ->setHeader('Content-Type', 'application/pdf')
-            ->setHeader('Content-Disposition', 'attachment; filename="' . $doc['filename'] . '"')
-            ->setHeader('X-Content-Type-Options', 'nosniff')
+        return $this->response->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'inline; filename="' . $doc['filename'] . '"')
             ->setBody(file_get_contents($filePath));
+    }
+
+    // ── NON-REGISTRATION MATERIAL ────────────────────────────────────────
+
+    public function nonRegDashboard()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu.');
+        }
+
+        $page = $this->request->getGet('page') ?? 1;
+        $limit = 50;
+        $offset = ($page - 1) * $limit;
+        
+        $search = $this->request->getGet('keyword') ?? '';
+        $sortBy = $this->request->getGet('sort_by') ?? 'nama_material';
+        $sortDir = $this->request->getGet('sort_dir') ?? 'asc';
+
+        $nonRegModel = new \App\Models\NonRegistrationModel();
+        
+        $builder = $nonRegModel->builder();
+        if (!empty($search)) {
+            $builder->groupStart()
+                    ->like('kode_spec', $search)
+                    ->orLike('nama_material', $search)
+                    ->groupEnd();
+        }
+
+        $totalData = $builder->countAllResults(false);
+        $builder->orderBy($sortBy, $sortDir);
+        $data['perangkat'] = $builder->get($limit, $offset)->getResultArray();
+
+        $data['currentPage'] = $page;
+        $data['limit'] = $limit;
+        $data['totalPage'] = ceil($totalData / $limit);
+        $data['keyword'] = $search;
+        
+        return view('nonreg_dashboard', $data);
+    }
+
+    public function getNonRegHistory($id)
+    {
+        $model = new \App\Models\MutasiModel();
+
+        $page = $this->request->getVar('page') ?? 1;
+        $search = $this->request->getVar('searchHistory') ?? '';
+
+        $limit = 15;
+        $offset = ($page - 1) * $limit;
+
+        $filters = [
+            'searchHistory' => $search
+        ];
+
+        $result = $model->getNonRegHistory($id, $filters, $limit, $offset);
+
+        $total = $result['total'];
+        $totalPage = ceil($total / $limit);
+
+        return $this->response->setJSON([
+            'data' => $result['data'],
+            'total' => $total,
+            'totalPage' => $totalPage,
+            'currentPage' => (int) $page
+        ]);
+    }
+    public function nonRegList()
+    {
+        $nonRegModel = new \App\Models\NonRegistrationModel();
+        $items = $nonRegModel->orderBy('nama_material', 'ASC')->findAll();
+        return $this->response->setJSON($items);
+    }
+
+    public function getNonReg()
+    {
+        $search = $this->request->getGet('search') ?? '';
+        $nonRegModel = new \App\Models\NonRegistrationModel();
+
+        $data = $nonRegModel
+            ->groupStart()
+            ->like('kode_spec', $search)
+            ->orLike('nama_material', $search)
+            ->groupEnd()
+            ->limit(10)
+            ->findAll();
+
+        return $this->response->setJSON($data);
+    }
+
+    public function saveNonReg()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $id = $this->request->getPost('id');
+        $kode_spec = trim($this->request->getPost('kode_spec'));
+        $nama_material = trim($this->request->getPost('nama_material'));
+        $quantity = (int) $this->request->getPost('quantity');
+
+        if (empty($nama_material)) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Nama material wajib diisi']);
+        }
+
+        $nonRegModel = new \App\Models\NonRegistrationModel();
+
+        $data = [
+            'kode_spec' => $kode_spec,
+            'nama_material' => $nama_material,
+            'quantity' => $quantity,
+        ];
+
+        if ($id) {
+            $data['updated_at'] = date('Y-m-d H:i:s');
+            $nonRegModel->update($id, $data);
+            $msg = 'Data berhasil diupdate';
+        } else {
+            $data['created_at'] = date('Y-m-d H:i:s');
+            $nonRegModel->insert($data);
+            $msg = 'Data berhasil ditambahkan';
+        }
+
+        return $this->response->setJSON(['success' => true, 'msg' => $msg]);
+    }
+
+    public function deleteNonReg($id)
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $nonRegModel = new \App\Models\NonRegistrationModel();
+        $deleted = $nonRegModel->delete($id);
+
+        return $this->response->setJSON(['success' => $deleted ? true : false]);
+    }
+
+    public function uploadNonRegExcel()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $file = $this->request->getFile('file_excel');
+        if (!$file || !$file->isValid()) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'File tidak valid']);
+        }
+
+        try {
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+            $spreadsheet = $reader->load($file->getTempName());
+            $sheetData = $spreadsheet->getActiveSheet()->toArray();
+
+            $nonRegModel = new \App\Models\NonRegistrationModel();
+            $inserted = 0;
+            $updated = 0;
+
+            // Skip header (row 0)
+            for ($i = 1; $i < count($sheetData); $i++) {
+                $row = $sheetData[$i];
+                if (empty(trim($row[0])) && empty(trim($row[1]))) continue;
+
+                $kode_spec = trim($row[0]);
+                $nama_material = trim($row[1]);
+                $quantity = (int) trim($row[2]);
+
+                $existing = $nonRegModel->where('kode_spec', $kode_spec)->first();
+                if ($existing) {
+                    $nonRegModel->update($existing['id'], [
+                        'nama_material' => $nama_material,
+                        'quantity' => $existing['quantity'] + $quantity,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+                    $updated++;
+                } else {
+                    $nonRegModel->insert([
+                        'kode_spec' => $kode_spec,
+                        'nama_material' => $nama_material,
+                        'quantity' => $quantity,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                    $inserted++;
+                }
+            }
+
+            return $this->response->setJSON([
+                'success' => true, 
+                'msg' => "Berhasil memproses. $inserted ditambahkan, $updated diupdate."
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'msg' => $e->getMessage()]);
+        }
+    }
+    public function getUsersWithDibawa()
+    {
+        $db = \Config\Database::connect();
+        
+        $builder = $db->table('mutasi m');
+        
+        $subQuery = $db->table('mutasi')
+            ->select('MAX(id) as latest_id')
+            ->groupBy('COALESCE(id_perangkat, -id_non_reg)')
+            ->getCompiledSelect();
+
+        $builder->join("($subQuery) latest_data", 'm.id = latest_data.latest_id');
+        
+        $builder->select('m.id as mutasi_id, u.id as user_id, u.nama, m.created_at, p.noreg as perangkat_noreg, p.nama as perangkat_nama, nr.kode_spec as nr_noreg, nr.nama_material as nr_nama, m.qty');
+        $builder->join('users u', 'u.id = m.id_users');
+        $builder->join('perangkat p', 'p.id = m.id_perangkat', 'left');
+        $builder->join('non_registration nr', 'nr.id = m.id_non_reg', 'left');
+        $builder->where('m.status', 'Dibawa');
+        $builder->where('m.is_read_admin', 'false');
+        $builder->orderBy('u.nama', 'ASC');
+        $builder->orderBy('m.created_at', 'DESC');
+        
+        $mutasiRecords = $builder->get()->getResultArray();
+        
+        $brpDocuments = $db->table('brp_documents')->select('id, mutasi_ids')->get()->getResultArray();
+        
+        $users = [];
+        foreach ($mutasiRecords as $row) {
+            $noreg = $row['perangkat_noreg'] ?? $row['nr_noreg'];
+            $nama = $row['perangkat_nama'] ?? $row['nr_nama'];
+            
+            $brpId = null;
+            foreach ($brpDocuments as $brp) {
+                $ids = json_decode($brp['mutasi_ids'], true);
+                if (is_array($ids) && in_array($row['mutasi_id'], $ids)) {
+                    $brpId = $brp['id'];
+                    break;
+                }
+            }
+            
+            $userName = $row['nama'];
+            if (!isset($users[$userName])) {
+                $users[$userName] = [
+                    'nama' => $userName,
+                    'total_dibawa' => 0,
+                    'last_dibawa' => $row['created_at'],
+                    'devices' => []
+                ];
+            }
+            
+            if ($row['created_at'] > $users[$userName]['last_dibawa']) {
+                $users[$userName]['last_dibawa'] = $row['created_at'];
+            }
+            
+            $users[$userName]['total_dibawa']++;
+            $users[$userName]['devices'][] = [
+                'noreg' => $noreg,
+                'nama' => $nama,
+                'created_at' => $row['created_at'],
+                'brp_id' => $brpId
+            ];
+        }
+        
+        $users = array_values($users);
+        usort($users, function($a, $b) {
+            return strtotime($b['last_dibawa']) - strtotime($a['last_dibawa']);
+        });
+        
+        return $this->response->setJSON(['success' => true, 'data' => $users]);
+    }
+    
+    public function markDibawaAsRead()
+    {
+        $db = \Config\Database::connect();
+        $db->table('mutasi')
+           ->where('status', 'Dibawa')
+           ->where('is_read_admin', 'false')
+           ->update(['is_read_admin' => 'true']);
+           
+        return $this->response->setJSON(['success' => true]);
     }
 }

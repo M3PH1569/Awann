@@ -12,7 +12,7 @@ class NodeModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
     protected $protectFields = true;
-    protected $allowedFields = ['arep', 'node_sentral'];
+    protected $allowedFields = ['arep', 'site_sentral', 'node_sentral'];
 
     protected $useTimestamps = true;
     protected $dateFormat = 'datetime';

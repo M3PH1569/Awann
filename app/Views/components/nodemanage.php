@@ -23,7 +23,7 @@
         <div class="p-4 flex flex-col flex-1 overflow-hidden" id="tabContentNodeManual">
             <!-- Add Node Form -->
             <div class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg shrink-0">
-                <div class="grid grid-cols-2 gap-2 mb-2">
+                <div class="grid grid-cols-3 gap-2 mb-2">
                     <select id="newNodeArep"
                         class="border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
                         <option value="">Pilih Arep...</option>
@@ -33,8 +33,10 @@
                         <option value="Yogyakarta">Yogyakarta</option>
                         <option value="Purwokerto">Purwokerto</option>
                     </select>
-                    <input type="text" id="newNodeSentral" placeholder="Node Sentral (ex: SMGHCPGA01)"
+                    <input type="text" id="newNodeSite" placeholder="Site Sentral"
                         class="border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none uppercase">
+                    <input type="text" id="newNodeSentral" placeholder="Node Sentral (Opsional)"
+                        class="border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none uppercase" oninput="if(this.value.length >= 6) document.getElementById('newNodeSite').value = this.value.substring(0, 6).toUpperCase();">
                 </div>
                 <button onclick="saveNewNode()"
                     class="bg-[#1C4D8D] hover:bg-[#3E679E] text-white px-4 py-2 rounded-md text-xs font-semibold transition w-full">
@@ -62,7 +64,7 @@
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <i class="fa-solid fa-search text-gray-400 text-xs"></i>
                     </div>
-                    <input type="text" id="searchNode" onkeyup="filterNodes()" placeholder="Cari Arep / Node Sentral..." class="w-full border border-gray-300 pl-8 pr-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
+                    <input type="text" id="searchNode" onkeyup="filterNodes()" placeholder="Cari Arep / Site / Node..." class="w-full border border-gray-300 pl-8 pr-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
                 </div>
             </div>
             <div class="overflow-y-auto flex-1 min-h-[200px]">
@@ -75,6 +77,7 @@
                             <th class="px-4 py-3 text-center w-[70px] border border-gray-300">Action</th>
                             <th class="px-4 py-3 text-center w-[50px] border border-gray-300">No</th>
                             <th class="px-4 py-3 text-left border border-gray-300">Arep</th>
+                            <th class="px-4 py-3 text-left border border-gray-300">Site Sentral</th>
                             <th class="px-4 py-3 text-left border border-gray-300">Node Sentral</th>
                         </tr>
                     </thead>
@@ -205,6 +208,7 @@
         const term = document.getElementById('searchNode').value.toLowerCase();
         const filtered = allNodes.filter(n => 
             (n.arep && n.arep.toLowerCase().includes(term)) || 
+            (n.site_sentral && n.site_sentral.toLowerCase().includes(term)) ||
             (n.node_sentral && n.node_sentral.toLowerCase().includes(term))
         );
         renderNodes(filtered);
@@ -232,7 +236,7 @@
                     </td>
                     <td class="px-4 py-3 text-center border border-gray-300">
                         <div class="flex items-center justify-center gap-2">
-                            <button type="button" onclick="editNode(${n.id}, '${n.arep.replace(/'/g, "\\'")}', '${n.node_sentral.replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-400 transition" title="Edit">
+                            <button type="button" onclick="editNode(${n.id}, '${(n.arep||'').replace(/'/g, "\\'")}', '${(n.site_sentral||'').replace(/'/g, "\\'")}', '${(n.node_sentral||'').replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-400 transition" title="Edit">
                                 <i class="fa-solid fa-pen-to-square text-xs"></i>
                             </button>
                             <button type="button" onclick="deleteNode(${n.id})" class="text-red-500 hover:text-red-400 transition" title="Hapus">
@@ -241,18 +245,20 @@
                         </div>
                     </td>
                     <td class="px-4 py-3 text-center text-xs border border-gray-300">${no++}</td>
-                    <td class="px-4 py-3 text-left text-xs border border-gray-300 font-semibold">${n.arep}</td>
-                    <td class="px-4 py-3 text-left text-xs border border-gray-300 font-mono">${n.node_sentral}</td>
+                    <td class="px-4 py-3 text-left text-xs border border-gray-300 font-semibold">${n.arep || '-'}</td>
+                    <td class="px-4 py-3 text-left text-xs border border-gray-300 font-mono">${n.site_sentral || '-'}</td>
+                    <td class="px-4 py-3 text-left text-xs border border-gray-300 font-mono">${n.node_sentral || '-'}</td>
                 </tr>`;
         });
     }
 
     function saveNewNode() {
         const arep = document.getElementById('newNodeArep').value;
-        const nodeSentral = document.getElementById('newNodeSentral').value.trim().toUpperCase();
+        const nodeSentral = document.getElementById('newNodeSentral').value.trim().toUpperCase() || '-';
+        const siteSentral = document.getElementById('newNodeSite').value.trim().toUpperCase();
 
-        if (!arep || !nodeSentral) {
-            showToast('Pilih Arep dan isi Node Sentral', 'warning');
+        if (!arep || !siteSentral) {
+            showToast('Pilih Arep dan isi Site Sentral', 'warning');
             return;
         }
 
@@ -262,7 +268,7 @@
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
             },
-            body: new URLSearchParams({ arep, node_sentral: nodeSentral })
+            body: new URLSearchParams({ arep, site_sentral: siteSentral, node_sentral: nodeSentral })
         })
             .then(res => res.json())
             .then(res => {
@@ -276,7 +282,7 @@
             });
     }
 
-    function editNode(id, oldArep, oldNode) {
+    function editNode(id, oldArep, oldSite, oldNode) {
         Swal.fire({
             title: 'Edit Node',
             html: `
@@ -287,7 +293,8 @@
                     <option value="Yogyakarta" ${oldArep === 'Yogyakarta' ? 'selected' : ''}>Yogyakarta</option>
                     <option value="Purwokerto" ${oldArep === 'Purwokerto' ? 'selected' : ''}>Purwokerto</option>
                 </select>
-                <input id="swal-node" class="swal2-input uppercase" placeholder="Node Sentral" value="${oldNode}">
+                <input id="swal-site" class="swal2-input uppercase" placeholder="Site Sentral" value="${oldSite}">
+                <input id="swal-node" class="swal2-input uppercase" placeholder="Node Sentral (Opsional)" value="${oldNode !== '-' ? oldNode : ''}" oninput="if(this.value.length >= 6) document.getElementById('swal-site').value = this.value.substring(0, 6).toUpperCase();">
             `,
             focusConfirm: false,
             showCancelButton: true,
@@ -295,11 +302,12 @@
             cancelButtonText: 'Batal',
             preConfirm: () => {
                 const arep = document.getElementById('swal-arep').value;
-                const node_sentral = document.getElementById('swal-node').value.trim().toUpperCase();
-                if (!arep || !node_sentral) {
-                    Swal.showValidationMessage('Semua field wajib diisi');
+                const site_sentral = document.getElementById('swal-site').value.trim().toUpperCase();
+                const node_sentral = document.getElementById('swal-node').value.trim().toUpperCase() || '-';
+                if (!arep || !site_sentral) {
+                    Swal.showValidationMessage('Arep dan Site Sentral wajib diisi');
                 }
-                return { arep, node_sentral };
+                return { arep, site_sentral, node_sentral };
             }
         }).then((result) => {
             if (result.isConfirmed) {
