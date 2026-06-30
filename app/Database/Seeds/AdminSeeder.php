@@ -9,13 +9,15 @@ class AdminSeeder extends Seeder
 {
     public function run()
     {
+        helper('password');
         $this->db->table('admin')->insert([
-            'nama'=>'admin',
-            'username'=>'admin',
-            'password'=>password_hash('admin123', PASSWORD_DEFAULT),
-            'is_super'=>1,
-            'created_at'=>Time::now(),
-            'updated_at'=>Time::now(),
+            'nama'       => 'admin',
+            'username'   => 'admin',
+            // [SECURITY] Argon2ID — admin wajib ganti password saat pertama login
+            'password'   => hash_password('admin123'),
+            'is_super'   => 1,
+            'created_at' => Time::now(),
+            'updated_at' => Time::now(),
         ]);
     }
 }

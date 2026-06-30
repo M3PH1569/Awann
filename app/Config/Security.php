@@ -24,7 +24,8 @@ class Security extends BaseConfig
      *
      * Randomize the CSRF Token for added security.
      */
-    public bool $tokenRandomize = false;
+    // [SECURITY FIX] Token di-randomize setiap request untuk mencegah prediksi
+    public bool $tokenRandomize = true;
 
     /**
      * --------------------------------------------------------------------------
@@ -33,7 +34,8 @@ class Security extends BaseConfig
      *
      * Token name for Cross Site Request Forgery protection.
      */
-    public string $tokenName = 'csrf_test_name';
+    // [SECURITY FIX] Nama custom — mencegah fingerprinting framework CodeIgniter
+    public string $tokenName = 'am_token';
 
     /**
      * --------------------------------------------------------------------------
@@ -51,7 +53,8 @@ class Security extends BaseConfig
      *
      * Cookie name for Cross Site Request Forgery protection.
      */
-    public string $cookieName = 'csrf_cookie_name';
+    // [SECURITY FIX] Nama custom — mencegah fingerprinting framework CodeIgniter
+    public string $cookieName = 'am_csrf';
 
     /**
      * --------------------------------------------------------------------------
@@ -71,7 +74,8 @@ class Security extends BaseConfig
      *
      * Regenerate CSRF Token on every submission.
      */
-    public bool $regenerate = false;
+    // [SECURITY FIX] Token diregenerasi setiap submit — mencegah CSRF replay attack
+    public bool $regenerate = true;
 
     /**
      * --------------------------------------------------------------------------

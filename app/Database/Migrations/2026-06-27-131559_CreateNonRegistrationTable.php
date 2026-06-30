@@ -39,7 +39,7 @@ class CreateNonRegistrationTable extends Migration
             ],
         ]);
         $this->forge->addKey('id', true);
-        $this->forge->createTable('non_registration');
+        $this->forge->createTable('non_registration', true);
     }
 
     public function down()

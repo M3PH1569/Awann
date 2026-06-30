@@ -35,7 +35,7 @@ class CreateReturnRequestsTable extends Migration
 
         $this->forge->addKey('id', true);
         $this->forge->addForeignKey('id_mutasi', 'mutasi', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('return_requests');
+        $this->forge->createTable('return_requests', true);
     }
 
     public function down()

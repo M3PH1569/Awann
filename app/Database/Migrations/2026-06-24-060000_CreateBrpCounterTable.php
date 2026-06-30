@@ -31,7 +31,7 @@ class CreateBrpCounterTable extends Migration
 
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey(['period_month', 'period_year']);
-        $this->forge->createTable('brp_counter');
+        $this->forge->createTable('brp_counter', true);
     }
 
     public function down()

@@ -84,6 +84,13 @@ class FormController extends BaseController
         ]);
     }
 
+    public function nonRegList()
+    {
+        $nonRegModel = new \App\Models\NonRegistrationModel();
+        $items = $nonRegModel->orderBy('nama_material', 'ASC')->findAll();
+        return $this->response->setJSON($items);
+    }
+
     public function submit()
     {
         $perangkatModel = new PerangkatModel();

@@ -39,7 +39,7 @@ class CreatePerangkatTable extends Migration
 
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey('noreg');
-        $this->forge->createTable('perangkat');
+        $this->forge->createTable('perangkat', true);
     }
 
     public function down()

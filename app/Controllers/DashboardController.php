@@ -22,6 +22,8 @@ class DashboardController extends BaseController
         $this->perangkatModel = new PerangkatModel();
         $this->mutasiModel = new MutasiModel();
         $this->userModel = new UserModel();
+        // Load password helper untuk Argon2ID hashing
+        helper('password');
     }
 
     public function dashboard()
@@ -262,7 +264,8 @@ class DashboardController extends BaseController
         $db->table('admin')->insert([
             'nama'       => $nama,
             'username'   => $username,
-            'password'   => password_hash('', PASSWORD_DEFAULT),
+            // [SECURITY] Argon2ID hash untuk password kosong (akan di-setup oleh admin baru)
+            'password'   => hash_password(''),
             'is_super'   => 0,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
@@ -333,7 +336,8 @@ class DashboardController extends BaseController
         $db = \Config\Database::connect();
         
         $db->table('admin')->where('id', $id)->update([
-            'password' => password_hash('', PASSWORD_DEFAULT),
+            // [SECURITY] Argon2ID hash untuk password reset (admin baru harus setup saat login)
+            'password'   => hash_password(''),
             'updated_at' => date('Y-m-d H:i:s')
         ]);
 

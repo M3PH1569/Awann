@@ -23,7 +23,7 @@ class AdminController extends BaseController
         $this->db = Database::connect();
 
         $this->session = Services::session();
-        helper('form');
+        helper(['form', 'password']);
     }
 
     public function index()
@@ -39,13 +39,27 @@ class AdminController extends BaseController
         $safeUsername = sanitizeLog((string) $username);
 
         $admin = $this->db->table('admin')->where('username', $safeUsername)->get()->getRowArray();
-        if ($admin && password_verify($password, $admin['password'])) {
+        if ($admin && verify_password($password, $admin['password'])) {
             $this->session->set('admin', $admin);
             log_message('info', 'Login berhasil username: ' . $safeUsername);
+
             // If password is blank, redirect to setup page before dashboard
-            if (password_verify('', $admin['password'])) {
+            if (verify_password('', $admin['password'])) {
                 return redirect()->to('/setup-password');
             }
+
+            // [SECURITY] Transparent rehash: upgrade bcrypt → Argon2ID saat login
+            // password_needs_upgrade() cek apakah hash masih bcrypt atau Argon2ID lama
+            // Proses ini transparan — user tidak perlu ganti password
+            if (password_needs_upgrade($admin['password'])) {
+                $newHash = hash_password($password);
+                $this->db->table('admin')->where('id', $admin['id'])->update([
+                    'password'   => $newHash,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+                log_message('info', 'Password rehashed ke Argon2ID untuk username: ' . $safeUsername);
+            }
+
             return redirect()->to('/dashboard');
         } else {
             log_message('warning', 'Login gagal username: ' . $safeUsername);
@@ -69,7 +83,7 @@ class AdminController extends BaseController
 
         // If password is already set, go straight to dashboard
         $adminDb = $this->db->table('admin')->where('id', $adminSession['id'])->get()->getRowArray();
-        if (!password_verify('', $adminDb['password'])) {
+        if (!verify_password('', $adminDb['password'])) {
             return redirect()->to('/dashboard');
         }
 
@@ -80,15 +94,26 @@ class AdminController extends BaseController
             if (empty($newPass)) {
                 return redirect()->back()->with('error', 'Password baru harus diisi.');
             }
-            if (strlen($newPass) < 5) {
-                return redirect()->back()->with('error', 'Password baru harus minimal 5 karakter.');
+            // [SECURITY FIX] Password policy diperkuat untuk production
+            if (strlen($newPass) < 12) {
+                return redirect()->back()->with('error', 'Password baru harus minimal 12 karakter.');
+            }
+            if (!preg_match('/[A-Z]/', $newPass)) {
+                return redirect()->back()->with('error', 'Password harus mengandung minimal 1 huruf kapital.');
+            }
+            if (!preg_match('/[0-9]/', $newPass)) {
+                return redirect()->back()->with('error', 'Password harus mengandung minimal 1 angka.');
+            }
+            if (!preg_match('/[^a-zA-Z0-9]/', $newPass)) {
+                return redirect()->back()->with('error', 'Password harus mengandung minimal 1 karakter spesial (!@#$%^&*).');
             }
             if ($newPass !== $confPass) {
                 return redirect()->back()->with('error', 'Konfirmasi password tidak cocok.');
             }
 
+            // [SECURITY] Gunakan hash_password() — Argon2ID
             $this->db->table('admin')->where('id', $adminSession['id'])->update([
-                'password'   => password_hash($newPass, PASSWORD_DEFAULT),
+                'password'   => hash_password($newPass),
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
 
@@ -120,12 +145,26 @@ class AdminController extends BaseController
 
         $adminDb = $this->db->table('admin')->where('id', $adminId)->get()->getRowArray();
 
-        if (!password_verify($oldPass, $adminDb['password'])) {
+        // [SECURITY] verify_password() backward compatible — bcrypt atau Argon2ID
+        if (!verify_password($oldPass, $adminDb['password'])) {
             return redirect()->back()->with('error', 'Password lama tidak sesuai. Silakan cek kembali.')->with('openModal', true);
         }
 
-        if (strlen($newPass) < 5) {
-            return redirect()->back()->with('error', 'Password baru harus minimal 5 karakter.')->with('openModal', true);
+        // [SECURITY FIX] Password policy diperkuat untuk production
+        if (strlen($newPass) < 12) {
+            return redirect()->back()->with('error', 'Password baru harus minimal 12 karakter.')->with('openModal', true);
+        }
+
+        if (!preg_match('/[A-Z]/', $newPass)) {
+            return redirect()->back()->with('error', 'Password harus mengandung minimal 1 huruf kapital.')->with('openModal', true);
+        }
+
+        if (!preg_match('/[0-9]/', $newPass)) {
+            return redirect()->back()->with('error', 'Password harus mengandung minimal 1 angka.')->with('openModal', true);
+        }
+
+        if (!preg_match('/[^a-zA-Z0-9]/', $newPass)) {
+            return redirect()->back()->with('error', 'Password harus mengandung minimal 1 karakter spesial (!@#$%^&*).')->with('openModal', true);
         }
 
         if ($oldPass === $newPass) {
@@ -136,7 +175,8 @@ class AdminController extends BaseController
             return redirect()->back()->with('error', 'Konfirmasi password baru tidak cocok.')->with('openModal', true);
         }
 
-        $hashedPassword = password_hash($newPass, PASSWORD_DEFAULT);
+        // [SECURITY] Gunakan hash_password() — Argon2ID
+        $hashedPassword = hash_password($newPass);
 
         $update = $this->db->table('admin')->where('id', $adminId)->update([
             'password' => $hashedPassword

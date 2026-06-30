@@ -1,6 +1,7 @@
 #-------------------------
 # Operating Specific Junk Files
 #-------------------------
+k3s/
 
 # OS X
 .DS_Store
@@ -60,13 +61,16 @@ writable/session/*
 writable/brp/*
 !writable/brp/index.html
 
-# writable/uploads/*
-# !writable/uploads/index.html
+writable/uploads/*
+!writable/uploads/index.html
 
 writable/debugbar/*
 !writable/debugbar/index.html
 
 php_errors.log
+*.sql
+*.bak
+*.tmp
 
 #-------------------------
 # User Guide Temp Files
@@ -127,3 +131,4 @@ _modules/*
 
 /results/
 /phpunit*.xml
+!phpunit.xml.dist

@@ -40,7 +40,8 @@ class App extends BaseConfig
      * something else. If you have configured your web server to remove this file
      * from your site URIs, set this variable to an empty string.
      */
-    public string $indexPage = 'index.php';
+    // [BUG FIX] Dikosongkan agar URL bersih tanpa 'index.php'
+    public string $indexPage = '';
 
     /**
      * --------------------------------------------------------------------------
@@ -157,7 +158,7 @@ class App extends BaseConfig
      * secure, the user will be redirected to a secure version of the page
      * and the HTTP Strict Transport Security (HSTS) header will be set.
      */
-    public bool $forceGlobalSecureRequests = false;
+    public bool $forceGlobalSecureRequests = true;
 
     /**
      * --------------------------------------------------------------------------
@@ -180,7 +181,14 @@ class App extends BaseConfig
      *
      * @var array<string, string>
      */
-    public array $proxyIPs = [];
+    // [BUG FIX] Daftarkan subnet Traefik agar CI membaca IP asli user
+    // dari header X-Forwarded-For, bukan IP pod Traefik
+    public array $proxyIPs = [
+        '10.42.0.0/24' => 'X-Forwarded-For',
+        '10.0.10.0/30' => 'X-Forwarded-For',
+        '10.0.20.0/24' => 'X-Forwarded-For',
+        '127.0.0.1'    => 'X-Forwarded-For',
+    ];
 
     /**
      * --------------------------------------------------------------------------

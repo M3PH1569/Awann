@@ -4,7 +4,7 @@ namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Session\Handlers\BaseHandler;
-use CodeIgniter\Session\Handlers\FileHandler;
+use CodeIgniter\Session\Handlers\DatabaseHandler;
 
 class Session extends BaseConfig
 {
@@ -22,7 +22,9 @@ class Session extends BaseConfig
      *
      * @var class-string<BaseHandler>
      */
-    public string $driver = FileHandler::class;
+    // [BUG FIX] Ganti FileHandler → DatabaseHandler
+    // FileHandler tidak kompatibel dengan environment multi-pod/multi-replica
+    public string $driver = DatabaseHandler::class;
 
     /**
      * --------------------------------------------------------------------------
@@ -31,7 +33,8 @@ class Session extends BaseConfig
      *
      * The session cookie name, must contain only [0-9a-z_-] characters
      */
-    public string $cookieName = 'ci_session';
+    // [SECURITY FIX] Nama custom — mencegah fingerprinting framework
+    public string $cookieName = 'am_session';
 
     /**
      * --------------------------------------------------------------------------
@@ -58,7 +61,9 @@ class Session extends BaseConfig
      *
      * IMPORTANT: You are REQUIRED to set a valid save path!
      */
-    public string $savePath = WRITEPATH . 'session';
+    // [BUG FIX] Tabel database untuk menyimpan session
+    // Jalankan: php spark session:migration, lalu php spark migrate
+    public string $savePath = 'ci_sessions';
 
     /**
      * --------------------------------------------------------------------------
@@ -90,7 +95,9 @@ class Session extends BaseConfig
      * when auto-regenerating the session ID. When set to FALSE, the data
      * will be later deleted by the garbage collector.
      */
-    public bool $regenerateDestroy = false;
+    // [SECURITY FIX] Session lama dihapus saat ID diregenerasi
+    // Mencegah session fixation dan mengurangi penumpukan data session
+    public bool $regenerateDestroy = true;
 
     /**
      * --------------------------------------------------------------------------

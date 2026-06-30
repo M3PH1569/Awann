@@ -468,7 +468,7 @@
     let tsNonReg = null;
 
     // Load Non-Registration Materials
-    fetch('<?= base_url('dashboard/nonRegList') ?>', {
+    fetch('<?= base_url('form/nonRegList') ?>', {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
       .then(res => res.json())

@@ -25,7 +25,7 @@ class CreateSpecPerangkat extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->createTable('spec_perangkat');
+        $this->forge->createTable('spec_perangkat', true);
     }
 
     public function down()

@@ -44,7 +44,7 @@ class PerangkatModel extends Model
     protected $beforeDelete = [];
     protected $afterDelete = [];
 
-    public function getDataDash($filters = [], $limit, $offset)
+    public function getDataDash($filters = [], $limit = 0, $offset = 0)
     {
         $where = [];
 

@@ -38,7 +38,7 @@ class CreateAdminTable extends Migration
 
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey(['username']);
-        $this->forge->createTable('admin');
+        $this->forge->createTable('admin', true);
     }
 
     public function down()

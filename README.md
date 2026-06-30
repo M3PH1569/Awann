@@ -1,69 +1,70 @@
-# CodeIgniter 4 Application Starter
+# Asset Management System
 
-## What is CodeIgniter?
+A robust and secure Asset Management System built with CodeIgniter 4. This application is designed to help organizations track, manage, and maintain their physical and digital assets efficiently.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Core Features
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+- **Asset Tracking:** Monitor the complete lifecycle of all organizational assets from acquisition to disposal.
+- **User Management:** Role-based access control for secure and segregated operations.
+- **Reporting & Analytics:** Generate detailed reports on asset status, location, assignments, and maintenance schedules.
+- **Modern Interface:** Responsive and intuitive design accessible across various devices and screen sizes.
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## System Requirements
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+- PHP version 8.2 or higher
+- Required PHP Extensions:
+  - `intl`
+  - `mbstring`
+  - `json`
+  - `mysqlnd` (for MySQL database connections)
+  - `libcurl` (for HTTP requests)
 
-## Installation & updates
+## Installation Guide
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd AssetManagement
+   ```
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+2. **Install dependencies:**
+   Ensure you have Composer installed, then run:
+   ```bash
+   composer install
+   ```
 
-## Setup
+3. **Environment Configuration:**
+   - Copy the example environment file:
+     ```bash
+     cp env .env
+     ```
+   - Open `.env` and configure your specific settings. Pay special attention to:
+     - `app.baseURL`
+     - Database configuration (`database.default.hostname`, `database.default.database`, `database.default.username`, `database.default.password`)
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+4. **Database Setup:**
+   Run the database migrations and seeders (if applicable) to initialize your database structure:
+   ```bash
+   php spark migrate
+   ```
 
-## Important Change with index.php
+## Web Server Configuration
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+For security reasons, this application requires the web server document root to point to the `public` folder, **not** the project root directory. 
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+- **Apache:** Ensure your VirtualHost `DocumentRoot` points to `/path/to/AssetManagement/public`.
+- **Nginx:** Ensure your server block `root` points to `/path/to/AssetManagement/public`.
 
-**Please** read the user guide for a better explanation of how CI4 works!
+Never expose the project root to the public web.
 
-## Repository Management
+## Support and Issue Tracking
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+To report bugs, request features, or seek assistance, please use the GitHub Issues section of this repository. Provide as much detail as possible to help us address your concerns promptly.
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+## Docker Images
 
-## Server Requirements
+- [Assets Management (Awann)](https://hub.docker.com/r/choss69/awann)
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+## License
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+Please refer to the [LICENSE](LICENSE) file in the repository root for information regarding the licensing of this project.

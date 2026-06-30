@@ -48,7 +48,7 @@ class CreateMutasiTable extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addForeignKey('id_perangkat','perangkat','id','CASCADE','CASCADE');
         $this->forge->addForeignKey('id_users','users','id','CASCADE','CASCADE');
-        $this->forge->createTable('mutasi');
+        $this->forge->createTable('mutasi', true);
     }
 
     public function down()

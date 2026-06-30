@@ -44,7 +44,7 @@ class CreateBrpDocumentsTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->createTable('brp_documents');
+        $this->forge->createTable('brp_documents', true);
     }
 
     public function down()

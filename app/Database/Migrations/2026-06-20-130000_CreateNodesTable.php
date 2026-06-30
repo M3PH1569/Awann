@@ -33,7 +33,7 @@ class CreateNodesTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->createTable('nodes');
+        $this->forge->createTable('nodes', true);
 
         // Seed initial data
         $db = \Config\Database::connect();
