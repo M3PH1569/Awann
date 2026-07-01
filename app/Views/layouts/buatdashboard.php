@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <title>Dashboard</title>
 
     <script>
@@ -255,9 +256,15 @@
                 <script>
                     function getCookie(name) {
                         let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                        if (match) return match[2];
+                        if (match) return decodeURIComponent(match[2]);
                         return '';
                     }
+
+                    // Helper global: ambil CSRF token terbaru dari cookie am_csrf
+                    // Dipanggil sesaat sebelum request dikirim agar selalu fresh
+                    window.csrfToken = function() {
+                        return getCookie('am_csrf') || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                    };
 
                     function notificationComponent() {
                         return {
@@ -311,7 +318,8 @@
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
-                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': getCookie('am_csrf') || '<?= csrf_hash() ?>'
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': csrfToken()
                                     },
                                     body: params
                                 }).catch(err => console.error(err));
@@ -377,7 +385,8 @@
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
-                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': getCookie('am_csrf') || '<?= csrf_hash() ?>'
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': csrfToken()
                                     },
                                     body: params
                                 })
@@ -1270,8 +1279,8 @@
         <?= view('components/usermanage') ?>
         <?= view('components/adminmanage') ?>
         <?= view('components/nodemanage') ?>
-        <?= view('components/non_registration_manage') ?>
     <?php endif; ?>
+    <?= view('components/non_registration_manage') ?>
 
     <script>
         const overlay = document.getElementById('overlayPassword');
