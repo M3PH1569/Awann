@@ -24,8 +24,9 @@ class Security extends BaseConfig
      *
      * Randomize the CSRF Token for added security.
      */
-    // [SECURITY FIX] Token di-randomize setiap request untuk mencegah prediksi
-    public bool $tokenRandomize = true;
+    // Token randomize dimatikan: dengan regenerate=false, token stabil selama session
+    // sehingga AJAX request yang overlap tidak saling invalidate
+    public bool $tokenRandomize = false;
 
     /**
      * --------------------------------------------------------------------------
@@ -74,8 +75,10 @@ class Security extends BaseConfig
      *
      * Regenerate CSRF Token on every submission.
      */
-    // [SECURITY FIX] Token diregenerasi setiap submit — mencegah CSRF replay attack
-    public bool $regenerate = true;
+    // Regenerate dimatikan: mencegah race condition antara multiple AJAX POST
+    // yang terjadi bersamaan (mark-read + approve + polling). Token tetap valid
+    // sepanjang session (dikendalikan oleh $expires = 7200 detik).
+    public bool $regenerate = false;
 
     /**
      * --------------------------------------------------------------------------
