@@ -59,7 +59,7 @@
       </select>
     </div>
 
-    <a href="/dashboard" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
+    <a href="<?= base_url('dashboard') ?>" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
       Reset Filter
     </a>
 
@@ -998,11 +998,11 @@
         valueField: "id",
         labelField: "text",
         searchField: ["kode_spec", "nama_perangkat"],
-        create: true,
+        create: false,
         controlClass: 'ts-control no-arrow',
         load: function (query, callback) {
           if (!query.length) return callback();
-          fetch(`/perangkat/getSpec?search=${query}`)
+          fetch(`<?= base_url('perangkat/getSpec') ?>?search=${encodeURIComponent(query)}`)
             .then(res => res.json())
             .then(data => {
               callback(data.map(item => ({
@@ -1017,7 +1017,7 @@
           const namaInput = document.getElementById("nama");
           const namaWrapper = document.getElementById("namaWrapper");
           if (/^\d+$/.test(value)) {
-            fetch(`/perangkat/getSpecById?id=${value}`)
+            fetch(`<?= base_url('perangkat/getSpecById') ?>?id=${value}`)
               .then(res => res.json())
               .then(data => {
                 namaInput.value = data.nama_perangkat;
@@ -1111,7 +1111,7 @@
 
       let noreg = kode_spec + kode_id;
 
-      fetch(`/perangkat/cek-noreg?noreg=${noreg}`)
+      fetch(`<?= base_url('perangkat/cek-noreg') ?>?noreg=${noreg}`)
         .then(res => res.json())
         .then(data => {
           if (data.exists) {
