@@ -23,7 +23,7 @@
         class="border text-xs rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#1C4D8D] pr-8 transition-all duration-500 ease-in-out">
     </div>
 
-    <a href="/dashboard/nonreg" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
+    <a href="<?= base_url('dashboard/nonreg') ?>" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
       Reset Filter
     </a>
     <button type="button" onclick="openNonRegManage()" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white ml-auto">
