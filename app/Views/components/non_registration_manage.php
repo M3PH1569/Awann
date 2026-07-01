@@ -142,11 +142,11 @@
                 valueField: "id",
                 labelField: "text",
                 searchField: ["kode_spec", "nama_material"],
-                create: true,
+                create: false,
                 controlClass: 'ts-control no-arrow',
                 load: function (query, callback) {
                     if (!query.length) return callback();
-                    fetch(`/dashboard/nonreg/getNonReg?search=${query}`)
+                    fetch(`<?= base_url('dashboard/nonreg/getNonReg') ?>?search=${encodeURIComponent(query)}`)
                         .then(response => response.json())
                         .then(data => {
                             callback(data.map(item => ({
@@ -250,7 +250,7 @@
             body: formData,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                'X-CSRF-TOKEN': csrfToken()
             }
         })
         .then(res => res.json())
